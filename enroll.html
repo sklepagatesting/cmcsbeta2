@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gray-50 text-black min-h-screen py-10 flex items-center justify-center p-6">
 
-    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
             <h3 id="modalTitle" class="font-black text-2xl mb-2 uppercase">Notice</h3>
             <p id="modalMsg" class="font-medium text-gray-700 mb-6"></p>
@@ -17,63 +17,51 @@
     </div>
 
     <div class="max-w-2xl w-full bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div class="mb-8 flex justify-between items-start">
-            <div>
-                <h2 class="text-3xl font-black uppercase tracking-tighter">Student Enrollment</h2>
-                <p class="text-sm text-gray-500 italic">Fill out the official registration form.</p>
-            </div>
-            <a href="index.html" class="text-[10px] font-black border-2 border-black px-2 py-1 hover:bg-black hover:text-white transition">BACK</a>
-        </div>
+        <h2 class="text-3xl font-black mb-8 uppercase tracking-tighter">Student Enrollment</h2>
         
         <form id="studentForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-1 space-y-4">
-                <input type="text" id="id_num" placeholder="Student ID No." class="w-full border-2 border-black p-3 outline-none" required>
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-3 outline-none" required>
-                    <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-3 outline-none" required>
-                </div>
-                <select id="gender" class="w-full border-2 border-black p-3 outline-none bg-white" required>
-                    <option value="" disabled selected>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold">DATE OF BIRTH</label>
-                    <input type="date" id="dob" class="w-full border-2 border-black p-3 outline-none" required>
-                </div>
+            <input type="text" id="id_num" placeholder="Student ID" class="border-2 border-black p-3 outline-none" required>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-3 outline-none" required>
+                <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-3 outline-none" required>
             </div>
 
-            <div class="md:col-span-1 space-y-4">
-                <input type="email" id="email" placeholder="Active Gmail" class="w-full border-2 border-black p-3 outline-none" required>
-                <input type="password" id="pw" placeholder="Password" class="w-full border-2 border-black p-3 outline-none" required>
-                <input type="text" id="address" placeholder="Complete Address" class="w-full border-2 border-black p-3 outline-none" required>
-                <input type="tel" id="mobile" placeholder="Mobile Number" class="w-full border-2 border-black p-3 outline-none" required>
+            <select id="gender" class="w-full border-2 border-black p-3 outline-none bg-white" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold">DATE OF BIRTH</label>
+                <input type="date" id="dob" class="border-2 border-black p-3 outline-none" required>
             </div>
 
-            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 border-t-2 border-black pt-6">
+            <input type="email" id="email" placeholder="Gmail Address" class="w-full border-2 border-black p-3 outline-none" required>
+            <input type="password" id="pw" placeholder="Password" class="w-full border-2 border-black p-3 outline-none" required>
+            <input type="text" id="address" placeholder="Address" class="w-full border-2 border-black p-3 outline-none md:col-span-2" required>
+            <input type="tel" id="mobile" placeholder="Mobile Number" class="w-full border-2 border-black p-3 outline-none" required>
+            
+            <div class="md:col-span-2 grid grid-cols-3 gap-4 border-t-2 border-black pt-6">
                 <select id="course" class="border-2 border-black p-3 outline-none bg-white" required>
-                    <option value="" disabled selected>Course</option>
                     <option value="BSIT">BSIT</option>
                     <option value="BSCS">BSCS</option>
                 </select>
                 <select id="year" class="border-2 border-black p-3 outline-none bg-white" required>
-                    <option value="" disabled selected>Year Level</option>
                     <option value="1">1st Year</option>
                     <option value="2">2nd Year</option>
                     <option value="3">3rd Year</option>
                     <option value="4">4th Year</option>
                 </select>
                 <select id="semester" class="border-2 border-black p-3 outline-none bg-white" required>
-                    <option value="" disabled selected>Semester</option>
                     <option value="1">1st Sem</option>
                     <option value="2">2nd Sem</option>
                 </select>
             </div>
 
-            <button type="submit" id="submitBtn" class="md:col-span-2 bg-black text-white py-4 font-black hover:bg-gray-800 transition uppercase tracking-widest shadow-lg">
-                SUBMIT ENROLLMENT
-            </button>
+            <button type="submit" id="submitBtn" class="md:col-span-2 bg-black text-white py-4 font-black hover:bg-gray-800 transition uppercase tracking-widest">SUBMIT ENROLLMENT</button>
         </form>
     </div>
 
@@ -82,28 +70,18 @@
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
-
+        const firebaseConfig = { /* USE YOUR CONFIG */ };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
         let redirectOnClose = false;
-
         window.showModal = (title, msg, redirect = false) => {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalMsg').innerText = msg;
             document.getElementById('msgModal').classList.remove('hidden');
             redirectOnClose = redirect;
         }
-
         window.closeModal = () => {
             document.getElementById('msgModal').classList.add('hidden');
             if(redirectOnClose) window.location.href = "login.html";
@@ -111,22 +89,16 @@
 
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "SUBMITTING...";
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('pw').value;
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                await setDoc(doc(db, "users", user.uid), {
+                await setDoc(doc(db, "users", userCredential.user.uid), {
                     studentId: document.getElementById('id_num').value,
                     lastname: document.getElementById('ln').value,
                     firstname: document.getElementById('fn').value,
-                    gender: document.getElementById('gender').value,
+                    gender: document.getElementById('gender').value, // Saved to DB
                     birthdate: document.getElementById('dob').value,
                     address: document.getElementById('address').value,
                     mobile: document.getElementById('mobile').value,
@@ -138,12 +110,9 @@
                     status: "pending",
                     createdAt: new Date()
                 });
-
-                showModal("Registration Sent", "Your profile is now pending for administrator approval.", true);
+                showModal("Success", "Student enrollment submitted. Pending admin approval.", true);
             } catch (error) {
                 showModal("Error", error.message);
-                btn.disabled = false;
-                btn.innerText = "SUBMIT ENROLLMENT";
             }
         });
     </script>
