@@ -70,7 +70,15 @@
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { /* USE YOUR CONFIG */ };
+        const firebaseConfig = {
+  apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+  authDomain: "svls-289ee.firebaseapp.com",
+  projectId: "svls-289ee",
+  storageBucket: "svls-289ee.firebasestorage.app",
+  messagingSenderId: "500705386198",
+  appId: "1:500705386198:web:96f189662bc2aa99cf7377",
+  measurementId: "G-5TNBMQ2HN5"
+};
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
