@@ -55,75 +55,94 @@
         <a href="admin_class.html" class="text-xs font-bold hover:text-gray-400">CLASSES</a>
     </nav>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-  authDomain: "svls-289ee.firebaseapp.com",
-  projectId: "svls-289ee",
-  storageBucket: "svls-289ee.firebasestorage.app",
-  messagingSenderId: "500705386198",
-  appId: "1:500705386198:web:96f189662bc2aa99cf7377",
-  measurementId: "G-5TNBMQ2HN5"
-};
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        async function loadPendingUsers() {
-            const tBody = document.getElementById('teacherTableBody');
-            const sBody = document.getElementById('studentTableBody');
-            tBody.innerHTML = ''; sBody.innerHTML = '';
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-            const q = query(collection(db, "users"), where("status", "==", "pending"));
-            const querySnapshot = await getDocs(q);
-
-            querySnapshot.forEach((userDoc) => {
-                const data = userDoc.data();
-                const id = userDoc.id;
-                
-                if (data.role === 'teacher') {
-                    tBody.innerHTML += `
-                        <tr class="border-b-2 border-black hover:bg-gray-50">
-                            <td class="p-3 border-r-2 border-black">${data.lastname}, ${data.firstname}</td>
-                            <td class="p-3 border-r-2 border-black">${data.gender}</td>
-                            <td class="p-3 border-r-2 border-black text-xs font-mono">${data.email}</td>
-                            <td class="p-3 border-r-2 border-black">${data.designation}</td>
-                            <td class="p-3 flex gap-2">
-                                <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold">APPROVE</button>
-                                <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-500">DECLINE</button>
-                            </td>
-                        </tr>`;
-                } else if (data.role === 'student') {
-                    sBody.innerHTML += `
-                        <tr class="border-b-2 border-black hover:bg-gray-50">
-                            <td class="p-3 border-r-2 border-black">${data.lastname}, ${data.firstname}</td>
-                            <td class="p-3 border-r-2 border-black">${data.course} - Yr ${data.year}</td>
-                            <td class="p-3 border-r-2 border-black">${data.gender}</td>
-                            <td class="p-3 border-r-2 border-black text-xs truncate max-w-[150px]">${data.address}</td>
-                            <td class="p-3 flex gap-2">
-                                <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold">APPROVE</button>
-                                <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-500">DECLINE</button>
-                            </td>
-                        </tr>`;
-                }
-            });
-        }
-
-        window.handleUser = async (uid, action) => {
+    // 1. Define the function first
+    const handleUser = async (uid, action) => {
+        try {
             const userRef = doc(db, "users", uid);
             if (action === 'approve') {
                 await updateDoc(userRef, { status: "approved" });
                 alert("Account Approved!");
             } else {
                 await deleteDoc(userRef);
-                alert("Account Declined/Removed.");
+                alert("Account Declined and Removed.");
             }
-            loadPendingUsers();
-        };
+            loadPendingUsers(); // Refresh the list
+        } catch (error) {
+            console.error("Error updating user:", error);
+            alert("Action failed: " + error.message);
+        }
+    };
 
-        loadPendingUsers();
-    </script>
+    // 2. IMPORTANT: Attach it to the window object so onclick can find it
+    window.handleUser = handleUser;
+
+    async function loadPendingUsers() {
+        const tBody = document.getElementById('teacherTableBody');
+        const sBody = document.getElementById('studentTableBody');
+        tBody.innerHTML = '<tr class="text-center"><td colspan="5" class="p-4">Loading...</td></tr>'; 
+        sBody.innerHTML = '<tr class="text-center"><td colspan="5" class="p-4">Loading...</td></tr>';
+
+        const q = query(collection(db, "users"), where("status", "==", "pending"));
+        const querySnapshot = await getDocs(q);
+
+        tBody.innerHTML = ''; 
+        sBody.innerHTML = '';
+
+        if (querySnapshot.empty) {
+            tBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center italic">No pending teachers</td></tr>';
+            sBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center italic">No pending students</td></tr>';
+            return;
+        }
+
+        querySnapshot.forEach((userDoc) => {
+            const data = userDoc.data();
+            const id = userDoc.id;
+            
+            if (data.role === 'teacher') {
+                tBody.innerHTML += `
+                    <tr class="border-b-2 border-black hover:bg-gray-50">
+                        <td class="p-3 border-r-2 border-black font-bold">${data.lastname}, ${data.firstname}</td>
+                        <td class="p-3 border-r-2 border-black">${data.gender || 'N/A'}</td>
+                        <td class="p-3 border-r-2 border-black text-xs font-mono">${data.email}</td>
+                        <td class="p-3 border-r-2 border-black">${data.designation}</td>
+                        <td class="p-3 flex gap-2">
+                            <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold hover:bg-green-600 transition">APPROVE</button>
+                            <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-600 hover:text-white transition">DECLINE</button>
+                        </td>
+                    </tr>`;
+            } else if (data.role === 'student') {
+                sBody.innerHTML += `
+                    <tr class="border-b-2 border-black hover:bg-gray-50">
+                        <td class="p-3 border-r-2 border-black font-bold">${data.lastname}, ${data.firstname}</td>
+                        <td class="p-3 border-r-2 border-black">${data.course} - Yr ${data.year}</td>
+                        <td class="p-3 border-r-2 border-black">${data.gender || 'N/A'}</td>
+                        <td class="p-3 border-r-2 border-black text-xs truncate max-w-[150px]">${data.address}</td>
+                        <td class="p-3 flex gap-2">
+                            <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold hover:bg-green-600 transition">APPROVE</button>
+                            <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-600 hover:text-white transition">DECLINE</button>
+                        </td>
+                    </tr>`;
+            }
+        });
+    }
+
+    loadPendingUsers();
+</script>
 </body>
 </html>
