@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-black min-h-screen py-10 flex items-center justify-center p-6">
+    <div class="max-w-2xl w-full border-2 border-black p-8 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <h2 class="text-2xl font-black mb-6 border-b-2 border-black pb-2">STUDENT ENROLLMENT FORM</h2>
+        
+        <form id="studentForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="id_num" placeholder="Student ID (Manual)" class="border-2 border-black p-2 outline-none" required>
+            <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-2 outline-none" required>
+            <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-2 outline-none" required>
+            
+            <div class="flex flex-col">
+                <label class="text-[10px] font-bold">BIRTHDATE</label>
+                <input type="date" id="dob" class="border-2 border-black p-2 outline-none" required>
+            </div>
+
+            <input type="email" id="email" placeholder="Gmail Address" class="border-2 border-black p-2 outline-none md:col-span-2" required>
+            <input type="password" id="pw" placeholder="Password" class="border-2 border-black p-2 outline-none md:col-span-2" required>
+            
+            <input type="text" id="address" placeholder="Complete Address" class="border-2 border-black p-2 outline-none md:col-span-2" required>
+            <input type="tel" id="mobile" placeholder="Mobile Number" class="border-2 border-black p-2 outline-none" required>
+            
+            <select id="course" class="border-2 border-black p-2 outline-none bg-white" required>
+                <option value="" disabled selected>Select Course</option>
+                <option value="BSIT">BS Information Technology</option>
+                <option value="BSCS">BS Computer Science</option>
+            </select>
+
+            <select id="year" class="border-2 border-black p-2 outline-none bg-white" required>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+
+            <select id="semester" class="border-2 border-black p-2 outline-none bg-white" required>
+                <option value="1">1st Semester</option>
+                <option value="2">2nd Semester</option>
+            </select>
+
+            <button type="submit" class="md:col-span-2 bg-black text-white py-4 font-bold hover:invert transition">SUBMIT STUDENT ENROLLMENT</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { /* SAME AS PREVIOUS */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pw').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, "users", user.uid), {
+                    studentId: document.getElementById('id_num').value,
+                    lastname: document.getElementById('ln').value,
+                    firstname: document.getElementById('fn').value,
+                    birthdate: document.getElementById('dob').value,
+                    address: document.getElementById('address').value,
+                    mobile: document.getElementById('mobile').value,
+                    course: document.getElementById('course').value,
+                    year: document.getElementById('year').value,
+                    semester: document.getElementById('semester').value,
+                    email: email,
+                    role: "student",
+                    status: "pending",
+                    createdAt: new Date()
+                });
+
+                alert("Enrollment pending for approval. Redirecting to login.");
+                window.location.href = "login.html";
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    </script>
+</body>
+</html>
