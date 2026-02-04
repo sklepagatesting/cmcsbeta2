@@ -8,9 +8,9 @@
 </head>
 <body class="bg-gray-50 text-black min-h-screen flex items-center justify-center p-6">
 
-    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
-            <h3 id="modalTitle" class="font-black text-2xl mb-2 uppercase">Notice</h3>
+            <h3 id="modalTitle" class="font-black text-2xl mb-2 uppercase tracking-tighter">Notice</h3>
             <p id="modalMsg" class="font-medium text-gray-700 mb-6"></p>
             <button onclick="closeModal()" class="w-full bg-black text-white py-3 font-bold hover:bg-gray-800 transition uppercase tracking-widest">Understood</button>
         </div>
@@ -24,39 +24,33 @@
         
         <form id="teacherForm" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-3 outline-none focus:bg-gray-50" required>
-                <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-3 outline-none focus:bg-gray-50" required>
+                <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-3 outline-none" required>
+                <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-3 outline-none" required>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
-                <select id="gender" class="border-2 border-black p-3 outline-none bg-white appearance-none" required>
-                    <option value="" disabled selected>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-                <select id="designation" class="border-2 border-black p-3 outline-none bg-white appearance-none" required>
-                    <option value="" disabled selected>Designation</option>
-                    <option value="Subject Teacher">Subject Teacher</option>
-                    <option value="Substitute">Substitute</option>
-                </select>
-            </div>
+            <select id="gender" class="w-full border-2 border-black p-3 outline-none bg-white" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
 
-            <input type="email" id="email" placeholder="Gmail (active account)" class="w-full border-2 border-black p-3 outline-none focus:bg-gray-50" required>
-            <input type="password" id="pw" placeholder="Password" class="w-full border-2 border-black p-3 outline-none focus:bg-gray-50" required>
+            <select id="designation" class="w-full border-2 border-black p-3 outline-none bg-white" required>
+                <option value="" disabled selected>Select Designation</option>
+                <option value="Subject Teacher">Subject Teacher</option>
+                <option value="Substitute">Substitute</option>
+            </select>
+
+            <input type="email" id="email" placeholder="Gmail Address" class="w-full border-2 border-black p-3 outline-none" required>
+            <input type="password" id="pw" placeholder="Password" class="w-full border-2 border-black p-3 outline-none" required>
             
             <div class="space-y-1">
                 <label class="text-[10px] font-black uppercase">License Number (7 Digits)</label>
-                <input type="text" id="license" pattern="[0-9]{7}" placeholder="0000000" class="w-full border-2 border-black p-3 outline-none focus:bg-gray-50" required>
+                <input type="text" id="license" pattern="[0-9]{7}" placeholder="0000000" class="w-full border-2 border-black p-3 outline-none" required>
             </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-black text-white py-4 font-black hover:invert transition-all flex justify-center items-center">
-                SUBMIT FOR APPROVAL
-            </button>
+            <button type="submit" id="submitBtn" class="w-full bg-black text-white py-4 font-black hover:invert transition-all">SUBMIT FOR APPROVAL</button>
         </form>
-        <div class="mt-6 text-center">
-            <a href="index.html" class="text-xs font-bold underline hover:no-underline">CANCEL AND GO BACK</a>
-        </div>
     </div>
 
     <script type="module">
@@ -93,21 +87,15 @@
 
         document.getElementById('teacherForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerText = "PROCESSING...";
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('pw').value;
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                await setDoc(doc(db, "users", user.uid), {
+                await setDoc(doc(db, "users", userCredential.user.uid), {
                     lastname: document.getElementById('ln').value,
                     firstname: document.getElementById('fn').value,
-                    gender: document.getElementById('gender').value,
+                    gender: document.getElementById('gender').value, // Saved to DB
                     designation: document.getElementById('designation').value,
                     email: email,
                     license: document.getElementById('license').value,
@@ -115,12 +103,9 @@
                     status: "pending",
                     createdAt: new Date()
                 });
-
-                showModal("Success", "Your enrollment has been submitted. Please wait for the Admin to approve your account.", true);
+                showModal("Success", "Teacher enrollment submitted. Waiting for admin approval.", true);
             } catch (error) {
                 showModal("Error", error.message);
-                btn.disabled = false;
-                btn.innerText = "SUBMIT FOR APPROVAL";
             }
         });
     </script>
