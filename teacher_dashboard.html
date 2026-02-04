@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal | SVLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-black min-h-screen">
+
+    <header class="bg-white border-b-4 border-black p-6 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black uppercase tracking-tighter">Faculty_Portal</h1>
+                <p id="teacherName" class="text-xs font-bold text-gray-500 italic uppercase">Loading Profile...</p>
+            </div>
+            <button onclick="logout()" class="border-2 border-black px-4 py-2 text-xs font-bold hover:bg-black hover:text-white transition">LOGOUT</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <section class="lg:col-span-1">
+            <h3 class="text-sm font-black uppercase mb-4 tracking-widest bg-black text-white inline-block px-2 py-1">My Assigned Subjects</h3>
+            <div id="subjectContainer" class="space-y-4">
+                <p class="text-sm italic text-gray-400">Fetching your assigned classes...</p>
+            </div>
+        </section>
+
+        <section class="lg:col-span-2">
+            <div id="rosterHeader" class="hidden mb-4 flex justify-between items-end">
+                <div>
+                    <h3 id="activeSubjectTitle" class="text-3xl font-black uppercase tracking-tighter">Select a Subject</h3>
+                    <p id="studentCount" class="text-xs font-bold text-gray-500 uppercase"></p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="bg-black text-white px-4 py-2 text-[10px] font-black hover:invert">ATTENDANCE</button>
+                    <button class="border-2 border-black px-4 py-2 text-[10px] font-black hover:bg-gray-100">GRADES</button>
+                </div>
+            </div>
+
+            <div class="border-4 border-black bg-white min-h-[400px] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)]">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100 border-b-2 border-black">
+                        <tr class="text-[10px] font-black uppercase">
+                            <th class="p-4 border-r-2 border-black">Student ID</th>
+                            <th class="p-4 border-r-2 border-black">Full Name</th>
+                            <th class="p-4">Year/Course</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rosterBody">
+                        <tr>
+                            <td colspan="3" class="p-20 text-center italic text-gray-400">
+                                Click a subject on the left to view your student roster.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+                    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentTeacherName = "";
+
+        // AUTH CHECK
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userSnap = await getDoc(doc(db, "users", user.uid));
+                if (userSnap.exists() && userSnap.data().role === 'teacher') {
+                    const data = userSnap.data();
+                    currentTeacherName = data.lastname;
+                    document.getElementById('teacherName').innerText = `PROF. ${data.firstname} ${data.lastname}`;
+                    loadTeacherSubjects(data.lastname);
+                } else {
+                    window.location.href = "login.html";
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // LOAD SUBJECTS ASSIGNED TO THIS TEACHER
+        async function loadTeacherSubjects(lastname) {
+            const container = document.getElementById('subjectContainer');
+            const q = query(collection(db, "programs"), where("teacher", "==", lastname));
+            const snap = await getDocs(q);
+            
+            container.innerHTML = '';
+            if(snap.empty) {
+                container.innerHTML = '<div class="p-4 border-2 border-dashed border-black text-xs uppercase font-bold text-center">No subjects assigned yet.</div>';
+                return;
+            }
+
+            snap.forEach(p => {
+                const data = p.data();
+                container.innerHTML += `
+                    <button onclick="loadRoster('${data.code}', '${data.name}')" 
+                        class="w-full text-left p-4 border-2 border-black hover:bg-black hover:text-white transition group flex justify-between items-center bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <div>
+                            <div class="font-black text-lg">${data.code}</div>
+                            <div class="text-[10px] font-bold uppercase opacity-60">${data.name}</div>
+                        </div>
+                        <span class="text-xl font-black group-hover:translate-x-1 transition-transform">→</span>
+                    </button>`;
+            });
+        }
+
+        // LOAD STUDENTS ENROLLED IN SELECTED SUBJECT
+        window.loadRoster = async (subjectCode, subjectName) => {
+            const body = document.getElementById('rosterBody');
+            const header = document.getElementById('rosterHeader');
+            const title = document.getElementById('activeSubjectTitle');
+            const count = document.getElementById('studentCount');
+
+            header.classList.remove('hidden');
+            title.innerText = subjectCode;
+            body.innerHTML = '<tr><td colspan="3" class="p-10 text-center font-bold animate-pulse">Filtering Roster...</td></tr>';
+
+            // Query students who have this subject code in their "subjects" array
+            const q = query(collection(db, "users"), 
+                where("role", "==", "student"),
+                where("subjects", "array-contains", subjectCode)
+            );
+            
+            const snap = await getDocs(q);
+            body.innerHTML = '';
+            count.innerText = `${snap.size} Students Enrolled`;
+
+            if(snap.empty) {
+                body.innerHTML = '<tr><td colspan="3" class="p-10 text-center italic">No students assigned to this subject yet.</td></tr>';
+                return;
+            }
+
+            snap.forEach(s => {
+                const d = s.data();
+                body.innerHTML += `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="p-4 border-r-2 border-black font-mono text-xs font-bold">${d.studentId}</td>
+                        <td class="p-4 border-r-2 border-black font-black uppercase text-sm">${d.lastname}, ${d.firstname}</td>
+                        <td class="p-4 text-xs font-bold text-gray-500">${d.course} - ${d.year}YR</td>
+                    </tr>`;
+            });
+        }
+
+        window.logout = () => signOut(auth);
+
+    </script>
+</body>
+</html>
