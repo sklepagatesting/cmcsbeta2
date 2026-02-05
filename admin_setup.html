@@ -19,21 +19,22 @@
         td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
         
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        #notifModal { z-index: 200; } /* Always on top */
+        #notifModal { z-index: 200; }
 
         .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; }
         .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; border-radius: 0; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; }
         .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
         
         .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         
-        .status-pill { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase; border: 1px solid black; }
-        .status-active { background-color: #00ff00; }
-        .status-inactive { background-color: #ff0000; color: white; }
+        /* Status Color Logic */
+        .status-pill { padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid black; display: inline-block; }
+        .status-active { background-color: #28a745; color: white; } /* Green */
+        .status-inactive { background-color: #dc3545; color: white; } /* Red */
 
         .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
@@ -41,11 +42,9 @@
 <body class="bg-white min-h-screen flex flex-col font-sans">
 
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
-        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm uppercase">CMCS Virtual Learning System</span></div>
+        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS VIRTUAL LEARNING SYSTEM</span></div>
         <div class="flex items-center h-full">
-            <div class="flex gap-4 px-6 items-center text-xs italic uppercase">
-                <span id="adminName">Loading...</span>
-            </div>
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
             <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
     </nav>
@@ -59,13 +58,13 @@
         </aside>
 
         <main class="flex-1 p-6">
-            <div class="mb-12">
+            <div class="mb-10">
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
-                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD NEW COURSE</button>
+                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD NEW COURSE</button>
                 </div>
                 <table>
-                    <thead><tr><th>SCHOOL YEAR</th><th>COURSE NAME</th><th>YRS</th><th>DESCRIPTION</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>SCHOOL YEAR</th><th>COURSE NAME</th><th>DURATION</th><th>DESCRIPTION</th><th>ACTIONS</th></tr></thead>
                     <tbody id="courseTableBody"></tbody>
                 </table>
             </div>
@@ -73,10 +72,10 @@
             <div>
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">SUBJECT PROGRAM</h2>
-                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD SUBJECT</button>
+                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD SUBJECT</button>
                 </div>
                 <table>
-                    <thead><tr><th>CODE</th><th>SUBJECT</th><th>YEAR/SEM</th><th>DATE & TIME SCHEDULE</th><th>FACULTY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead><tr><th>CODE</th><th>SUBJECT</th><th>YEAR/SEM</th><th>TIME SCHEDULE</th><th>FACULTY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
                     <tbody id="programTableBody"></tbody>
                 </table>
             </div>
@@ -84,13 +83,13 @@
     </div>
 
     <div id="notifModal" class="modal-overlay">
-        <div class="modal-container w-80 text-center">
-            <div class="modal-header"><span>SYSTEM MESSAGE</span></div>
+        <div class="modal-container w-72 text-center">
+            <div class="modal-header"><span>SYSTEM ALERT</span></div>
             <div class="modal-body">
-                <p id="notifMessage" class="font-bold text-xs uppercase mb-2"></p>
+                <p id="notifMessage" class="font-bold text-[11px] uppercase"></p>
                 <div id="confirmActions" class="hidden flex justify-center gap-2 mt-4">
-                    <button id="btnYes" class="btn-modal-save">CONFIRM</button>
-                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">BACK</button>
+                    <button id="btnYes" class="btn-modal-save">YES</button>
+                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">NO</button>
                 </div>
                 <div id="alertActions" class="flex justify-center mt-4">
                     <button onclick="closeModal('notifModal')" class="btn-modal-save">OKAY</button>
@@ -101,7 +100,7 @@
 
     <div id="courseModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="courseModalTitle">COURSE ENTRY</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
+            <div class="modal-header"><span id="courseModalTitle">COURSE FORM</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
             <form id="courseForm">
                 <input type="hidden" id="editCourseId">
                 <div class="modal-body">
@@ -109,13 +108,13 @@
                     <input type="text" id="courseSY" class="modal-input" placeholder="2025-2026" required>
                     <label class="modal-label">Course Name</label>
                     <input type="text" id="courseName" class="modal-input" required>
-                    <label class="modal-label">Duration (Years)</label>
+                    <label class="modal-label">Years to Complete</label>
                     <input type="number" id="courseDuration" class="modal-input" required>
                     <label class="modal-label">Description</label>
                     <textarea id="courseDesc" class="modal-input h-20" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="courseSubmitBtn" class="btn-modal-save">SAVE RECORD</button>
+                    <button type="submit" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
                 </div>
             </form>
@@ -124,23 +123,21 @@
 
     <div id="subjectModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="subjectModalTitle">SUBJECT ENTRY</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
+            <div class="modal-header"><span id="subjectModalTitle">SUBJECT FORM</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
             <form id="programForm">
                 <input type="hidden" id="editSubjectId">
                 <div class="modal-body">
                     <div class="grid grid-cols-2 gap-x-4">
                         <div><label class="modal-label">Subject Code</label><input type="text" id="progCode" class="modal-input" required></div>
                         <div><label class="modal-label">Subject Name</label><input type="text" id="progName" class="modal-input" required></div>
-                        <div><label class="modal-label">Year Level</label>
+                        <div><label class="modal-label">Year</label>
                             <select id="progYear" class="modal-select"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
                         </div>
                         <div><label class="modal-label">Semester</label>
                             <select id="progSem" class="modal-select"><option value="1">1st Sem</option><option value="2">2nd Sem</option></select>
                         </div>
-                        <div class="col-span-2">
-                            <label class="modal-label">Date & Time Schedule</label>
-                            <input type="datetime-local" id="progSched" class="modal-input" required>
-                        </div>
+                        <div><label class="modal-label">Start Time</label><input type="time" id="progStart" class="modal-input" required></div>
+                        <div><label class="modal-label">End Time</label><input type="time" id="progEnd" class="modal-input" required></div>
                         <div><label class="modal-label">Faculty</label><select id="progTeacher" class="modal-select" required></select></div>
                         <div><label class="modal-label">Status</label>
                             <select id="progStatus" class="modal-select">
@@ -151,14 +148,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="subjectSubmitBtn" class="btn-modal-save">SAVE RECORD</button>
+                    <button type="submit" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('subjectModal')">CANCEL</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <footer class="bg-cmcs-blue text-white p-2 mt-auto"><p class="text-[10px] ml-4">Copyright 2026 CMCS. All Rights Reserved</p></footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -178,67 +173,15 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- AUTH & LISTENERS ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    startRealtimeListeners();
-                    loadFacultyList();
-                }
-            } else {
-                setTimeout(() => { if(!auth.currentUser) window.location.href = "login.html"; }, 1500);
-            }
-        });
+        // UI Notification Logic
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
+            document.getElementById('alertActions').className = isConfirm ? 'hidden' : 'flex justify-center mt-4';
+            if(isConfirm) document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            document.getElementById('notifModal').style.display = 'flex';
+        };
 
-        function formatDateTime(val) {
-            if(!val) return "N/A";
-            const d = new Date(val);
-            return d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-        }
-
-        function startRealtimeListeners() {
-            onSnapshot(collection(db, "courses"), (snapshot) => {
-                const body = document.getElementById('courseTableBody');
-                body.innerHTML = '';
-                snapshot.forEach(d => {
-                    const row = d.data();
-                    body.innerHTML += `<tr>
-                        <td>${row.schoolYear || 'N/A'}</td><td>${row.name}</td><td>${row.duration}</td><td>${row.desc}</td>
-                        <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
-                        <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span></td></tr>`;
-                });
-            });
-
-            onSnapshot(collection(db, "programs"), (snapshot) => {
-                const body = document.getElementById('programTableBody');
-                body.innerHTML = '';
-                snapshot.forEach(d => {
-                    const row = d.data();
-                    const statusClass = row.status === 'active' ? 'status-active' : 'status-inactive';
-                    body.innerHTML += `<tr>
-                        <td class="font-bold">${row.code}</td><td>${row.name}</td><td>Y${row.year} S${row.semester}</td>
-                        <td class="italic">${formatDateTime(row.schedule)}</td><td>${row.teacher}</td>
-                        <td><span class="status-pill ${statusClass}">${row.status}</span></td>
-                        <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editSubject('${d.id}')">Edit</span>
-                        <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('programs', '${d.id}')">Delete</span></td></tr>`;
-                });
-            });
-        }
-
-        async function loadFacultyList() {
-            onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
-                const tSelect = document.getElementById('progTeacher');
-                tSelect.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
-                snap.forEach(d => {
-                    tSelect.innerHTML += `<option value="${d.data().lastname}, ${d.data().firstname}">${d.data().lastname}, ${d.data().firstname}</option>`;
-                });
-            });
-        }
-
-        // --- GLOBAL HELPERS ---
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
         window.closeModal = (id) => {
             document.getElementById(id).style.display = 'none';
             if(id === 'courseModal' || id === 'subjectModal') {
@@ -246,46 +189,91 @@
                 document.getElementById('programForm').reset();
                 document.getElementById('editCourseId').value = "";
                 document.getElementById('editSubjectId').value = "";
+                document.getElementById('progStatus').value = "active"; // Reset to default active
             }
         };
 
-        window.showNotif = (msg, isConfirm = false, onYes = null) => {
-            document.getElementById('notifMessage').innerText = msg;
-            document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
-            document.getElementById('alertActions').className = isConfirm ? 'hidden' : 'flex justify-center mt-4';
-            if(isConfirm) document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-            openModal('notifModal');
+        // Time Formatter (14:00 -> 02:00 PM)
+        const formatTime = (t) => {
+            if(!t) return "";
+            const [h, m] = t.split(':');
+            const hh = parseInt(h);
+            const suffix = hh >= 12 ? "PM" : "AM";
+            return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${suffix}`;
         };
 
-        window.handleDelete = (coll, id) => showNotif("DELETE THIS RECORD PERMANENTLY?", true, async () => {
-            await deleteDoc(doc(db, coll, id));
-            showNotif("RECORD REMOVED");
+        // Auth & Real-time Listeners
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    
+                    // Courses Listener
+                    onSnapshot(collection(db, "courses"), (snap) => {
+                        const body = document.getElementById('courseTableBody');
+                        body.innerHTML = '';
+                        snap.forEach(d => {
+                            const r = d.data();
+                            body.innerHTML += `<tr><td>${r.schoolYear}</td><td>${r.name}</td><td>${r.duration} Yrs</td><td>${r.desc}</td>
+                            <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
+                            <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span></td></tr>`;
+                        });
+                    });
+
+                    // Subjects Listener
+                    onSnapshot(collection(db, "programs"), (snap) => {
+                        const body = document.getElementById('programTableBody');
+                        body.innerHTML = '';
+                        snap.forEach(d => {
+                            const r = d.data();
+                            const sClass = r.status === 'active' ? 'status-active' : 'status-inactive';
+                            body.innerHTML += `<tr><td class="font-bold">${r.code}</td><td>${r.name}</td><td>Y${r.year} S${r.semester}</td>
+                            <td>${formatTime(r.startTime)} - ${formatTime(r.endTime)}</td><td>${r.teacher}</td>
+                            <td><span class="status-pill ${sClass}">${r.status}</span></td>
+                            <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editSubject('${d.id}')">Edit</span>
+                            <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('programs', '${d.id}')">Delete</span></td></tr>`;
+                        });
+                    });
+
+                    // Faculty Dropdown
+                    onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
+                        const sel = document.getElementById('progTeacher');
+                        sel.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
+                        snap.forEach(d => sel.innerHTML += `<option value="${d.data().lastname}, ${d.data().firstname}">${d.data().lastname}, ${d.data().firstname}</option>`);
+                    });
+                }
+            } else { window.location.href = "login.html"; }
         });
 
-        // --- COURSE LOGIC ---
-        window.prepareAddCourse = () => { document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE"; openModal('courseModal'); };
+        // Delete Handler
+        window.handleDelete = (coll, id) => showNotif("DELETE THIS PERMANENTLY?", true, async () => {
+            await deleteDoc(doc(db, coll, id));
+            showNotif("DELETED SUCCESSFULLY");
+        });
+
+        // Course CRUD
+        window.prepareAddCourse = () => { document.getElementById('courseModalTitle').innerText = "ADD COURSE"; document.getElementById('courseModal').style.display='flex'; };
         window.editCourse = async (id) => {
             const d = (await getDoc(doc(db, "courses", id))).data();
             document.getElementById('editCourseId').value = id;
-            document.getElementById('courseSY').value = d.schoolYear || "";
+            document.getElementById('courseSY').value = d.schoolYear;
             document.getElementById('courseName').value = d.name;
             document.getElementById('courseDuration').value = d.duration;
             document.getElementById('courseDesc').value = d.desc;
             document.getElementById('courseModalTitle').innerText = "EDIT COURSE";
-            openModal('courseModal');
+            document.getElementById('courseModal').style.display='flex';
         };
-
         document.getElementById('courseForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('editCourseId').value;
             const data = { schoolYear: document.getElementById('courseSY').value, name: document.getElementById('courseName').value, duration: document.getElementById('courseDuration').value, desc: document.getElementById('courseDesc').value };
-            if(id) await updateDoc(doc(db, "courses", id), data);
-            else await addDoc(collection(db, "courses"), data);
-            closeModal('courseModal'); showNotif("COURSE RECORD SAVED");
+            if(id) await updateDoc(doc(db, "courses", id), data); else await addDoc(collection(db, "courses"), data);
+            closeModal('courseModal'); showNotif("COURSE SAVED");
         };
 
-        // --- SUBJECT LOGIC ---
-        window.prepareAddSubject = () => { document.getElementById('subjectModalTitle').innerText = "ADD NEW SUBJECT"; openModal('subjectModal'); };
+        // Subject CRUD
+        window.prepareAddSubject = () => { document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT"; document.getElementById('subjectModal').style.display='flex'; };
         window.editSubject = async (id) => {
             const d = (await getDoc(doc(db, "programs", id))).data();
             document.getElementById('editSubjectId').value = id;
@@ -293,25 +281,24 @@
             document.getElementById('progName').value = d.name;
             document.getElementById('progYear').value = d.year;
             document.getElementById('progSem').value = d.semester;
-            document.getElementById('progSched').value = d.schedule || "";
+            document.getElementById('progStart').value = d.startTime;
+            document.getElementById('progEnd').value = d.endTime;
             document.getElementById('progTeacher').value = d.teacher;
-            document.getElementById('progStatus').value = d.status || "active";
+            document.getElementById('progStatus').value = d.status;
             document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT";
-            openModal('subjectModal');
+            document.getElementById('subjectModal').style.display='flex';
         };
-
         document.getElementById('programForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('editSubjectId').value;
             const data = { 
-                code: document.getElementById('progCode').value, name: document.getElementById('progName').value, 
+                code: document.getElementById('progCode').value, name: document.getElementById('progName').value,
                 year: document.getElementById('progYear').value, semester: document.getElementById('progSem').value,
-                schedule: document.getElementById('progSched').value, teacher: document.getElementById('progTeacher').value,
-                status: document.getElementById('progStatus').value
+                startTime: document.getElementById('progStart').value, endTime: document.getElementById('progEnd').value,
+                teacher: document.getElementById('progTeacher').value, status: document.getElementById('progStatus').value
             };
-            if(id) await updateDoc(doc(db, "programs", id), data);
-            else await addDoc(collection(db, "programs"), data);
-            closeModal('subjectModal'); showNotif("SUBJECT RECORD SAVED");
+            if(id) await updateDoc(doc(db, "programs", id), data); else await addDoc(collection(db, "programs"), data);
+            closeModal('subjectModal'); showNotif("SUBJECT SAVED");
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
