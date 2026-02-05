@@ -22,7 +22,12 @@
         .text-edit { color: #0070c0; }
         .text-delete { color: #cc0000; }
 
+        /* standard z-index for form modals */
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        
+        /* HIGHER z-index for notifications so they appear on top of forms */
+        #notifModal { z-index: 200; }
+
         .modal-container { background: white; border: 2px solid black; width: 450px; padding: 0; box-shadow: 6px 6px 0px 0px black; }
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; }
@@ -42,8 +47,8 @@
         <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS Virtual Learning System</span></div>
         <div class="flex items-center h-full">
             <div class="flex gap-4 px-6 items-center text-xs italic uppercase">
-                <span id="adminName">Admin</span>
-                <span id="adminEmail">...</span>
+                <span id="adminName">Loading...</span>
+                <span id="adminEmail"></span>
             </div>
             <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
@@ -61,7 +66,7 @@
             <div class="mb-12">
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
-                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase hover:bg-yellow-400 transition shadow-[2px_2px_0px_0px_black]">+ ADD NEW COURSE</button>
+                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase shadow-[2px_2px_0px_0px_black]">+ ADD NEW COURSE</button>
                 </div>
                 <table>
                     <thead><tr><th width="20%">COURSE NAME</th><th width="10%">DURATION</th><th width="50%">DESCRIPTION</th><th width="20%">ACTIONS</th></tr></thead>
@@ -72,7 +77,7 @@
             <div>
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">SUBJECT PROGRAM</h2>
-                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase hover:bg-yellow-400 transition shadow-[2px_2px_0px_0px_black]">+ ADD SUBJECT</button>
+                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase shadow-[2px_2px_0px_0px_black]">+ ADD SUBJECT</button>
                 </div>
                 <table>
                     <thead><tr><th>CODE</th><th>SUBJECT NAME</th><th>YEAR</th><th>SEM</th><th>FACULTY</th><th>ACTIONS</th></tr></thead>
@@ -84,12 +89,12 @@
 
     <div id="notifModal" class="modal-overlay">
         <div class="modal-container w-80 text-center">
-            <div class="modal-header"><span id="notifTitle">SYSTEM MESSAGE</span></div>
+            <div class="modal-header"><span id="notifTitle italic">SYSTEM NOTIFICATION</span></div>
             <div class="modal-body">
                 <p id="notifMessage" class="font-bold text-xs uppercase mb-2"></p>
                 <div id="confirmActions" class="hidden flex justify-center gap-2 mt-4">
                     <button id="btnYes" class="btn-modal-save">CONFIRM</button>
-                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">CANCEL</button>
+                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">BACK</button>
                 </div>
                 <div id="alertActions" class="flex justify-center mt-4">
                     <button onclick="closeModal('notifModal')" class="btn-modal-save">OKAY</button>
@@ -100,7 +105,7 @@
 
     <div id="courseModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="courseModalTitle">ADD NEW COURSE</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
+            <div class="modal-header"><span id="courseModalTitle">COURSE ENTRY</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
             <form id="courseForm">
                 <input type="hidden" id="editCourseId">
                 <div class="modal-body">
@@ -121,7 +126,7 @@
 
     <div id="subjectModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="subjectModalTitle">ADD NEW SUBJECT</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
+            <div class="modal-header"><span id="subjectModalTitle">SUBJECT ENTRY</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
             <form id="programForm">
                 <input type="hidden" id="editSubjectId">
                 <div class="modal-body">
@@ -135,7 +140,7 @@
                             <select id="progSem" class="modal-select"><option value="1">1</option><option value="2">2</option></select>
                         </div>
                     </div>
-                    <label class="modal-label">Faculty (Teacher)</label>
+                    <label class="modal-label">Assigned Faculty</label>
                     <select id="progTeacher" class="modal-select" required></select>
                 </div>
                 <div class="modal-footer">
@@ -166,7 +171,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- GLOBAL UI HELPERS ---
+        // UI Helpers
         window.openModal = (id) => document.getElementById(id).style.display = 'flex';
         window.closeModal = (id) => {
             document.getElementById(id).style.display = 'none';
@@ -178,23 +183,20 @@
             }
         };
 
-        // UI Notification & Confirmation Logic
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             const confirmBox = document.getElementById('confirmActions');
             const alertBox = document.getElementById('alertActions');
-            
             if(isConfirm) {
-                confirmBox.classList.remove('hidden');
-                alertBox.classList.add('hidden');
+                confirmBox.classList.remove('hidden'); alertBox.classList.add('hidden');
                 document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
             } else {
-                confirmBox.classList.add('hidden');
-                alertBox.classList.remove('hidden');
+                confirmBox.classList.add('hidden'); alertBox.classList.remove('hidden');
             }
             openModal('notifModal');
         };
 
+        // Auth Fix
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
@@ -203,7 +205,9 @@
                     document.getElementById('adminEmail').innerText = user.email;
                     loadData();
                 }
-            } else { window.location.href = "login.html"; }
+            } else {
+                setTimeout(() => { if(!auth.currentUser) window.location.href = "login.html"; }, 1500);
+            }
         });
 
         async function loadData() {
@@ -214,13 +218,9 @@
 
             const courses = await getDocs(collection(db, "courses"));
             courses.forEach(d => {
-                cTable.innerHTML += `<tr>
-                    <td>${d.data().name}</td><td>${d.data().duration}</td><td>${d.data().desc}</td>
-                    <td>
-                        <span class="btn-action text-edit" onclick="editCourse('${d.id}')">Edit</span>
-                        <span class="btn-action text-delete" onclick="handleDelete('courses', '${d.id}')">Delete</span>
-                    </td>
-                </tr>`;
+                cTable.innerHTML += `<tr><td>${d.data().name}</td><td>${d.data().duration}</td><td>${d.data().desc}</td>
+                <td><span class="btn-action text-edit" onclick="editCourse('${d.id}')">Edit</span>
+                <span class="btn-action text-delete" onclick="handleDelete('courses', '${d.id}')">Delete</span></td></tr>`;
             });
 
             const teachers = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")));
@@ -230,37 +230,27 @@
 
             const progs = await getDocs(collection(db, "programs"));
             progs.forEach(d => {
-                pTable.innerHTML += `<tr>
-                    <td class="font-bold">${d.data().code}</td><td>${d.data().name}</td><td>${d.data().year}</td><td>${d.data().semester}</td><td>${d.data().teacher}</td>
-                    <td>
-                        <span class="btn-action text-edit" onclick="editSubject('${d.id}')">Edit</span>
-                        <span class="btn-action text-delete" onclick="handleDelete('programs', '${d.id}')">Delete</span>
-                    </td>
-                </tr>`;
+                pTable.innerHTML += `<tr><td class="font-bold">${d.data().code}</td><td>${d.data().name}</td><td>${d.data().year}</td><td>${d.data().semester}</td><td>${d.data().teacher}</td>
+                <td><span class="btn-action text-edit" onclick="editSubject('${d.id}')">Edit</span>
+                <span class="btn-action text-delete" onclick="handleDelete('programs', '${d.id}')">Delete</span></td></tr>`;
             });
         }
 
-        // Action Handlers
-        window.handleDelete = (coll, id) => {
-            showNotif("ARE YOU SURE YOU WANT TO DELETE THIS RECORD?", true, async () => {
-                await deleteDoc(doc(db, coll, id));
-                showNotif("RECORD REMOVED SUCCESSFULLY");
-                loadData();
-            });
-        };
+        window.handleDelete = (coll, id) => showNotif("ARE YOU SURE YOU WANT TO DELETE THIS?", true, async () => {
+            await deleteDoc(doc(db, coll, id));
+            showNotif("DELETED SUCCESSFULLY");
+            loadData();
+        });
 
-        window.prepareAddCourse = () => {
-            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
-            openModal('courseModal');
-        };
-
+        window.prepareAddCourse = () => { document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE"; openModal('courseModal'); };
+        
         window.editCourse = async (id) => {
-            const d = await getDoc(doc(db, "courses", id));
+            const d = (await getDoc(doc(db, "courses", id))).data();
             document.getElementById('editCourseId').value = id;
-            document.getElementById('courseName').value = d.data().name;
-            document.getElementById('courseDuration').value = d.data().duration;
-            document.getElementById('courseDesc').value = d.data().desc;
-            document.getElementById('courseModalTitle').innerText = "EDIT COURSE RECORD";
+            document.getElementById('courseName').value = d.name;
+            document.getElementById('courseDuration').value = d.duration;
+            document.getElementById('courseDesc').value = d.desc;
+            document.getElementById('courseModalTitle').innerText = "EDIT COURSE";
             openModal('courseModal');
         };
 
@@ -269,12 +259,7 @@
             const btn = document.getElementById('courseSubmitBtn');
             btn.classList.add('loading-btn');
             const id = document.getElementById('editCourseId').value;
-            const payload = {
-                name: document.getElementById('courseName').value,
-                duration: document.getElementById('courseDuration').value,
-                desc: document.getElementById('courseDesc').value
-            };
-
+            const payload = { name: document.getElementById('courseName').value, duration: document.getElementById('courseDuration').value, desc: document.getElementById('courseDesc').value };
             if(id) {
                 await updateDoc(doc(db, "courses", id), payload);
                 showNotif("COURSE UPDATED");
@@ -287,20 +272,17 @@
             closeModal('courseModal'); loadData(); btn.classList.remove('loading-btn');
         };
 
-        window.prepareAddSubject = () => {
-            document.getElementById('subjectModalTitle').innerText = "ADD NEW SUBJECT";
-            openModal('subjectModal');
-        };
+        window.prepareAddSubject = () => { document.getElementById('subjectModalTitle').innerText = "ADD NEW SUBJECT"; openModal('subjectModal'); };
 
         window.editSubject = async (id) => {
-            const d = await getDoc(doc(db, "programs", id));
+            const d = (await getDoc(doc(db, "programs", id))).data();
             document.getElementById('editSubjectId').value = id;
-            document.getElementById('progCode').value = d.data().code;
-            document.getElementById('progName').value = d.data().name;
-            document.getElementById('progYear').value = d.data().year;
-            document.getElementById('progSem').value = d.data().semester;
-            document.getElementById('progTeacher').value = d.data().teacher;
-            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT RECORD";
+            document.getElementById('progCode').value = d.code;
+            document.getElementById('progName').value = d.name;
+            document.getElementById('progYear').value = d.year;
+            document.getElementById('progSem').value = d.semester;
+            document.getElementById('progTeacher').value = d.teacher;
+            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT";
             openModal('subjectModal');
         };
 
@@ -309,25 +291,13 @@
             const btn = document.getElementById('subjectSubmitBtn');
             btn.classList.add('loading-btn');
             const id = document.getElementById('editSubjectId').value;
-            const payload = {
-                code: document.getElementById('progCode').value,
-                name: document.getElementById('progName').value,
-                year: document.getElementById('progYear').value,
-                semester: document.getElementById('progSem').value,
-                teacher: document.getElementById('progTeacher').value
-            };
-
+            const payload = { code: document.getElementById('progCode').value, name: document.getElementById('progName').value, year: document.getElementById('progYear').value, semester: document.getElementById('progSem').value, teacher: document.getElementById('progTeacher').value };
             if(id) {
                 await updateDoc(doc(db, "programs", id), payload);
                 showNotif("SUBJECT UPDATED");
             } else {
-                // Logic: Block only if Code, Year, and Semester match (Exact same offering)
-                const check = await getDocs(query(collection(db, "programs"), 
-                    where("code", "==", payload.code),
-                    where("year", "==", payload.year),
-                    where("semester", "==", payload.semester)
-                ));
-                if(!check.empty) { showNotif("THIS EXACT SUBJECT OFFERING ALREADY EXISTS"); btn.classList.remove('loading-btn'); return; }
+                const check = await getDocs(query(collection(db, "programs"), where("code", "==", payload.code), where("year", "==", payload.year), where("semester", "==", payload.semester)));
+                if(!check.empty) { showNotif("EXACT RECORD ALREADY EXISTS"); btn.classList.remove('loading-btn'); return; }
                 await addDoc(collection(db, "programs"), payload);
                 showNotif("SUBJECT ADDED");
             }
