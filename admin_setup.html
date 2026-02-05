@@ -3,192 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Setup | SVLS Admin</title>
+    <title>Academic Setup | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Exact Colors and Theme from Guidelines */
+        .bg-cmcs-blue { background-color: #0070c0; }
+        .bg-cmcs-sidebar { background-color: #00b0f0; }
+        .bg-cmcs-yellow { background-color: #ffff00; }
+        .bg-cmcs-logout { background-color: #cc0000; }
+        
+        .sidebar-link {
+            padding: 12px 20px;
+            display: block;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        .active-tab { background-color: #ffff00; color: black; }
+        
+        /* Table Styles from Visuals */
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 4px; text-align: left; font-weight: bold; }
+        td { border: 1px solid #7f7f7f; padding: 4px; background-color: #ffffff; }
+        
+        /* Action Links */
+        .btn-action { text-decoration: underline; cursor: pointer; font-weight: bold; margin-right: 8px; }
+        .text-edit { color: #0070c0; }
+        .text-delete { color: #cc0000; }
+
+        /* Modal Design Language from Guidelines */
+        .modal-overlay { background-color: rgba(0,0,0,0.5); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-container { background: white; border: 2px solid black; width: 450px; padding: 0; box-shadow: 4px 4px 0px 0px black; }
+        .modal-header { background-color: #0070c0; color: white; padding: 8px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; }
+        .modal-body { padding: 15px; }
+        .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+        .modal-input { width: 100%; border: 1px solid #7f7f7f; padding: 4px; font-size: 11px; margin-bottom: 10px; outline: none; }
+        .modal-footer { padding: 10px; display: flex; justify-content: flex-end; gap: 5px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
+        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 4px 15px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 4px 15px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+    </style>
 </head>
-<body class="bg-white text-black min-h-screen pb-32">
+<body class="bg-white min-h-screen flex flex-col font-sans">
 
-    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
-            <p id="modalMsg" class="font-bold text-lg mb-6 uppercase"></p>
-            <button onclick="document.getElementById('msgModal').classList.add('hidden')" class="w-full bg-black text-white py-2 font-bold hover:bg-gray-800">OK</button>
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
+        <div class="flex items-center px-4 gap-2">
+            <span class="font-bold text-sm">[Logo] CMCS Virtual Learning System</span>
         </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto p-6">
-        <h2 class="text-4xl font-black mb-8 border-b-8 border-black pb-2 italic uppercase">Academic_Setup</h2>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            <section class="space-y-6">
-                <div class="border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <h3 class="text-xl font-black mb-4 uppercase">Add New Course</h3>
-                    <form id="courseForm" class="space-y-4">
-                        <input type="text" id="courseName" placeholder="Course Name (e.g., BSIT)" class="w-full border-2 border-black p-2 outline-none" required>
-                        <input type="number" id="courseDuration" placeholder="Duration (Years)" class="w-full border-2 border-black p-2 outline-none" required>
-                        <textarea id="courseDesc" placeholder="Description" class="w-full border-2 border-black p-2 outline-none h-20" required></textarea>
-                        <button type="submit" class="w-full bg-black text-white py-3 font-bold hover:invert transition">ADD COURSE</button>
-                    </form>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full border-2 border-black text-left">
-                        <thead class="bg-black text-white uppercase text-xs">
-                            <tr>
-                                <th class="p-2 border-r border-white">Course</th>
-                                <th class="p-2 border-r border-white text-center">Yrs</th>
-                                <th class="p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="courseTableBody"></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="space-y-6">
-                <div class="border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                    <h3 class="text-xl font-black mb-4 uppercase">Add Subject Program</h3>
-                    <form id="programForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="progCode" placeholder="Code (e.g., IT101)" class="border-2 border-black p-2 outline-none" required>
-                            <input type="text" id="progName" placeholder="Subject Name" class="border-2 border-black p-2 outline-none" required>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <select id="progYear" class="border-2 border-black p-2 bg-white" required>
-                                <option value="1">Year 1</option><option value="2">Year 2</option>
-                                <option value="3">Year 3</option><option value="4">Year 4</option>
-                            </select>
-                            <select id="progSem" class="border-2 border-black p-2 bg-white" required>
-                                <option value="1">1st Sem</option><option value="2">2nd Sem</option>
-                            </select>
-                        </div>
-                        <select id="progTeacher" class="w-full border-2 border-black p-2 bg-white" required>
-                            <option value="" disabled selected>Assign Subject Teacher</option>
-                        </select>
-                        <button type="submit" class="w-full bg-black text-white py-3 font-bold hover:invert transition">ADD PROGRAM</button>
-                    </form>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full border-2 border-black text-left">
-                        <thead class="bg-black text-white uppercase text-xs">
-                            <tr>
-                                <th class="p-2 border-r border-white">Code</th>
-                                <th class="p-2 border-r border-white">Subject</th>
-                                <th class="p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="programTableBody"></tbody>
-                    </table>
-                </div>
-            </section>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center">
+                <span id="adminName" class="font-bold text-xs uppercase italic">Lastname, Firstname</span>
+                <span id="adminEmail" class="font-bold text-xs italic">Email@gmail.com</span>
+            </div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
-    </div>
-
-    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-full flex gap-6 shadow-2xl z-50">
-        <a href="admin_dashboard.html" class="text-xs font-bold hover:text-gray-400">HOME</a>
-        <a href="admin_approval.html" class="text-xs font-bold hover:text-gray-400">APPROVALS</a>
-        <a href="admin_class.html" class="text-xs font-bold hover:text-gray-400">CLASSES</a>
     </nav>
+
+    <div class="flex flex-1">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
+            <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
+            <a href="admin_setup.html" class="sidebar-link active-tab">ACADEMIC SETUP</a>
+            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
+            <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
+        </aside>
+
+        <main class="flex-1 p-4">
+            
+            <div class="mb-10">
+                <div class="flex justify-between items-end mb-1">
+                    <h2 class="text-[11px] font-bold uppercase">COURSES</h2>
+                    <button onclick="openModal('courseModal')" class="bg-cmcs-yellow border border-black px-2 py-0.5 text-[10px] font-bold uppercase hover:bg-yellow-400">
+                        + ADD NEW COURSE
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">COURSE NAME</th>
+                            <th style="width: 10%;">DURATION</th>
+                            <th style="width: 55%;">DESCRIPTION</th>
+                            <th style="width: 15%;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courseTable">
+                        <tr>
+                            <td>BSIT</td>
+                            <td>4</td>
+                            <td>Bachelor of Science in Information Technology</td>
+                            <td>
+                                <span class="btn-action text-edit">Edit</span>
+                                <span class="btn-action text-delete">Delete</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-end mb-1">
+                    <h2 class="text-[11px] font-bold uppercase">SUBJECT PROGRAM</h2>
+                    <button onclick="openModal('subjectModal')" class="bg-cmcs-yellow border border-black px-2 py-0.5 text-[10px] font-bold uppercase hover:bg-yellow-400">
+                        + ADD SUBJECT
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CODE</th>
+                            <th>SUBJECT NAME</th>
+                            <th>YEAR</th>
+                            <th>SEMESTER</th>
+                            <th>FACULTY</th>
+                            <th>SCHEDULE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectTable">
+                        <tr>
+                            <td>IT101</td>
+                            <td>PROGRAMMING 101</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>Dela Cruz, Juan</td>
+                            <td>8AM - 9AM</td>
+                            <td>
+                                <span class="btn-action text-edit">Edit</span>
+                                <span class="btn-action text-delete">Delete</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="courseModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span>ADD NEW COURSE</span>
+                <span class="cursor-pointer" onclick="closeModal('courseModal')">X</span>
+            </div>
+            <div class="modal-body">
+                <label class="modal-label">Course Name (e.g., BSIT)</label>
+                <input type="text" id="newCourseName" class="modal-input">
+                <label class="modal-label">Duration (Years)</label>
+                <input type="number" id="newCourseDuration" class="modal-input">
+                <label class="modal-label">Description</label>
+                <textarea id="newCourseDesc" class="modal-input h-16"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save">ADD COURSE</button>
+                <button class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="subjectModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span>ADD NEW SUBJECT</span>
+                <span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="modal-label">Code</label>
+                        <input type="text" id="subjCode" class="modal-input">
+                    </div>
+                    <div>
+                        <label class="modal-label">Subject Name</label>
+                        <input type="text" id="subjName" class="modal-input">
+                    </div>
+                    <div>
+                        <label class="modal-label">Year</label>
+                        <input type="text" id="subjYear" class="modal-input">
+                    </div>
+                    <div>
+                        <label class="modal-label">Semester</label>
+                        <input type="text" id="subjSem" class="modal-input">
+                    </div>
+                </div>
+                <label class="modal-label">Faculty</label>
+                <input type="text" id="subjFaculty" class="modal-input">
+                <label class="modal-label">Schedule</label>
+                <input type="text" id="subjSched" class="modal-input">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save">ADD SUBJECT</button>
+                <button class="btn-modal-cancel" onclick="closeModal('subjectModal')">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-cmcs-blue text-white p-2">
+        <p class="text-[10px] ml-4">Copyright 2026 CMCS. All Rights Reserved</p>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-       const firebaseConfig = {
-  apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-  authDomain: "svls-289ee.firebaseapp.com",
-  projectId: "svls-289ee",
-  storageBucket: "svls-289ee.firebasestorage.app",
-  messagingSenderId: "500705386198",
-  appId: "1:500705386198:web:96f189662bc2aa99cf7377",
-  measurementId: "G-5TNBMQ2HN5"
-};
+        // Logic for showing/hiding modals
+        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+        // Placeholder for existing Firebase logic
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        const alertBox = (msg) => {
-            document.getElementById('modalMsg').innerText = msg;
-            document.getElementById('msgModal').classList.remove('hidden');
-        };
-
-        // --- CORE LOGIC: LOAD DATA ---
-        async function loadData() {
-            const cTable = document.getElementById('courseTableBody');
-            const pTable = document.getElementById('programTableBody');
-            const teacherSelect = document.getElementById('progTeacher');
-            
-            cTable.innerHTML = ''; pTable.innerHTML = ''; 
-            teacherSelect.innerHTML = '<option value="" disabled selected>Assign Subject Teacher</option>';
-
-            // Load Courses
-            const courses = await getDocs(collection(db, "courses"));
-            courses.forEach(d => {
-                cTable.innerHTML += `<tr class="border-b border-black text-sm">
-                    <td class="p-2">${d.data().name}</td>
-                    <td class="p-2 text-center">${d.data().duration}</td>
-                    <td class="p-2"><button onclick="deleteRec('courses', '${d.id}')" class="text-red-600 font-bold">DEL</button></td>
-                </tr>`;
-            });
-
-            // Load Teachers (Only Approved)
-            const teachers = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")));
-            teachers.forEach(d => {
-                teacherSelect.innerHTML += `<option value="${d.data().lastname}">${d.data().lastname}, ${d.data().firstname}</option>`;
-            });
-
-            // Load Programs
-            const progs = await getDocs(collection(db, "programs"));
-            progs.forEach(d => {
-                pTable.innerHTML += `<tr class="border-b border-black text-sm">
-                    <td class="p-2 font-mono">${d.data().code}</td>
-                    <td class="p-2">${d.data().name}</td>
-                    <td class="p-2"><button onclick="deleteRec('programs', '${d.id}')" class="text-red-600 font-bold">DEL</button></td>
-                </tr>`;
-            });
-        }
-
-        // --- DUPLICATION CHECKS & SAVING ---
-        document.getElementById('courseForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('courseName').value;
-            const q = query(collection(db, "courses"), where("name", "==", name));
-            const check = await getDocs(q);
-            
-            if (!check.empty) return alertBox("Course already exists!");
-            
-            await addDoc(collection(db, "courses"), {
-                name, duration: document.getElementById('courseDuration').value,
-                desc: document.getElementById('courseDesc').value
-            });
-            e.target.reset(); loadData();
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
+                    document.getElementById('adminEmail').innerText = user.email;
+                }
+            } else { window.location.href = "login.html"; }
         });
 
-        document.getElementById('programForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const code = document.getElementById('progCode').value;
-            const q = query(collection(db, "programs"), where("code", "==", code));
-            const check = await getDocs(q);
-
-            if (!check.empty) return alertBox("Program Code already exists!");
-
-            await addDoc(collection(db, "programs"), {
-                code, name: document.getElementById('progName').value,
-                year: document.getElementById('progYear').value,
-                semester: document.getElementById('progSem').value,
-                teacher: document.getElementById('progTeacher').value
-            });
-            e.target.reset(); loadData();
-        });
-
-        window.deleteRec = async (coll, id) => {
-            if(confirm("Delete this record?")) {
-                await deleteDoc(doc(db, coll, id));
-                loadData();
-            }
-        }
-
-        loadData();
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
 </html>
