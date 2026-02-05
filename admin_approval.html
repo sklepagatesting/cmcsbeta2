@@ -3,61 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Approvals | Admin</title>
+    <title>Approvals | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Exact Colors from Guidelines */
+        .bg-cmcs-blue { background-color: #0070c0; }
+        .bg-cmcs-sidebar { background-color: #00b0f0; }
+        .bg-cmcs-yellow { background-color: #ffff00; }
+        .bg-cmcs-logout { background-color: #cc0000; }
+        
+        .sidebar-link {
+            padding: 12px 20px;
+            display: block;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        .active-tab { background-color: #ffff00; color: black; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 4px; text-align: left; }
+        td { border: 1px solid #7f7f7f; padding: 4px; }
+        .btn-approve { color: #22c55e; font-weight: bold; cursor: pointer; }
+        .btn-decline { color: #cc0000; font-weight: bold; cursor: pointer; }
+    </style>
 </head>
-<body class="bg-white text-black min-h-screen pb-32">
+<body class="bg-white min-h-screen flex flex-col font-sans">
 
-    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
-        <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
-            <h3 id="modalTitle" class="font-black text-2xl mb-2 uppercase">System Message</h3>
-            <p id="modalMsg" class="font-medium text-gray-700 mb-6"></p>
-            <button onclick="closeModal()" class="w-full bg-black text-white py-3 font-bold hover:bg-gray-800 transition uppercase">Understood</button>
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
+        <div class="flex items-center px-4 gap-2">
+            <span class="font-bold text-sm">[Logo] CMCS Virtual Learning System</span>
         </div>
-    </div>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center">
+                <span id="adminName" class="font-bold text-xs uppercase">Lastname, Firstname</span>
+                <span id="adminEmail" class="font-bold text-xs">Email@gmail.com</span>
+            </div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs">Logout</button>
+        </div>
+    </nav>
 
-    <div class="max-w-6xl mx-auto p-6">
-        <h2 class="text-4xl font-black mb-8 border-b-8 border-black pb-2 italic">PENDING_APPROVALS</h2>
+    <div class="flex flex-1">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
+            <a href="admin_approval.html" class="sidebar-link active-tab">APPROVALS</a>
+            <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
+            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
+            <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
+        </aside>
 
-        <section class="mb-12">
-            <h3 class="text-xl font-bold bg-black text-white px-4 py-1 inline-block mb-4 uppercase">Teacher Requests</h3>
-            <div class="overflow-x-auto border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-100 border-b-2 border-black">
-                        <tr class="text-xs uppercase font-black">
-                            <th class="p-3 border-r-2 border-black">Name</th>
-                            <th class="p-3 border-r-2 border-black">Gender</th>
-                            <th class="p-3 border-r-2 border-black">Email</th>
-                            <th class="p-3 border-r-2 border-black">Designation</th>
-                            <th class="p-3">Actions</th>
+        <main class="flex-1 p-4">
+            
+            <div class="mb-8">
+                <div class="bg-cmcs-yellow border border-black px-2 py-0.5 w-full">
+                    <h2 class="text-[10px] font-bold uppercase">STUDENT REQUEST</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LASTNAME</th>
+                            <th>FIRSTNAME</th>
+                            <th>EMAIL</th>
+                            <th>ADDRESS</th>
+                            <th>COURSE</th>
+                            <th>YEAR</th>
+                            <th>ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody id="teacherTableBody"></tbody>
+                    <tbody id="studentTable">
+                        </tbody>
                 </table>
             </div>
-        </section>
 
-        <section>
-            <h3 class="text-xl font-bold bg-black text-white px-4 py-1 inline-block mb-4 uppercase">Student Requests</h3>
-            <div class="overflow-x-auto border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-100 border-b-2 border-black">
-                        <tr class="text-xs uppercase font-black">
-                            <th class="p-3 border-r-2 border-black">Name</th>
-                            <th class="p-3 border-r-2 border-black">Course/Year</th>
-                            <th class="p-3 border-r-2 border-black">Gender</th>
-                            <th class="p-3">Actions</th>
+            <div>
+                <div class="bg-cmcs-yellow border border-black px-2 py-0.5 w-full">
+                    <h2 class="text-[10px] font-bold uppercase">FACULTY REQUEST</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LASTNAME</th>
+                            <th>FIRSTNAME</th>
+                            <th>EMAIL</th>
+                            <th>ADDRESS</th>
+                            <th>COURSE</th>
+                            <th>YEAR</th>
+                            <th>ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody id="studentTableBody"></tbody>
+                    <tbody id="facultyTable">
+                        </tbody>
                 </table>
             </div>
-        </section>
+
+        </main>
     </div>
+
+    <footer class="bg-cmcs-blue text-white p-4">
+        <p class="text-[10px]">Copyright 2026 CMCS. All Rights Reserved</p>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
@@ -70,80 +119,61 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // MODAL LOGIC
-        window.showModal = (title, msg) => {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMsg').innerText = msg;
-            document.getElementById('msgModal').classList.remove('hidden');
-        }
-
-        window.closeModal = () => {
-            document.getElementById('msgModal').classList.add('hidden');
-        }
-
-        // APPROVAL LOGIC
-        window.handleUser = async (uid, action) => {
-            try {
-                const userRef = doc(db, "users", uid);
-                if (action === 'approve') {
-                    await updateDoc(userRef, { status: "approved" });
-                    showModal("SUCCESS", "Account has been officially approved.");
-                } else {
-                    await deleteDoc(userRef);
-                    showModal("REMOVED", "Account request has been declined.");
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
+                    document.getElementById('adminEmail').innerText = user.email;
+                    loadRequests();
                 }
-                loadPendingUsers();
-            } catch (error) {
-                showModal("PERMISSION ERROR", error.message);
-            }
-        };
+            } else { window.location.href = "login.html"; }
+        });
 
-        async function loadPendingUsers() {
-            const tBody = document.getElementById('teacherTableBody');
-            const sBody = document.getElementById('studentTableBody');
-            tBody.innerHTML = ''; sBody.innerHTML = '';
+        async function loadRequests() {
+            const sTable = document.getElementById('studentTable');
+            const fTable = document.getElementById('facultyTable');
+            sTable.innerHTML = ''; fTable.innerHTML = '';
 
             const q = query(collection(db, "users"), where("status", "==", "pending"));
             const snap = await getDocs(q);
 
-            if (snap.empty) {
-                tBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center italic">All caught up! No pending teachers.</td></tr>';
-                sBody.innerHTML = '<tr><td colspan="4" class="p-4 text-center italic">All caught up! No pending students.</td></tr>';
-                return;
-            }
-
-            snap.forEach((u) => {
+            snap.forEach(u => {
                 const d = u.data();
-                const id = u.id;
-                if (d.role === 'teacher') {
-                    tBody.innerHTML += `
-                        <tr class="border-b-2 border-black hover:bg-gray-50">
-                            <td class="p-3 border-r-2 border-black font-bold">${d.lastname}, ${d.firstname}</td>
-                            <td class="p-3 border-r-2 border-black">${d.gender || 'N/A'}</td>
-                            <td class="p-3 border-r-2 border-black text-xs font-mono">${d.email}</td>
-                            <td class="p-3 border-r-2 border-black">${d.designation}</td>
-                            <td class="p-3 flex gap-2">
-                                <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold hover:bg-green-600 transition">APPROVE</button>
-                                <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-600 hover:text-white transition">DECLINE</button>
-                            </td>
-                        </tr>`;
-                } else {
-                    sBody.innerHTML += `
-                        <tr class="border-b-2 border-black hover:bg-gray-50">
-                            <td class="p-3 border-r-2 border-black font-bold">${d.lastname}, ${d.firstname}</td>
-                            <td class="p-3 border-r-2 border-black">${d.course} - Yr ${d.year}</td>
-                            <td class="p-3 border-r-2 border-black">${d.gender || 'N/A'}</td>
-                            <td class="p-3 flex gap-2">
-                                <button onclick="handleUser('${id}', 'approve')" class="bg-black text-white px-3 py-1 text-xs font-bold hover:bg-green-600 transition">APPROVE</button>
-                                <button onclick="handleUser('${id}', 'decline')" class="border-2 border-black px-3 py-1 text-xs font-bold hover:bg-red-600 hover:text-white transition">DECLINE</button>
-                            </td>
-                        </tr>`;
-                }
+                const row = `
+                    <tr>
+                        <td class="uppercase">${d.lastname}</td>
+                        <td class="uppercase">${d.firstname}</td>
+                        <td class="text-blue-600 underline">${d.email}</td>
+                        <td>${d.address || 'Mlang, Cotabato'}</td>
+                        <td>${d.course || 'BSIT'}</td>
+                        <td>${d.year || '1'}</td>
+                        <td>
+                            <span onclick="updateStatus('${u.id}', 'approved')" class="btn-approve">Approve</span>
+                            <span onclick="updateStatus('${u.id}', 'declined')" class="btn-decline">Decline</span>
+                        </td>
+                    </tr>`;
+                
+                if (d.role === 'teacher') fTable.innerHTML += row;
+                else sTable.innerHTML += row;
             });
         }
 
-        loadPendingUsers();
+        window.updateStatus = async (uid, status) => {
+            if (status === 'approved') {
+                await updateDoc(doc(db, "users", uid), { status: "approved" });
+                alert("Account Approved");
+            } else {
+                await deleteDoc(doc(db, "users", uid));
+                alert("Request Declined");
+            }
+            loadRequests();
+        };
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
 </html>
