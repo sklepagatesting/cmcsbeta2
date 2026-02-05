@@ -31,10 +31,9 @@
         .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         
-        /* Status Color Logic */
         .status-pill { padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid black; display: inline-block; }
-        .status-active { background-color: #28a745; color: white; } /* Green */
-        .status-inactive { background-color: #dc3545; color: white; } /* Red */
+        .status-active { background-color: #28a745; color: white; }
+        .status-inactive { background-color: #dc3545; color: white; }
 
         .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
@@ -114,7 +113,7 @@
                     <textarea id="courseDesc" class="modal-input h-20" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn-modal-save">SAVE RECORD</button>
+                    <button type="submit" id="courseSaveBtn" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
                 </div>
             </form>
@@ -148,7 +147,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn-modal-save">SAVE RECORD</button>
+                    <button type="submit" id="subjectSaveBtn" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('subjectModal')">CANCEL</button>
                 </div>
             </form>
@@ -157,7 +156,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
@@ -173,7 +172,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI Notification Logic
+        // UI Notification & Modal Handlers
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
@@ -189,11 +188,10 @@
                 document.getElementById('programForm').reset();
                 document.getElementById('editCourseId').value = "";
                 document.getElementById('editSubjectId').value = "";
-                document.getElementById('progStatus').value = "active"; // Reset to default active
+                document.getElementById('progStatus').value = "active";
             }
         };
 
-        // Time Formatter (14:00 -> 02:00 PM)
         const formatTime = (t) => {
             if(!t) return "";
             const [h, m] = t.split(':');
@@ -202,14 +200,13 @@
             return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${suffix}`;
         };
 
-        // Auth & Real-time Listeners
+        // Auth & Real-time Sync
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
                     
-                    // Courses Listener
                     onSnapshot(collection(db, "courses"), (snap) => {
                         const body = document.getElementById('courseTableBody');
                         body.innerHTML = '';
@@ -221,7 +218,6 @@
                         });
                     });
 
-                    // Subjects Listener
                     onSnapshot(collection(db, "programs"), (snap) => {
                         const body = document.getElementById('programTableBody');
                         body.innerHTML = '';
@@ -236,7 +232,6 @@
                         });
                     });
 
-                    // Faculty Dropdown
                     onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
                         const sel = document.getElementById('progTeacher');
                         sel.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
@@ -246,13 +241,12 @@
             } else { window.location.href = "login.html"; }
         });
 
-        // Delete Handler
-        window.handleDelete = (coll, id) => showNotif("DELETE THIS PERMANENTLY?", true, async () => {
+        window.handleDelete = (coll, id) => showNotif("DELETE THIS RECORD PERMANENTLY?", true, async () => {
             await deleteDoc(doc(db, coll, id));
             showNotif("DELETED SUCCESSFULLY");
         });
 
-        // Course CRUD
+        // --- COURSE LOGIC ---
         window.prepareAddCourse = () => { document.getElementById('courseModalTitle').innerText = "ADD COURSE"; document.getElementById('courseModal').style.display='flex'; };
         window.editCourse = async (id) => {
             const d = (await getDoc(doc(db, "courses", id))).data();
@@ -264,15 +258,36 @@
             document.getElementById('courseModalTitle').innerText = "EDIT COURSE";
             document.getElementById('courseModal').style.display='flex';
         };
+
         document.getElementById('courseForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('editCourseId').value;
-            const data = { schoolYear: document.getElementById('courseSY').value, name: document.getElementById('courseName').value, duration: document.getElementById('courseDuration').value, desc: document.getElementById('courseDesc').value };
+            const sy = document.getElementById('courseSY').value;
+            const name = document.getElementById('courseName').value;
+            const btn = document.getElementById('courseSaveBtn');
+            
+            btn.classList.add('loading-btn');
+
+            // Check Duplication (Only if creating new)
+            if(!id) {
+                const q = query(collection(db, "courses"), where("name", "==", name), where("schoolYear", "==", sy));
+                const check = await getDocs(q);
+                if(!check.empty) {
+                    showNotif("DUPLICATE ERROR: COURSE WITH THIS NAME & YEAR ALREADY EXISTS");
+                    btn.classList.remove('loading-btn');
+                    return;
+                }
+            }
+
+            const data = { schoolYear: sy, name: name, duration: document.getElementById('courseDuration').value, desc: document.getElementById('courseDesc').value };
             if(id) await updateDoc(doc(db, "courses", id), data); else await addDoc(collection(db, "courses"), data);
-            closeModal('courseModal'); showNotif("COURSE SAVED");
+            
+            btn.classList.remove('loading-btn');
+            closeModal('courseModal');
+            showNotif("COURSE SAVED");
         };
 
-        // Subject CRUD
+        // --- SUBJECT LOGIC ---
         window.prepareAddSubject = () => { document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT"; document.getElementById('subjectModal').style.display='flex'; };
         window.editSubject = async (id) => {
             const d = (await getDoc(doc(db, "programs", id))).data();
@@ -288,17 +303,38 @@
             document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT";
             document.getElementById('subjectModal').style.display='flex';
         };
+
         document.getElementById('programForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('editSubjectId').value;
+            const code = document.getElementById('progCode').value;
+            const name = document.getElementById('progName').value;
+            const teacher = document.getElementById('progTeacher').value;
+            const btn = document.getElementById('subjectSaveBtn');
+
+            btn.classList.add('loading-btn');
+
+            // Check Duplication (Only if creating new)
+            if(!id) {
+                const q = query(collection(db, "programs"), where("code", "==", code), where("name", "==", name), where("teacher", "==", teacher));
+                const check = await getDocs(q);
+                if(!check.empty) {
+                    showNotif("DUPLICATE ERROR: SAME CODE, SUBJECT, AND TEACHER DETECTED");
+                    btn.classList.remove('loading-btn');
+                    return;
+                }
+            }
+
             const data = { 
-                code: document.getElementById('progCode').value, name: document.getElementById('progName').value,
-                year: document.getElementById('progYear').value, semester: document.getElementById('progSem').value,
+                code: code, name: name, year: document.getElementById('progYear').value, semester: document.getElementById('progSem').value,
                 startTime: document.getElementById('progStart').value, endTime: document.getElementById('progEnd').value,
-                teacher: document.getElementById('progTeacher').value, status: document.getElementById('progStatus').value
+                teacher: teacher, status: document.getElementById('progStatus').value
             };
             if(id) await updateDoc(doc(db, "programs", id), data); else await addDoc(collection(db, "programs"), data);
-            closeModal('subjectModal'); showNotif("SUBJECT SAVED");
+            
+            btn.classList.remove('loading-btn');
+            closeModal('subjectModal');
+            showNotif("SUBJECT SAVED");
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
