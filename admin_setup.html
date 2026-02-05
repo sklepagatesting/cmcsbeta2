@@ -6,6 +6,7 @@
     <title>Academic Setup | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* CMCS Design Guidelines Palette */
         .bg-cmcs-blue { background-color: #0070c0; }
         .bg-cmcs-sidebar { background-color: #00b0f0; }
         .bg-cmcs-yellow { background-color: #ffff00; }
@@ -23,7 +24,7 @@
         .text-delete { color: #cc0000; }
 
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 450px; padding: 0; box-shadow: 6px 6px 0px 0px black; }
+        .modal-container { background: white; border: 2px solid black; width: 450px; box-shadow: 6px 6px 0px 0px black; }
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; }
         .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
@@ -41,8 +42,8 @@
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12">
         <div class="px-4 font-bold text-sm">CMCS Virtual Learning System</div>
         <div class="flex items-center h-full">
-            <div class="px-6 text-xs uppercase italic"><span id="adminName">Admin</span></div>
-            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs">LOGOUT</button>
+            <div class="px-6 text-xs uppercase italic"><span id="adminName">Loading Admin...</span></div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs hover:bg-red-700">LOGOUT</button>
         </div>
     </nav>
 
@@ -57,19 +58,19 @@
         <main class="flex-1 p-6">
             <div class="mb-10">
                 <div class="flex justify-between items-end mb-2">
-                    <h2 class="text-[12px] font-bold uppercase">COURSES</h2>
-                    <button onclick="openEntryModal('course')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold">+ ADD NEW COURSE</button>
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
+                    <button onclick="openEntryModal('course')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:translate-y-0.5">+ ADD NEW COURSE</button>
                 </div>
                 <table>
-                    <thead><tr><th width="25%">COURSE NAME</th><th width="10%">YRS</th><th>DESCRIPTION</th><th width="15%">ACTIONS</th></tr></thead>
+                    <thead><tr><th width="20%">COURSE NAME</th><th width="10%">YRS</th><th>DESCRIPTION</th><th width="15%">ACTIONS</th></tr></thead>
                     <tbody id="courseTableBody"></tbody>
                 </table>
             </div>
 
             <div>
                 <div class="flex justify-between items-end mb-2">
-                    <h2 class="text-[12px] font-bold uppercase">SUBJECT PROGRAM</h2>
-                    <button onclick="openEntryModal('subject')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold">+ ADD SUBJECT</button>
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">SUBJECT PROGRAM</h2>
+                    <button onclick="openEntryModal('subject')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:translate-y-0.5">+ ADD SUBJECT</button>
                 </div>
                 <table>
                     <thead><tr><th>CODE</th><th>SUBJECT</th><th>YEAR</th><th>SEM</th><th>FACULTY</th><th>ACTIONS</th></tr></thead>
@@ -81,7 +82,7 @@
 
     <div id="entryModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="modalTitle">ENTRY</span><span class="cursor-pointer" onclick="closeModal('entryModal')">X</span></div>
+            <div class="modal-header"><span id="modalTitle italic">ENTRY</span><span class="cursor-pointer" onclick="closeModal('entryModal')">X</span></div>
             <form id="entryForm">
                 <input type="hidden" id="targetColl">
                 <input type="hidden" id="editId">
@@ -102,24 +103,27 @@
         </div>
     </div>
 
+    <footer class="bg-cmcs-blue text-white p-2 text-[10px] pl-4">Copyright 2026 CMCS. All Rights Reserved</footer>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
-    apiKey: "AIzaSy...",
-    authDomain: "svls-289ee.firebaseapp.com",
-    projectId: "svls-289ee",
-    storageBucket: "svls-289ee.firebasestorage.app",
-    messagingSenderId: "500705386198",
-    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-};
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- UNIFIED MODAL LOGIC ---
+        // --- GLOBAL UI HELPERS ---
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         
         window.showSysMsg = (msg, onConfirm = null) => {
@@ -145,17 +149,32 @@
             document.getElementById('sysModal').style.display = 'flex';
         };
 
-        // --- AUTH & LOADING ---
+        // --- AUTH PROTECTION ---
         onAuthStateChanged(auth, async (user) => {
-            if (user) { loadData(); } else { window.location.href = "login.html"; }
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists()) {
+                        document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    } else {
+                        document.getElementById('adminName').innerText = user.email;
+                    }
+                    loadData();
+                } catch (e) { loadData(); } // Bypass if firestore is restricted
+            } else {
+                // If login check fails during testing, comment the line below
+                window.location.href = "login.html"; 
+            }
         });
 
         async function loadData() {
             const cTable = document.getElementById('courseTableBody');
             const pTable = document.getElementById('programTableBody');
-            cTable.innerHTML = ''; pTable.innerHTML = '';
+            cTable.innerHTML = '<tr><td colspan="4" class="text-center">Fetching Courses...</td></tr>';
+            pTable.innerHTML = '<tr><td colspan="6" class="text-center">Fetching Subjects...</td></tr>';
 
             const courses = await getDocs(collection(db, "courses"));
+            cTable.innerHTML = '';
             courses.forEach(d => {
                 cTable.innerHTML += `<tr><td>${d.data().name}</td><td>${d.data().duration}</td><td>${d.data().desc}</td>
                 <td><span class="btn-action text-edit" onclick="editRec('courses', '${d.id}')">Edit</span>
@@ -163,6 +182,7 @@
             });
 
             const progs = await getDocs(collection(db, "programs"));
+            pTable.innerHTML = '';
             progs.forEach(d => {
                 pTable.innerHTML += `<tr><td class="font-bold">${d.data().code}</td><td>${d.data().name}</td><td>${d.data().year}</td><td>${d.data().semester}</td><td>${d.data().teacher}</td>
                 <td><span class="btn-action text-edit" onclick="editRec('programs', '${d.id}')">Edit</span>
@@ -170,7 +190,7 @@
             });
         }
 
-        // --- FORM HANDLING ---
+        // --- FORM LOGIC ---
         window.openEntryModal = async (type, data = null, id = "") => {
             const body = document.getElementById('modalBody');
             document.getElementById('targetColl').value = type === 'course' ? 'courses' : 'programs';
@@ -179,20 +199,23 @@
             
             if(type === 'course') {
                 body.innerHTML = `
-                    <label class="modal-label">Course Name</label><input type="text" id="f1" class="modal-input" value="${data?.name || ''}" required>
-                    <label class="modal-label">Duration</label><input type="number" id="f2" class="modal-input" value="${data?.duration || ''}" required>
+                    <label class="modal-label">Course Name (Unique)</label><input type="text" id="f1" class="modal-input" value="${data?.name || ''}" required>
+                    <label class="modal-label">Duration (Years)</label><input type="number" id="f2" class="modal-input" value="${data?.duration || ''}" required>
                     <label class="modal-label">Description</label><textarea id="f3" class="modal-input h-20" required>${data?.desc || ''}</textarea>`;
             } else {
+                // Pre-fetch approved teachers
                 const teachers = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")));
                 let options = teachers.docs.map(t => `<option value="${t.data().lastname}" ${data?.teacher === t.data().lastname ? 'selected' : ''}>${t.data().lastname}</option>`).join('');
+                if(!options) options = `<option value="No Teacher Available" disabled>No Approved Teachers</option>`;
+
                 body.innerHTML = `
                     <div class="grid grid-cols-2 gap-2">
-                        <div><label class="modal-label">Code</label><input type="text" id="f1" class="modal-input" value="${data?.code || ''}" required></div>
-                        <div><label class="modal-label">Subject</label><input type="text" id="f2" class="modal-input" value="${data?.name || ''}" required></div>
+                        <div><label class="modal-label">Subject Code (Unique)</label><input type="text" id="f1" class="modal-input" value="${data?.code || ''}" required></div>
+                        <div><label class="modal-label">Subject Name</label><input type="text" id="f2" class="modal-input" value="${data?.name || ''}" required></div>
                         <div><label class="modal-label">Year</label><select id="f3" class="modal-select">${[1,2,3,4].map(v => `<option value="${v}" ${data?.year == v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
                         <div><label class="modal-label">Semester</label><select id="f4" class="modal-select">${[1,2].map(v => `<option value="${v}" ${data?.semester == v ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
                     </div>
-                    <label class="modal-label">Teacher</label><select id="f5" class="modal-select" required>${options}</select>`;
+                    <label class="modal-label">Assigned Faculty</label><select id="f5" class="modal-select" required>${options}</select>`;
             }
             document.getElementById('entryModal').style.display = 'flex';
         };
@@ -208,27 +231,27 @@
                 { name: document.getElementById('f1').value, duration: document.getElementById('f2').value, desc: document.getElementById('f3').value } :
                 { code: document.getElementById('f1').value, name: document.getElementById('f2').value, year: document.getElementById('f3').value, semester: document.getElementById('f4').value, teacher: document.getElementById('f5').value };
 
-            // Logic: Block same exact record (Code for subjects, Name for courses)
-            const fieldToCheck = coll === 'courses' ? 'name' : 'code';
-            const check = await getDocs(query(collection(db, coll), where(fieldToCheck, "==", payload[fieldToCheck])));
+            // Check for duplicate of the primary key (Name for Course, Code for Subject)
+            const field = coll === 'courses' ? 'name' : 'code';
+            const check = await getDocs(query(collection(db, coll), where(field, "==", payload[field])));
             
             if(!id && !check.empty) {
-                showSysMsg("DUPLICATE ERROR: THIS RECORD ALREADY EXISTS.");
+                showSysMsg("ERROR: THIS " + field.toUpperCase() + " IS ALREADY REGISTERED.");
             } else if(id) {
                 await updateDoc(doc(db, coll, id), payload);
-                showSysMsg("RECORD UPDATED SUCCESSFULLY.");
+                showSysMsg("SUCCESS: RECORD UPDATED.");
+                closeModal('entryModal'); loadData();
             } else {
                 await addDoc(collection(db, coll), payload);
-                showSysMsg("RECORD SAVED SUCCESSFULLY.");
+                showSysMsg("SUCCESS: RECORD ADDED.");
+                closeModal('entryModal'); loadData();
             }
-
-            closeModal('entryModal'); loadData();
             btn.classList.remove('loading-btn');
         };
 
         window.editRec = async (coll, id) => {
-            const d = (await getDoc(doc(db, coll, id))).data();
-            openEntryModal(coll === 'courses' ? 'course' : 'subject', d, id);
+            const snap = await getDoc(doc(db, coll, id));
+            if(snap.exists()) openEntryModal(coll === 'courses' ? 'course' : 'subject', snap.data(), id);
         };
 
         window.askDelete = (coll, id) => showSysMsg("ARE YOU SURE YOU WANT TO DELETE THIS?", async () => {
