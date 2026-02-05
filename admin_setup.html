@@ -11,27 +11,31 @@
         .bg-cmcs-yellow { background-color: #ffff00; }
         .bg-cmcs-logout { background-color: #cc0000; }
         
-        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; }
+        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .active-tab { background-color: #ffff00; color: black; }
         
         table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
-        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 4px; text-align: left; font-weight: bold; }
-        td { border: 1px solid #7f7f7f; padding: 4px; background-color: #ffffff; }
+        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
+        td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
         
         .btn-action { text-decoration: underline; cursor: pointer; font-weight: bold; margin-right: 8px; }
         .text-edit { color: #0070c0; }
         .text-delete { color: #cc0000; }
 
         /* Modal Design Language */
-        .modal-overlay { background-color: rgba(0,0,0,0.5); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 450px; padding: 0; box-shadow: 4px 4px 0px 0px black; }
-        .modal-header { background-color: #0070c0; color: white; padding: 8px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; }
-        .modal-body { padding: 15px; }
+        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-container { background: white; border: 2px solid black; width: 450px; padding: 0; box-shadow: 6px 6px 0px 0px black; }
+        .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; }
         .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 4px; font-size: 11px; margin-bottom: 10px; outline: none; background: white; }
-        .modal-footer { padding: 10px; display: flex; justify-content: flex-end; gap: 5px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
-        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 4px 15px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 4px 15px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; background: white; }
+        .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
+        
+        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        
+        /* Loading State */
+        .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
@@ -40,7 +44,7 @@
         <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS Virtual Learning System</span></div>
         <div class="flex items-center h-full">
             <div class="flex gap-4 px-6 items-center">
-                <span id="adminName" class="font-bold text-xs uppercase italic">Syncing...</span>
+                <span id="adminName" class="font-bold text-xs uppercase italic">Admin</span>
                 <span id="adminEmail" class="font-bold text-xs italic">...</span>
             </div>
             <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
@@ -55,28 +59,28 @@
             <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
         </aside>
 
-        <main class="flex-1 p-4">
-            <div class="mb-10">
-                <div class="flex justify-between items-end mb-1">
-                    <h2 class="text-[11px] font-bold uppercase">COURSES</h2>
-                    <button onclick="openModal('courseModal')" class="bg-cmcs-yellow border border-black px-2 py-0.5 text-[10px] font-bold uppercase hover:bg-yellow-400">+ ADD NEW COURSE</button>
+        <main class="flex-1 p-6">
+            <div class="mb-12">
+                <div class="flex justify-between items-end mb-2">
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
+                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase hover:bg-yellow-400 transition shadow-[2px_2px_0px_0px_black]">+ ADD NEW COURSE</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th width="20%">COURSE NAME</th><th width="10%">DURATION</th><th width="55%">DESCRIPTION</th><th width="15%">ACTIONS</th></tr>
+                        <tr><th width="20%">COURSE NAME</th><th width="10%">DURATION</th><th width="50%">DESCRIPTION</th><th width="20%">ACTIONS</th></tr>
                     </thead>
                     <tbody id="courseTableBody"></tbody>
                 </table>
             </div>
 
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <h2 class="text-[11px] font-bold uppercase">SUBJECT PROGRAM</h2>
-                    <button onclick="openModal('subjectModal')" class="bg-cmcs-yellow border border-black px-2 py-0.5 text-[10px] font-bold uppercase hover:bg-yellow-400">+ ADD SUBJECT</button>
+                <div class="flex justify-between items-end mb-2">
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">SUBJECT PROGRAM</h2>
+                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold uppercase hover:bg-yellow-400 transition shadow-[2px_2px_0px_0px_black]">+ ADD SUBJECT</button>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>CODE</th><th>SUBJECT NAME</th><th>YEAR</th><th>SEMESTER</th><th>FACULTY</th><th>ACTIONS</th></tr>
+                        <tr><th>CODE</th><th>SUBJECT NAME</th><th>YEAR</th><th>SEM</th><th>FACULTY</th><th>ACTIONS</th></tr>
                     </thead>
                     <tbody id="programTableBody"></tbody>
                 </table>
@@ -86,18 +90,19 @@
 
     <div id="courseModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span>ADD NEW COURSE</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
+            <div class="modal-header"><span id="courseModalTitle">ADD NEW COURSE</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
             <form id="courseForm">
+                <input type="hidden" id="editCourseId">
                 <div class="modal-body">
                     <label class="modal-label">Course Name (e.g., BSIT)</label>
                     <input type="text" id="courseName" class="modal-input" required>
                     <label class="modal-label">Duration (Years)</label>
                     <input type="number" id="courseDuration" class="modal-input" required>
                     <label class="modal-label">Description</label>
-                    <textarea id="courseDesc" class="modal-input h-16" required></textarea>
+                    <textarea id="courseDesc" class="modal-input h-20" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn-modal-save">ADD COURSE</button>
+                    <button type="submit" id="courseSubmitBtn" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
                 </div>
             </form>
@@ -106,8 +111,9 @@
 
     <div id="subjectModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span>ADD NEW SUBJECT</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
+            <div class="modal-header"><span id="subjectModalTitle">ADD NEW SUBJECT</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
             <form id="programForm">
+                <input type="hidden" id="editSubjectId">
                 <div class="modal-body">
                     <div class="grid grid-cols-2 gap-2">
                         <div><label class="modal-label">Code</label><input type="text" id="progCode" class="modal-input" required></div>
@@ -119,14 +125,26 @@
                             <select id="progSem" class="modal-select"><option value="1">1</option><option value="2">2</option></select>
                         </div>
                     </div>
-                    <label class="modal-label">Faculty (Approved Teachers)</label>
+                    <label class="modal-label">Faculty (Teacher)</label>
                     <select id="progTeacher" class="modal-select" required></select>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn-modal-save">ADD SUBJECT</button>
+                    <button type="submit" id="subjectSubmitBtn" class="btn-modal-save">SAVE RECORD</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('subjectModal')">CANCEL</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-container w-80 text-center">
+            <div class="modal-header"><span id="notifTitle">SYSTEM MESSAGE</span></div>
+            <div class="modal-body">
+                <p id="notifMessage" class="font-bold text-sm uppercase"></p>
+            </div>
+            <div class="modal-footer justify-center">
+                <button onclick="closeModal('notifModal')" class="btn-modal-save">OKAY</button>
+            </div>
         </div>
     </div>
 
@@ -134,7 +152,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
@@ -150,9 +168,22 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI Helpers
+        // --- GLOBAL UI HELPERS ---
         window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.closeModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'courseModal' || id === 'subjectModal') {
+                document.getElementById('courseForm').reset();
+                document.getElementById('programForm').reset();
+                document.getElementById('editCourseId').value = "";
+                document.getElementById('editSubjectId').value = "";
+            }
+        };
+
+        window.showNotif = (msg) => {
+            document.getElementById('notifMessage').innerText = msg;
+            openModal('notifModal');
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -165,76 +196,136 @@
             } else { window.location.href = "login.html"; }
         });
 
+        // --- LOAD DATA ---
         async function loadData() {
             const cTable = document.getElementById('courseTableBody');
             const pTable = document.getElementById('programTableBody');
             const tSelect = document.getElementById('progTeacher');
-            cTable.innerHTML = ''; pTable.innerHTML = ''; tSelect.innerHTML = '';
+            cTable.innerHTML = ''; pTable.innerHTML = ''; tSelect.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
 
-            // Load Courses
             const courses = await getDocs(collection(db, "courses"));
             courses.forEach(d => {
                 cTable.innerHTML += `<tr>
-                    <td>${d.data().name}</td>
-                    <td>${d.data().duration}</td>
-                    <td>${d.data().desc}</td>
+                    <td>${d.data().name}</td><td>${d.data().duration}</td><td>${d.data().desc}</td>
                     <td>
-                        <span class="btn-action text-edit">Edit</span>
+                        <span class="btn-action text-edit" onclick="editCourse('${d.id}')">Edit</span>
                         <span class="btn-action text-delete" onclick="deleteRec('courses', '${d.id}')">Delete</span>
                     </td>
                 </tr>`;
             });
 
-            // Load Approved Teachers
             const teachers = await getDocs(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")));
             teachers.forEach(d => {
                 tSelect.innerHTML += `<option value="${d.data().lastname}, ${d.data().firstname}">${d.data().lastname}, ${d.data().firstname}</option>`;
             });
 
-            // Load Programs (Subjects)
             const progs = await getDocs(collection(db, "programs"));
             progs.forEach(d => {
                 pTable.innerHTML += `<tr>
-                    <td class="font-bold">${d.data().code}</td>
-                    <td>${d.data().name}</td>
-                    <td>${d.data().year}</td>
-                    <td>${d.data().semester}</td>
-                    <td>${d.data().teacher}</td>
+                    <td class="font-bold">${d.data().code}</td><td>${d.data().name}</td><td>${d.data().year}</td><td>${d.data().semester}</td><td>${d.data().teacher}</td>
                     <td>
-                        <span class="btn-action text-edit">Edit</span>
+                        <span class="btn-action text-edit" onclick="editSubject('${d.id}')">Edit</span>
                         <span class="btn-action text-delete" onclick="deleteRec('programs', '${d.id}')">Delete</span>
                     </td>
                 </tr>`;
             });
         }
 
-        // Add Course logic
+        // --- COURSE LOGIC ---
+        window.prepareAddCourse = () => {
+            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
+            document.getElementById('editCourseId').value = "";
+            openModal('courseModal');
+        };
+
+        window.editCourse = async (id) => {
+            const d = await getDoc(doc(db, "courses", id));
+            document.getElementById('editCourseId').value = id;
+            document.getElementById('courseName').value = d.data().name;
+            document.getElementById('courseDuration').value = d.data().duration;
+            document.getElementById('courseDesc').value = d.data().desc;
+            document.getElementById('courseModalTitle').innerText = "EDIT COURSE RECORD";
+            openModal('courseModal');
+        };
+
         document.getElementById('courseForm').onsubmit = async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "courses"), {
+            const btn = document.getElementById('courseSubmitBtn');
+            btn.classList.add('loading-btn'); // Prevent double click
+
+            const id = document.getElementById('editCourseId').value;
+            const payload = {
                 name: document.getElementById('courseName').value,
                 duration: document.getElementById('courseDuration').value,
                 desc: document.getElementById('courseDesc').value
-            });
-            closeModal('courseModal'); e.target.reset(); loadData();
+            };
+
+            if(id) {
+                await updateDoc(doc(db, "courses", id), payload);
+                showNotif("Course Updated Successfully");
+            } else {
+                // Prevent duplicate names
+                const check = await getDocs(query(collection(db, "courses"), where("name", "==", payload.name)));
+                if(!check.empty) { showNotif("Course Name already exists!"); btn.classList.remove('loading-btn'); return; }
+                await addDoc(collection(db, "courses"), payload);
+                showNotif("New Course Added");
+            }
+
+            closeModal('courseModal'); loadData();
+            btn.classList.remove('loading-btn');
         };
 
-        // Add Subject logic
+        // --- SUBJECT LOGIC ---
+        window.prepareAddSubject = () => {
+            document.getElementById('subjectModalTitle').innerText = "ADD NEW SUBJECT";
+            document.getElementById('editSubjectId').value = "";
+            openModal('subjectModal');
+        };
+
+        window.editSubject = async (id) => {
+            const d = await getDoc(doc(db, "programs", id));
+            document.getElementById('editSubjectId').value = id;
+            document.getElementById('progCode').value = d.data().code;
+            document.getElementById('progName').value = d.data().name;
+            document.getElementById('progYear').value = d.data().year;
+            document.getElementById('progSem').value = d.data().semester;
+            document.getElementById('progTeacher').value = d.data().teacher;
+            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT RECORD";
+            openModal('subjectModal');
+        };
+
         document.getElementById('programForm').onsubmit = async (e) => {
             e.preventDefault();
-            await addDoc(collection(db, "programs"), {
+            const btn = document.getElementById('subjectSubmitBtn');
+            btn.classList.add('loading-btn');
+
+            const id = document.getElementById('editSubjectId').value;
+            const payload = {
                 code: document.getElementById('progCode').value,
                 name: document.getElementById('progName').value,
                 year: document.getElementById('progYear').value,
                 semester: document.getElementById('progSem').value,
                 teacher: document.getElementById('progTeacher').value
-            });
-            closeModal('subjectModal'); e.target.reset(); loadData();
+            };
+
+            if(id) {
+                await updateDoc(doc(db, "programs", id), payload);
+                showNotif("Subject Updated");
+            } else {
+                const check = await getDocs(query(collection(db, "programs"), where("code", "==", payload.code)));
+                if(!check.empty) { showNotif("Subject Code already exists!"); btn.classList.remove('loading-btn'); return; }
+                await addDoc(collection(db, "programs"), payload);
+                showNotif("Subject Added");
+            }
+
+            closeModal('subjectModal'); loadData();
+            btn.classList.remove('loading-btn');
         };
 
         window.deleteRec = async (coll, id) => {
-            if(confirm("Confirm deletion?")) {
+            if(confirm("Are you sure you want to delete this record?")) {
                 await deleteDoc(doc(db, coll, id));
+                showNotif("Record Deleted");
                 loadData();
             }
         };
