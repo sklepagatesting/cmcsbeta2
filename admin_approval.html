@@ -14,23 +14,22 @@
         .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .active-tab { background-color: #ffff00; color: black; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 5px; }
         th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
         td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
         
-        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; }
         #notifModal { z-index: 200; }
 
-        .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
+        .modal-container { background: white; border: 2px solid black; width: 550px; box-shadow: 6px 6px 0px 0px black; margin: 20px; }
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
-        .modal-body { padding: 20px; }
-        .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; }
+        .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
+        .modal-label { display: block; font-size: 9px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 10px; outline: none; }
         .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
         
         .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        
         .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
@@ -55,11 +54,21 @@
         <main class="flex-1 p-6">
             <div class="mb-10">
                 <div class="flex justify-between items-end mb-2">
-                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">STUDENT REGISTRATION REQUESTS</h2>
-                    <button onclick="openAddModal('student')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUALLY ADD STUDENT</button>
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">STUDENT ADMISSION REQUESTS</h2>
+                    <button onclick="openAddModal('student')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL STUDENT ADMISSION</button>
                 </div>
                 <table>
-                    <thead><tr><th>LASTNAME</th><th>FIRSTNAME</th><th>EMAIL</th><th>COURSE</th><th>YEAR</th><th>ACTIONS</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>STUDENT ID</th>
+                            <th>NAME</th>
+                            <th>GENDER</th>
+                            <th>EMAIL</th>
+                            <th>COURSE / YR / SEM</th>
+                            <th>MOBILE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
                     <tbody id="studentTable"></tbody>
                 </table>
             </div>
@@ -67,10 +76,19 @@
             <div>
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">FACULTY REGISTRATION REQUESTS</h2>
-                    <button onclick="openAddModal('teacher')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUALLY ADD FACULTY</button>
+                    <button onclick="openAddModal('teacher')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL FACULTY HIRE</button>
                 </div>
                 <table>
-                    <thead><tr><th>LASTNAME</th><th>FIRSTNAME</th><th>EMAIL</th><th>ADDRESS</th><th>ACTIONS</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>LICENSE NO.</th>
+                            <th>NAME</th>
+                            <th>GENDER</th>
+                            <th>DESIGNATION</th>
+                            <th>EMAIL</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
                     <tbody id="facultyTable"></tbody>
                 </table>
             </div>
@@ -81,10 +99,10 @@
         <div class="modal-container w-72 text-center">
             <div class="modal-header"><span>SYSTEM MESSAGE</span></div>
             <div class="modal-body">
-                <p id="notifMessage" class="font-bold text-[11px] uppercase"></p>
+                <p id="notifMessage" class="font-bold text-[10px] uppercase"></p>
                 <div id="confirmActions" class="hidden flex justify-center gap-2 mt-4">
-                    <button id="btnYes" class="btn-modal-save">CONFIRM</button>
-                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">CANCEL</button>
+                    <button id="btnYes" class="btn-modal-save">PROCEED</button>
+                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">BACK</button>
                 </div>
                 <div id="alertActions" class="flex justify-center mt-4">
                     <button onclick="closeModal('notifModal')" class="btn-modal-save">OKAY</button>
@@ -95,40 +113,64 @@
 
     <div id="userModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="modalTitle">ADD USER</span><span class="cursor-pointer" onclick="closeModal('userModal')">X</span></div>
+            <div class="modal-header"><span id="modalTitle">ADMISSION FORM</span><span class="cursor-pointer" onclick="closeModal('userModal')">X</span></div>
             <form id="userForm">
                 <input type="hidden" id="userRole">
                 <div class="modal-body">
                     <div class="grid grid-cols-2 gap-x-4">
-                        <div><label class="modal-label">First Name</label><input type="text" id="fname" class="modal-input" required></div>
-                        <div><label class="modal-label">Last Name</label><input type="text" id="lname" class="modal-input" required></div>
+                        <div><label class="modal-label">First Name</label><input type="text" id="fn" class="modal-input" required></div>
+                        <div><label class="modal-label">Last Name</label><input type="text" id="ln" class="modal-input" required></div>
+                        
+                        <div>
+                            <label class="modal-label">Gender</label>
+                            <select id="gender" class="modal-select" required>
+                                <option value="Male">Male</option><option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div><label class="modal-label">Email Address</label><input type="email" id="uemail" class="modal-input" required></div>
                     </div>
-                    <label class="modal-label">Email Address</label>
-                    <input type="email" id="uemail" class="modal-input" required>
-                    
-                    <div id="studentFields" class="hidden">
-                        <label class="modal-label">Course</label>
-                        <select id="ucourse" class="modal-select"></select>
-                        <label class="modal-label">Year Level</label>
-                        <select id="uyear" class="modal-select">
-                            <option value="1">1st Year</option><option value="2">2nd Year</option>
-                            <option value="3">3rd Year</option><option value="4">4th Year</option>
-                        </select>
-                    </div>
-                    <div id="facultyFields" class="hidden">
+
+                    <div id="studentFields" class="hidden border-t pt-2 mt-2">
+                        <div class="grid grid-cols-2 gap-x-4">
+                            <div><label class="modal-label">Student ID</label><input type="text" id="id_num" class="modal-input"></div>
+                            <div><label class="modal-label">Date of Birth</label><input type="date" id="dob" class="modal-input"></div>
+                            <div><label class="modal-label">Mobile Number</label><input type="tel" id="mobile" class="modal-input"></div>
+                            <div><label class="modal-label">Course</label><select id="ucourse" class="modal-select"></select></div>
+                            <div><label class="modal-label">Year Level</label>
+                                <select id="uyear" class="modal-select">
+                                    <option value="1">1st Year</option><option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option><option value="4">4th Year</option>
+                                </select>
+                            </div>
+                            <div><label class="modal-label">Semester</label>
+                                <select id="usem" class="modal-select">
+                                    <option value="1">1st Sem</option><option value="2">2nd Sem</option>
+                                </select>
+                            </div>
+                        </div>
                         <label class="modal-label">Address</label>
                         <input type="text" id="uaddress" class="modal-input">
                     </div>
+
+                    <div id="facultyFields" class="hidden border-t pt-2 mt-2">
+                        <div class="grid grid-cols-2 gap-x-4">
+                            <div><label class="modal-label">License Number (7 Digits)</label><input type="text" id="license" class="modal-input" pattern="[0-9]{7}"></div>
+                            <div><label class="modal-label">Designation</label>
+                                <select id="designation" class="modal-select">
+                                    <option value="Subject Teacher">Subject Teacher</option>
+                                    <option value="Substitute">Substitute</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="saveUserBtn" class="btn-modal-save">CREATE ACCOUNT</button>
+                    <button type="submit" id="saveUserBtn" class="btn-modal-save">CONFIRM REGISTRATION</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('userModal')">CANCEL</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <footer class="bg-cmcs-blue text-white p-2 mt-auto"><p class="text-[10px] ml-4">Copyright 2026 CMCS. All Rights Reserved</p></footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -148,7 +190,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI Helpers
+        // UI NOTIFS
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
@@ -162,19 +204,19 @@
             if(id === 'userModal') document.getElementById('userForm').reset();
         };
 
-        // Real-time Auth & List
+        // AUTH & REAL-TIME LISTENER
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    startRealtimeListeners();
+                    startListeners();
                     loadCourses();
                 }
             } else { window.location.href = "login.html"; }
         });
 
-        function startRealtimeListeners() {
+        function startListeners() {
             onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
                 const sTable = document.getElementById('studentTable');
                 const fTable = document.getElementById('facultyTable');
@@ -182,18 +224,32 @@
 
                 snap.forEach(u => {
                     const d = u.data();
-                    const row = `<tr>
-                        <td class="font-bold uppercase">${d.lastname}</td>
-                        <td class="uppercase">${d.firstname}</td>
-                        <td class="text-blue-600 underline lowercase">${d.email}</td>
-                        ${d.role === 'student' ? `<td>${d.course}</td><td>${d.year}</td>` : `<td>${d.address || 'N/A'}</td>`}
-                        <td>
-                            <span onclick="handleApproval('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">APPROVE</span>
-                            <span onclick="handleApproval('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">DECLINE</span>
-                        </td>
-                    </tr>`;
-                    if (d.role === 'teacher') fTable.innerHTML += row;
-                    else sTable.innerHTML += row;
+                    const name = `${d.lastname}, ${d.firstname}`;
+                    const actions = `<td>
+                        <span onclick="handleAction('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">ADMIT</span>
+                        <span onclick="handleAction('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">REJECT</span>
+                    </td>`;
+
+                    if (d.role === 'student') {
+                        sTable.innerHTML += `<tr>
+                            <td class="font-bold">${d.studentId || 'NO ID'}</td>
+                            <td class="uppercase">${name}</td>
+                            <td>${d.gender}</td>
+                            <td class="text-blue-600 underline">${d.email}</td>
+                            <td>${d.course} / ${d.year} / ${d.semester}</td>
+                            <td>${d.mobile || 'N/A'}</td>
+                            ${actions}
+                        </tr>`;
+                    } else if (d.role === 'teacher') {
+                        fTable.innerHTML += `<tr>
+                            <td class="font-bold">${d.license || 'N/A'}</td>
+                            <td class="uppercase">${name}</td>
+                            <td>${d.gender}</td>
+                            <td>${d.designation}</td>
+                            <td class="text-blue-600 underline">${d.email}</td>
+                            ${actions}
+                        </tr>`;
+                    }
                 });
             });
         }
@@ -205,19 +261,19 @@
             snap.forEach(d => sel.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`);
         }
 
-        // Action Handlers
-        window.handleApproval = (uid, approved) => {
-            const action = approved ? "APPROVE THIS ACCOUNT?" : "DECLINE AND REMOVE THIS REQUEST?";
-            showNotif(action, true, async () => {
+        window.handleAction = (uid, approved) => {
+            const msg = approved ? "ADMIT THIS USER TO THE SYSTEM?" : "DELETE THIS REGISTRATION REQUEST?";
+            showNotif(msg, true, async () => {
                 if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
                 else await deleteDoc(doc(db, "users", uid));
-                showNotif(approved ? "ACCOUNT ACTIVATED" : "REQUEST REMOVED");
+                showNotif(approved ? "USER ADMITTED" : "REQUEST DELETED");
             });
         };
 
+        // MANUAL ADMISSION LOGIC
         window.openAddModal = (role) => {
             document.getElementById('userRole').value = role;
-            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL STUDENT ENTRY' : 'MANUAL FACULTY ENTRY';
+            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL STUDENT ADMISSION' : 'MANUAL FACULTY REGISTRATION';
             document.getElementById('studentFields').className = role === 'student' ? 'block' : 'hidden';
             document.getElementById('facultyFields').className = role === 'teacher' ? 'block' : 'hidden';
             document.getElementById('userModal').style.display = 'flex';
@@ -234,31 +290,38 @@
             // Duplicate Email Check
             const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
             if(!check.empty) {
-                showNotif("ERROR: EMAIL ALREADY REGISTERED");
+                showNotif("ERROR: EMAIL ALREADY IN USE");
                 btn.classList.remove('loading-btn');
                 return;
             }
 
             const userData = {
-                firstname: document.getElementById('fname').value,
-                lastname: document.getElementById('lname').value,
+                firstname: document.getElementById('fn').value,
+                lastname: document.getElementById('ln').value,
+                gender: document.getElementById('gender').value,
                 email: email,
                 role: role,
-                status: "approved", // Manual adds are pre-approved
-                createdAt: new Date().toISOString()
+                status: "approved",
+                createdAt: new Date()
             };
 
             if(role === 'student') {
+                userData.studentId = document.getElementById('id_num').value;
+                userData.birthdate = document.getElementById('dob').value;
+                userData.mobile = document.getElementById('mobile').value;
                 userData.course = document.getElementById('ucourse').value;
                 userData.year = document.getElementById('uyear').value;
-            } else {
+                userData.semester = document.getElementById('usem').value;
                 userData.address = document.getElementById('uaddress').value;
+            } else {
+                userData.license = document.getElementById('license').value;
+                userData.designation = document.getElementById('designation').value;
             }
 
             await addDoc(collection(db, "users"), userData);
             btn.classList.remove('loading-btn');
             closeModal('userModal');
-            showNotif("USER CREATED SUCCESSFULLY");
+            showNotif("ACCOUNT CREATED SUCCESSFULLY");
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
