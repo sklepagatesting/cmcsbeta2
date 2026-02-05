@@ -6,41 +6,41 @@
     <title>Approvals | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Exact Colors from Guidelines */
         .bg-cmcs-blue { background-color: #0070c0; }
         .bg-cmcs-sidebar { background-color: #00b0f0; }
         .bg-cmcs-yellow { background-color: #ffff00; }
         .bg-cmcs-logout { background-color: #cc0000; }
         
-        .sidebar-link {
-            padding: 12px 20px;
-            display: block;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
+        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .active-tab { background-color: #ffff00; color: black; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 4px; text-align: left; }
-        td { border: 1px solid #7f7f7f; padding: 4px; }
-        .btn-approve { color: #22c55e; font-weight: bold; cursor: pointer; }
-        .btn-decline { color: #cc0000; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
+        td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
+        
+        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        #notifModal { z-index: 200; }
+
+        .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
+        .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; }
+        .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; }
+        .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
+        
+        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        
+        .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
 
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
-        <div class="flex items-center px-4 gap-2">
-            <span class="font-bold text-sm">[Logo] CMCS Virtual Learning System</span>
-        </div>
+        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm uppercase">CMCS Virtual Learning System</span></div>
         <div class="flex items-center h-full">
-            <div class="flex gap-4 px-6 items-center">
-                <span id="adminName" class="font-bold text-xs uppercase">Lastname, Firstname</span>
-                <span id="adminEmail" class="font-bold text-xs">Email@gmail.com</span>
-            </div>
-            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs">Logout</button>
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
     </nav>
 
@@ -52,60 +52,87 @@
             <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
         </aside>
 
-        <main class="flex-1 p-4">
-            
-            <div class="mb-8">
-                <div class="bg-cmcs-yellow border border-black px-2 py-0.5 w-full">
-                    <h2 class="text-[10px] font-bold uppercase">STUDENT REQUEST</h2>
+        <main class="flex-1 p-6">
+            <div class="mb-10">
+                <div class="flex justify-between items-end mb-2">
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">STUDENT REGISTRATION REQUESTS</h2>
+                    <button onclick="openAddModal('student')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUALLY ADD STUDENT</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>LASTNAME</th>
-                            <th>FIRSTNAME</th>
-                            <th>EMAIL</th>
-                            <th>ADDRESS</th>
-                            <th>COURSE</th>
-                            <th>YEAR</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentTable">
-                        </tbody>
+                    <thead><tr><th>LASTNAME</th><th>FIRSTNAME</th><th>EMAIL</th><th>COURSE</th><th>YEAR</th><th>ACTIONS</th></tr></thead>
+                    <tbody id="studentTable"></tbody>
                 </table>
             </div>
 
             <div>
-                <div class="bg-cmcs-yellow border border-black px-2 py-0.5 w-full">
-                    <h2 class="text-[10px] font-bold uppercase">FACULTY REQUEST</h2>
+                <div class="flex justify-between items-end mb-2">
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">FACULTY REGISTRATION REQUESTS</h2>
+                    <button onclick="openAddModal('teacher')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUALLY ADD FACULTY</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>LASTNAME</th>
-                            <th>FIRSTNAME</th>
-                            <th>EMAIL</th>
-                            <th>ADDRESS</th>
-                            <th>COURSE</th>
-                            <th>YEAR</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="facultyTable">
-                        </tbody>
+                    <thead><tr><th>LASTNAME</th><th>FIRSTNAME</th><th>EMAIL</th><th>ADDRESS</th><th>ACTIONS</th></tr></thead>
+                    <tbody id="facultyTable"></tbody>
                 </table>
             </div>
-
         </main>
     </div>
 
-    <footer class="bg-cmcs-blue text-white p-4">
-        <p class="text-[10px]">Copyright 2026 CMCS. All Rights Reserved</p>
-    </footer>
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-container w-72 text-center">
+            <div class="modal-header"><span>SYSTEM MESSAGE</span></div>
+            <div class="modal-body">
+                <p id="notifMessage" class="font-bold text-[11px] uppercase"></p>
+                <div id="confirmActions" class="hidden flex justify-center gap-2 mt-4">
+                    <button id="btnYes" class="btn-modal-save">CONFIRM</button>
+                    <button onclick="closeModal('notifModal')" class="btn-modal-cancel">CANCEL</button>
+                </div>
+                <div id="alertActions" class="flex justify-center mt-4">
+                    <button onclick="closeModal('notifModal')" class="btn-modal-save">OKAY</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header"><span id="modalTitle">ADD USER</span><span class="cursor-pointer" onclick="closeModal('userModal')">X</span></div>
+            <form id="userForm">
+                <input type="hidden" id="userRole">
+                <div class="modal-body">
+                    <div class="grid grid-cols-2 gap-x-4">
+                        <div><label class="modal-label">First Name</label><input type="text" id="fname" class="modal-input" required></div>
+                        <div><label class="modal-label">Last Name</label><input type="text" id="lname" class="modal-input" required></div>
+                    </div>
+                    <label class="modal-label">Email Address</label>
+                    <input type="email" id="uemail" class="modal-input" required>
+                    
+                    <div id="studentFields" class="hidden">
+                        <label class="modal-label">Course</label>
+                        <select id="ucourse" class="modal-select"></select>
+                        <label class="modal-label">Year Level</label>
+                        <select id="uyear" class="modal-select">
+                            <option value="1">1st Year</option><option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option><option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    <div id="facultyFields" class="hidden">
+                        <label class="modal-label">Address</label>
+                        <input type="text" id="uaddress" class="modal-input">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="saveUserBtn" class="btn-modal-save">CREATE ACCOUNT</button>
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('userModal')">CANCEL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-cmcs-blue text-white p-2 mt-auto"><p class="text-[10px] ml-4">Copyright 2026 CMCS. All Rights Reserved</p></footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
@@ -121,56 +148,117 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // UI Helpers
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
+            document.getElementById('alertActions').className = isConfirm ? 'hidden' : 'flex justify-center mt-4';
+            if(isConfirm) document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            document.getElementById('notifModal').style.display = 'flex';
+        };
+
+        window.closeModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'userModal') document.getElementById('userForm').reset();
+        };
+
+        // Real-time Auth & List
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
-                    document.getElementById('adminEmail').innerText = user.email;
-                    loadRequests();
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    startRealtimeListeners();
+                    loadCourses();
                 }
             } else { window.location.href = "login.html"; }
         });
 
-        async function loadRequests() {
-            const sTable = document.getElementById('studentTable');
-            const fTable = document.getElementById('facultyTable');
-            sTable.innerHTML = ''; fTable.innerHTML = '';
+        function startRealtimeListeners() {
+            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+                const sTable = document.getElementById('studentTable');
+                const fTable = document.getElementById('facultyTable');
+                sTable.innerHTML = ''; fTable.innerHTML = '';
 
-            const q = query(collection(db, "users"), where("status", "==", "pending"));
-            const snap = await getDocs(q);
-
-            snap.forEach(u => {
-                const d = u.data();
-                const row = `
-                    <tr>
-                        <td class="uppercase">${d.lastname}</td>
+                snap.forEach(u => {
+                    const d = u.data();
+                    const row = `<tr>
+                        <td class="font-bold uppercase">${d.lastname}</td>
                         <td class="uppercase">${d.firstname}</td>
-                        <td class="text-blue-600 underline">${d.email}</td>
-                        <td>${d.address || 'Mlang, Cotabato'}</td>
-                        <td>${d.course || 'BSIT'}</td>
-                        <td>${d.year || '1'}</td>
+                        <td class="text-blue-600 underline lowercase">${d.email}</td>
+                        ${d.role === 'student' ? `<td>${d.course}</td><td>${d.year}</td>` : `<td>${d.address || 'N/A'}</td>`}
                         <td>
-                            <span onclick="updateStatus('${u.id}', 'approved')" class="btn-approve">Approve</span>
-                            <span onclick="updateStatus('${u.id}', 'declined')" class="btn-decline">Decline</span>
+                            <span onclick="handleApproval('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">APPROVE</span>
+                            <span onclick="handleApproval('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">DECLINE</span>
                         </td>
                     </tr>`;
-                
-                if (d.role === 'teacher') fTable.innerHTML += row;
-                else sTable.innerHTML += row;
+                    if (d.role === 'teacher') fTable.innerHTML += row;
+                    else sTable.innerHTML += row;
+                });
             });
         }
 
-        window.updateStatus = async (uid, status) => {
-            if (status === 'approved') {
-                await updateDoc(doc(db, "users", uid), { status: "approved" });
-                alert("Account Approved");
-            } else {
-                await deleteDoc(doc(db, "users", uid));
-                alert("Request Declined");
+        async function loadCourses() {
+            const snap = await getDocs(collection(db, "courses"));
+            const sel = document.getElementById('ucourse');
+            sel.innerHTML = '';
+            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`);
+        }
+
+        // Action Handlers
+        window.handleApproval = (uid, approved) => {
+            const action = approved ? "APPROVE THIS ACCOUNT?" : "DECLINE AND REMOVE THIS REQUEST?";
+            showNotif(action, true, async () => {
+                if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
+                else await deleteDoc(doc(db, "users", uid));
+                showNotif(approved ? "ACCOUNT ACTIVATED" : "REQUEST REMOVED");
+            });
+        };
+
+        window.openAddModal = (role) => {
+            document.getElementById('userRole').value = role;
+            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL STUDENT ENTRY' : 'MANUAL FACULTY ENTRY';
+            document.getElementById('studentFields').className = role === 'student' ? 'block' : 'hidden';
+            document.getElementById('facultyFields').className = role === 'teacher' ? 'block' : 'hidden';
+            document.getElementById('userModal').style.display = 'flex';
+        };
+
+        document.getElementById('userForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveUserBtn');
+            const email = document.getElementById('uemail').value.toLowerCase();
+            const role = document.getElementById('userRole').value;
+
+            btn.classList.add('loading-btn');
+
+            // Duplicate Email Check
+            const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+            if(!check.empty) {
+                showNotif("ERROR: EMAIL ALREADY REGISTERED");
+                btn.classList.remove('loading-btn');
+                return;
             }
-            loadRequests();
+
+            const userData = {
+                firstname: document.getElementById('fname').value,
+                lastname: document.getElementById('lname').value,
+                email: email,
+                role: role,
+                status: "approved", // Manual adds are pre-approved
+                createdAt: new Date().toISOString()
+            };
+
+            if(role === 'student') {
+                userData.course = document.getElementById('ucourse').value;
+                userData.year = document.getElementById('uyear').value;
+            } else {
+                userData.address = document.getElementById('uaddress').value;
+            }
+
+            await addDoc(collection(db, "users"), userData);
+            btn.classList.remove('loading-btn');
+            closeModal('userModal');
+            showNotif("USER CREATED SUCCESSFULLY");
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
