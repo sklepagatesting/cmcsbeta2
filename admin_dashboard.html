@@ -5,64 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .sidebar-link {
-            transition: all 0.3s;
-            text-transform: uppercase;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-        }
-        .sidebar-link:hover {
-            background-color: black;
-            color: white;
-            padding-left: 1.5rem;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 text-black min-h-screen">
+<body class="bg-white min-h-screen flex flex-col font-sans">
 
-    <nav class="bg-white border-b-4 border-black p-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-black flex items-center justify-center text-white font-bold text-xl rounded-sm">CMCS</div>
-            <h1 class="text-2xl font-black tracking-tighter uppercase italic">Virtual Learning System</h1>
+    <nav class="bg-[#0070c0] text-white p-0 flex justify-between items-center h-16 shadow-md">
+        <div class="flex items-center px-6 gap-2">
+            <span class="font-bold text-lg">[Logo]</span>
+            <h1 class="font-bold text-lg tracking-tight">CMCS Virtual Learning System</h1>
         </div>
         
-        <div class="flex items-center gap-6">
-            <div class="text-right">
-                <p id="adminNameDisplay" class="font-bold text-sm uppercase">Lastname, Firstname</p>
-                <p id="adminEmailDisplay" class="text-[10px] font-medium text-gray-500">Email@gmail.com</p>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center">
+                <span id="adminName" class="font-bold text-sm">Lastname, Firstname</span>
+                <span id="adminEmail" class="font-bold text-sm">Email@gmail.com</span>
             </div>
-            <button onclick="logout()" class="border-2 border-black px-4 py-2 text-xs font-black hover:bg-black hover:text-white transition">LOGOUT</button>
+            <button onclick="logout()" class="bg-[#cc0000] hover:bg-red-700 h-full px-10 text-white font-bold text-sm transition-colors">
+                Logout
+            </button>
         </div>
     </nav>
 
-    <div class="flex">
-        <aside class="w-64 bg-white min-h-[calc(100vh-84px)] border-r-4 border-black p-6 space-y-2">
-            <a href="admin_approval.html" class="sidebar-link block p-3 text-sm border-b-2 border-transparent">APPROVALS</a>
-            <a href="admin_setup.html" class="sidebar-link block p-3 text-sm border-b-2 border-transparent">ACADEMIC SETUP</a>
-            <a href="admin_class.html" class="sidebar-link block p-3 text-sm border-b-2 border-transparent">CLASS ASSIGNMENT</a>
-            <a href="admin_records.html" class="sidebar-link block p-3 text-sm border-b-2 border-transparent">MASTER RECORD</a>
-        </aside>
+    <main class="flex-1 flex items-center justify-center p-6">
+        <div class="grid grid-cols-2 gap-4 w-full max-w-4xl aspect-[4/3] md:aspect-[16/9]">
+            
+            <a href="admin_approval.html" class="bg-[#00b0f0] hover:opacity-90 flex items-center justify-center text-white font-bold text-2xl uppercase transition-opacity shadow-sm">
+                Approvals
+            </a>
 
-        <main class="flex-1 p-10">
-            <div class="max-w-4xl">
-                <h2 class="text-6xl font-black uppercase italic mb-4">Welcome_Admin</h2>
-                <div class="w-24 h-4 bg-black mb-8"></div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                        <h3 class="font-black text-xl mb-2 uppercase">System Overview</h3>
-                        <p class="text-sm text-gray-600 leading-relaxed font-medium">
-                            Use the navigation on the left to manage faculty requests, academic setups, and student class assignments[cite: 5, 7]. Ensure all records are updated in the Master Record section[cite: 8].
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+            <a href="admin_setup.html" class="bg-[#1cc024] hover:opacity-90 flex items-center justify-center text-white font-bold text-2xl uppercase transition-opacity shadow-sm">
+                Academic Setup
+            </a>
 
-    <footer class="fixed bottom-0 w-full bg-white border-t-2 border-black p-2 text-center">
-        <p class="text-[10px] font-bold uppercase tracking-widest">Copyright 2026 CMCS. All Rights Reserved</p>
+            <a href="admin_class.html" class="bg-[#ffc000] hover:opacity-90 flex items-center justify-center text-white font-bold text-2xl uppercase transition-opacity shadow-sm">
+                Class Assignment
+            </a>
+
+            <a href="admin_records.html" class="bg-[#7030a0] hover:opacity-90 flex items-center justify-center text-white font-bold text-2xl uppercase transition-opacity shadow-sm">
+                Master Record
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="bg-[#0070c0] text-white p-6">
+        <div class="max-w-7xl mx-auto">
+            <p class="text-sm font-medium">Copyright 2026 CMCS. All Rights Reserved</p>
+        </div>
     </footer>
 
     <script type="module">
@@ -70,6 +58,7 @@
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // CONFIGURATION
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
             authDomain: "svls-289ee.firebaseapp.com",
@@ -78,17 +67,19 @@
             messagingSenderId: "500705386198",
             appId: "1:500705386198:web:96f189662bc2aa99cf7377"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // UI SYNC
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists() && snap.data().role === 'admin') {
                     const data = snap.data();
-                    document.getElementById('adminNameDisplay').innerText = `${data.lastname}, ${data.firstname}`;
-                    document.getElementById('adminEmailDisplay').innerText = user.email;
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
+                    document.getElementById('adminEmail').innerText = user.email;
                 } else {
                     window.location.href = "login.html";
                 }
