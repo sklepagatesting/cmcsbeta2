@@ -37,7 +37,6 @@
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
-
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
         <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
         <div class="flex items-center h-full">
@@ -45,7 +44,6 @@
             <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
     </nav>
-
     <div class="flex flex-1">
         <aside class="w-48 bg-cmcs-sidebar flex flex-col">
             <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
@@ -54,7 +52,6 @@
             <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
             <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
         </aside>
-
         <main class="flex-1 p-6">
             <div class="flex justify-between items-end mb-4">
                 <h2 class="text-[12px] font-bold uppercase border-b-2 border-black inline-block">STUDENT LIST</h2>
@@ -77,6 +74,12 @@
                         <select id="filterSem" class="filter-select">
                             <option value="1">1</option><option value="2">2</option>
                         </select>
+                    </div>
+                </div>
+                <div class="filter-container w-64">
+                    <div class="filter-box" style="border: none;">
+                        <span class="filter-label">SEARCH NAME/ID</span>
+                        <input type="text" id="searchField" class="filter-select outline-none" placeholder="...">
                     </div>
                 </div>
                 <button id="fetchBtn" class="bg-cmcs-yellow border border-black px-10 h-[38px] font-bold text-xs uppercase shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">Fetch</button>
@@ -109,7 +112,6 @@
             </div>
         </div>
     </div>
-
     <div id="classModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
@@ -121,13 +123,10 @@
                     <span class="text-[9px] font-bold text-gray-500 uppercase italic">Updating enrollment for:</span>
                     <p id="targetStudentName" class="text-xs font-black uppercase text-blue-800"></p>
                 </div>
-
                 <div class="grid grid-cols-[30px_100px_1fr] gap-10 px-1 py-1 bg-gray-200 border border-black text-[9px] font-bold uppercase mb-1">
                     <span>SET</span><span>CODE</span><span>SUBJECT NAME</span>
                 </div>
-                
                 <div id="programList" class="max-h-64 overflow-y-auto border border-black bg-white mb-4"></div>
-
                 <div class="flex justify-end gap-2">
                     <button id="saveClassesBtn" class="btn-modal-save shadow-[3px_3px_0px_0px_black]">Save Record</button>
                     <button onclick="closeModal('classModal')" class="btn-modal-cancel">Cancel</button>
@@ -155,8 +154,8 @@
         const auth = getAuth(app);
 
         let currentStudentUid = null;
+        let fetchedStudents = []; // Store data for search
 
-        // System Notification Modal
         window.showNotif = (msg) => {
             document.getElementById('notifMessage').innerText = msg;
             document.getElementById('notifModal').style.display = 'flex';
@@ -183,6 +182,43 @@
                 sel.innerHTML += `<option value="${name}">${name}</option>`;
             });
         }
+
+        // Modified Render function to support filtering
+        function renderTable(students) {
+            const tbody = document.getElementById('studentTableBody');
+            const sem = document.getElementById('filterSem').value;
+            tbody.innerHTML = '';
+            let count = 1;
+
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-600 font-bold">NO RECORDS MATCHED</td></tr>';
+                return;
+            }
+
+            students.forEach(s => {
+                const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${count++}</td>
+                        <td class="font-bold text-blue-800">${s.studentId || '00-0-000'}</td>
+                        <td>${s.lastname}</td><td>${s.firstname}</td>
+                        <td>${s.course} Y${s.year} S${sem}</td>
+                        <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
+                        <td><button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="text-green-600 underline font-bold italic text-[10px]">UPDATE LOAD</button></td>
+                    </tr>`;
+            });
+        }
+
+        // Search Input Event
+        document.getElementById('searchField').oninput = (e) => {
+            const queryStr = e.target.value.toUpperCase();
+            const filtered = fetchedStudents.filter(s => 
+                s.lastname.toUpperCase().includes(queryStr) || 
+                s.firstname.toUpperCase().includes(queryStr) || 
+                (s.studentId && s.studentId.toUpperCase().includes(queryStr))
+            );
+            renderTable(filtered);
+        };
 
         window.openClassModal = async (uid, name) => {
             currentStudentUid = uid;
@@ -231,25 +267,17 @@
                 );
 
                 const snap = await getDocs(q);
-                tbody.innerHTML = '';
-                let count = 1;
-                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-600 font-bold">NO RECORDS FOUND</td></tr>'; return; }
-
+                fetchedStudents = [];
+                
                 snap.forEach(u => {
                     const d = u.data();
                     if (!d.semester || d.semester == sem) {
-                        const subjects = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${count++}</td>
-                                <td class="font-bold text-blue-800">${d.studentId || '00-0-000'}</td>
-                                <td>${d.lastname}</td><td>${d.firstname}</td>
-                                <td>${d.course} Y${d.year} S${sem}</td>
-                                <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
-                                <td><button onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="text-green-600 underline font-bold italic text-[10px]">UPDATE LOAD</button></td>
-                            </tr>`;
+                        fetchedStudents.push({ uid: u.id, ...d });
                     }
                 });
+                
+                renderTable(fetchedStudents);
+                document.getElementById('searchField').value = ''; // Reset search box on new fetch
             } catch (e) { showNotif("ERROR CONNECTING TO DATABASE"); }
         };
 
