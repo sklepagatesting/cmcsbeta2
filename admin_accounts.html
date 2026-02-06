@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts Management | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-cmcs-blue { background-color: #0070c0; }
+        .bg-cmcs-sidebar { background-color: #00b0f0; }
+        .bg-cmcs-yellow { background-color: #ffff00; }
+        .bg-cmcs-logout { background-color: #cc0000; }
+        
+        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .active-tab { background-color: #ffff00; color: black; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        th { background-color: #d9d9d9; border: 1px solid black; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
+        td { border: 1px solid black; padding: 6px; background-color: #ffffff; }
+
+        .status-pill { padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid black; }
+        .status-active { background-color: #28a745; color: white; }
+        .status-inactive { background-color: #dc3545; color: white; }
+        
+        .filter-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; margin-bottom: 20px; }
+        .filter-box { border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; }
+        .filter-label { font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col font-sans">
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12">
+        <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
+        </div>
+    </nav>
+
+    <div class="flex flex-1">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
+            <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
+            <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
+            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
+            <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
+            <a href="admin_accounts.html" class="sidebar-link active-tab">ACCOUNTS</a>
+        </aside>
+
+        <main class="flex-1 p-6">
+            <h2 class="text-[12px] font-bold uppercase border-b-2 border-black inline-block mb-4">USER ACCOUNT MANAGEMENT</h2>
+
+            <div class="flex gap-4">
+                <div class="filter-container w-48">
+                    <div class="filter-box w-full" style="border:none;">
+                        <span class="filter-label">VIEW ROLE</span>
+                        <select id="roleFilter" class="filter-select">
+                            <option value="ALL">ALL USERS</option>
+                            <option value="student">STUDENTS</option>
+                            <option value="teacher">TEACHERS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-container flex-1">
+                    <div class="filter-box w-full" style="border:none;">
+                        <span class="filter-label">SEARCH USER</span>
+                        <input type="text" id="userSearch" class="filter-select" placeholder="SEARCH BY NAME OR ID...">
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="120">USER ID / ROLE</th>
+                        <th>FULL NAME</th>
+                        <th>EMAIL ADDRESS</th>
+                        <th>DEPARTMENT/COURSE</th>
+                        <th width="100">STATUS</th>
+                        <th width="150">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    </tbody>
+            </table>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allUsers = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
+                    syncUsers();
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
+        function syncUsers() {
+            onSnapshot(collection(db, "users"), (snap) => {
+                allUsers = [];
+                snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
+                renderTable();
+            });
+        }
+
+        function renderTable() {
+            const role = document.getElementById('roleFilter').value;
+            const search = document.getElementById('userSearch').value.toUpperCase();
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+
+            const filtered = allUsers.filter(u => {
+                const matchRole = role === 'ALL' || u.role === role;
+                const fullName = `${u.lastname} ${u.firstname}`.toUpperCase();
+                const matchSearch = fullName.includes(search) || (u.studentId && u.studentId.includes(search));
+                return matchRole && matchSearch && u.role !== 'admin'; // Don't show other admins for safety
+            });
+
+            filtered.forEach(u => {
+                const statusClass = u.status === 'approved' ? 'status-active' : 'status-inactive';
+                const statusText = u.status === 'approved' ? 'ACTIVE' : 'INACTIVE';
+                const dept = u.role === 'student' ? u.course : 'FACULTY';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-[10px]">
+                            <div class="font-bold">${u.studentId || 'N/A'}</div>
+                            <div class="text-blue-600 font-bold italic">${u.role.toUpperCase()}</div>
+                        </td>
+                        <td class="font-bold uppercase">${u.lastname}, ${u.firstname}</td>
+                        <td class="lowercase">${u.email}</td>
+                        <td class="uppercase text-[10px]">${dept || '---'}</td>
+                        <td><span class="status-pill ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="flex flex-col gap-1">
+                                <button onclick="toggleStatus('${u.uid}', '${u.status}')" class="text-[9px] font-bold underline text-left">
+                                    ${u.status === 'approved' ? 'DEACTIVATE' : 'ACTIVATE'}
+                                </button>
+                                <button onclick="resetPass('${u.email}')" class="text-[9px] font-bold underline text-left text-blue-600">
+                                    RESET PASSWORD
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.toggleStatus = async (uid, currentStatus) => {
+            const newStatus = currentStatus === 'approved' ? 'disabled' : 'approved';
+            if(confirm(`ARE YOU SURE YOU WANT TO ${newStatus.toUpperCase()} THIS USER?`)) {
+                await updateDoc(doc(db, "users", uid), { status: newStatus });
+            }
+        };
+
+        window.resetPass = (email) => {
+            if(confirm(`SEND PASSWORD RESET LINK TO: ${email}?`)) {
+                sendPasswordResetEmail(auth, email).then(() => {
+                    alert("RESET LINK SENT TO EMAIL.");
+                }).catch(err => alert("ERROR: " + err.message));
+            }
+        };
+
+        document.getElementById('roleFilter').onchange = renderTable;
+        document.getElementById('userSearch').oninput = renderTable;
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
+</body>
+</html>
