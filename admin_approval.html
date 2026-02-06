@@ -31,7 +31,7 @@
         .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
         
         .password-container { position: relative; width: 100%; }
-        .eye-toggle { position: absolute; right: 10px; top: 28px; cursor: pointer; opacity: 0.6; }
+        .text-toggle { position: absolute; right: 10px; top: 28px; cursor: pointer; font-size: 9px; font-weight: 900; color: #0070c0; text-decoration: underline; }
 
         .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
@@ -111,7 +111,7 @@
                         <div class="password-container">
                             <label class="modal-label">Temp Password</label>
                             <input type="password" id="upass" class="modal-input" required>
-                            <span class="eye-toggle" onclick="togglePassword('upass')">👁️</span>
+                            <span id="passToggle" class="text-toggle" onclick="togglePassword('upass')">SHOW</span>
                         </div>
                     </div>
 
@@ -169,7 +169,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // ID Formatting (00-0-000)
+        // ID Formatter 00-0-000
         document.getElementById('id_num').addEventListener('input', (e) => {
             let val = e.target.value.replace(/\D/g, ''); 
             if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
@@ -179,7 +179,14 @@
 
         window.togglePassword = (id) => {
             const el = document.getElementById(id);
-            el.type = el.type === 'password' ? 'text' : 'password';
+            const toggle = document.getElementById('passToggle');
+            if (el.type === 'password') {
+                el.type = 'text';
+                toggle.innerText = 'HIDE';
+            } else {
+                el.type = 'password';
+                toggle.innerText = 'SHOW';
+            }
         };
 
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
@@ -192,7 +199,11 @@
 
         window.closeModal = (id) => {
             document.getElementById(id).style.display = 'none';
-            if(id === 'userModal') document.getElementById('userForm').reset();
+            if(id === 'userModal') {
+                document.getElementById('userForm').reset();
+                document.getElementById('passToggle').innerText = 'SHOW';
+                document.getElementById('upass').type = 'password';
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -248,7 +259,6 @@
             const email = document.getElementById('uemail').value.trim().toLowerCase();
             const btn = document.getElementById('saveUserBtn');
 
-            // Strict Gmail Check
             if(!/^[a-z0-9](\.?[a-z0-9]){5,}@gmail\.com$/.test(email)) return showNotif("USE A VALID GMAIL ACCOUNT");
 
             btn.classList.add('loading-btn');
