@@ -66,7 +66,8 @@
                 <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-20 h-20 mb-2">
                 <h1 class="font-bold text-2xl">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
                 <p class="text-[10px] uppercase tracking-[0.2em] font-bold">Master Student Academic Enrollment List</p>
-                <p class="text-[9px] mt-1 italic" id="printDate"></p>
+                <p id="printFilterInfo" class="text-[9px] mt-2 font-bold uppercase text-gray-700"></p>
+                <p class="text-[8px] mt-1 italic" id="printDate"></p>
                 <hr class="border-black w-full my-4">
             </div>
 
@@ -105,8 +106,8 @@
                 </div>
             </div>
 
-            <div class="bg-cmcs-blue text-white border-x border-t border-black p-1 no-print">
-                <h3 class="text-[11px] font-bold uppercase italic text-center">Master Academic Ledger</h3>
+            <div class="bg-cmcs-yellow border-x border-t border-black p-1">
+                <h3 class="text-[11px] font-bold uppercase italic text-left">Master Academic Ledger</h3>
             </div>
             <table>
                 <thead>
@@ -229,6 +230,11 @@
             const year = document.getElementById('filterYear').value;
             const sem = document.getElementById('filterSem').value;
             const search = document.getElementById('searchField').value.toUpperCase();
+
+            // Update Print Header Info
+            let filterText = `COURSE: ${course} | YEAR: ${year} | SEM: ${sem}`;
+            if(search) filterText += ` | SEARCH: "${search}"`;
+            document.getElementById('printFilterInfo').innerText = filterText;
 
             const filtered = masterData.filter(s => {
                 const matchCourse = course === 'ALL' || (s.course && s.course.toUpperCase() === course);
