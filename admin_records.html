@@ -33,9 +33,7 @@
             body { padding: 0; margin: 0; color: black !important; }
             table { font-size: 9px; width: 100% !important; }
             th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
-            
             body:not(.modal-open) #printMasterHeader { display: flex !important; flex-direction: column; align-items: center; margin-bottom: 20px; }
-            
             body.modal-open .modal-overlay { position: static; background: white; display: block !important; }
             body.modal-open .modal-container { box-shadow: none; border: none; width: 100%; position: static; }
             body.modal-open aside, body.modal-open nav, body.modal-open main > *:not(.modal-overlay) { display: none !important; }
@@ -43,7 +41,6 @@
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
-
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 no-print">
         <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
         <div class="flex items-center h-full">
@@ -78,7 +75,7 @@
                     <button onclick="window.print()" class="bg-white border border-black px-4 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-gray-100 uppercase">Print All</button>
                 </div>
             </div>
-            
+
             <div class="flex items-start gap-4 mb-6 no-print">
                 <div class="filter-container flex-1">
                     <div class="filter-box" style="flex: 2;">
@@ -88,13 +85,16 @@
                     <div class="filter-box">
                         <span class="filter-label">YEAR</span>
                         <select id="filterYear" class="filter-select">
-                            <option value="ALL">ALL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                            <option value="ALL">ALL</option>
+                            <option value="1">1</option><option value="2">2</option>
+                            <option value="3">3</option><option value="4">4</option>
                         </select>
                     </div>
                     <div class="filter-box" style="border-right: none;">
                         <span class="filter-label">SEM</span>
                         <select id="filterSem" class="filter-select">
-                            <option value="ALL">ALL</option><option value="1">1</option><option value="2">2</option>
+                            <option value="ALL">ALL</option>
+                            <option value="1">1</option><option value="2">2</option>
                         </select>
                     </div>
                 </div>
@@ -106,17 +106,14 @@
                 </div>
             </div>
 
-            <div class="bg-cmcs-yellow border-x border-t border-black p-1">
-                <h3 class="text-[11px] font-bold uppercase italic text-left">Master Academic Ledger</h3>
-            </div>
             <table>
                 <thead>
                     <tr>
                         <th width="30">NO.</th>
                         <th width="100">STUDENT ID</th>
                         <th>FULL NAME</th>
-                        <th>S.Y. / COURSE / YEAR / SEM</th>
-                        <th>SUBJECTS</th>
+                        <th>S.Y. / COURSE / YR / SEM</th>
+                        <th>ENROLLED</th>
                         <th width="80" class="no-print">ACTION</th>
                     </tr>
                 </thead>
@@ -128,8 +125,8 @@
     <div id="viewModal" class="modal-overlay">
         <div class="modal-container">
             <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase no-print">
-                <span>Student Profile Details</span>
-                <button onclick="closeModal('viewModal')">X</button>
+                <span>Student Academic Profile</span>
+                <button onclick="closeModal('viewModal')" class="font-bold">X</button>
             </div>
             <div id="printArea" class="p-8">
                 <div class="flex items-center justify-center gap-4 mb-6">
@@ -139,7 +136,7 @@
                         <p class="text-[10px] uppercase font-bold tracking-widest">Official Student Academic Record</p>
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4 border-y border-black py-4 mb-4">
                     <div class="text-[11px] space-y-1">
                         <p><strong>NAME:</strong> <span id="vName"></span></p>
@@ -149,23 +146,24 @@
                     </div>
                     <div class="text-[11px] space-y-1">
                         <p><strong>COURSE:</strong> <span id="vCourse"></span></p>
-                        <p><strong>YEAR/SEM:</strong> <span id="vLevel"></span></p>
-                        <p><strong>EMAIL:</strong> <span id="vEmail"></span></p>
+                        <p><strong>YEAR / SEM:</strong> <span id="vLevel"></span></p>
+                        <p><strong>EMAIL:</strong> <span id="vEmail" class="lowercase"></span></p>
                     </div>
                 </div>
 
-                <h4 class="font-bold text-[10px] uppercase mb-2">Enrolled Subjects & Class Schedule</h4>
+                <h4 class="font-bold text-[10px] uppercase mb-2">Class Schedule & Program Details</h4>
                 <table class="w-full border-black">
                     <thead>
                         <tr>
                             <th class="text-[9px]" width="80">CODE</th>
                             <th class="text-[9px]">SUBJECT NAME</th>
                             <th class="text-[9px]">INSTRUCTOR</th>
-                            <th class="text-[9px]">SCHEDULE</th>
+                            <th class="text-[9px]">TIME & DAY SCHEDULE</th>
                         </tr>
                     </thead>
                     <tbody id="vSubjectTable"></tbody>
                 </table>
+
                 <div class="mt-16 flex justify-between text-[10px] font-bold uppercase">
                     <div class="border-t border-black pt-1 w-48 text-center">Registrar Signature</div>
                     <div class="border-t border-black pt-1 w-48 text-center">School Director</div>
@@ -198,6 +196,16 @@
 
         let masterData = [];
         let courseSYMap = {};
+
+        // Helper: Format 24h to 12h Time
+        const formatTime = (t) => {
+            if(!t) return "";
+            const [h, m] = t.split(':');
+            const hh = parseInt(h);
+            const suffix = hh >= 12 ? "PM" : "AM";
+            let hour = ((hh + 11) % 12 + 1);
+            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -285,10 +293,11 @@
                 const progMap = {};
                 progSnap.forEach(p => {
                     const data = p.data();
+                    const fullSched = `${data.schedule || 'TBA'} ${formatTime(data.startTime)} - ${formatTime(data.endTime)}`;
                     progMap[data.code] = {
                         name: data.name || '---',
                         teacher: data.teacher || 'TBA',
-                        sched: data.schedule || 'TBA'
+                        sched: fullSched
                     };
                 });
 
@@ -301,7 +310,7 @@
                                 <td class="border border-black p-1 font-bold text-[9px]">${code}</td>
                                 <td class="border border-black p-1 text-[9px]">${info.name.toUpperCase()}</td>
                                 <td class="border border-black p-1 text-[9px]">${info.teacher.toUpperCase()}</td>
-                                <td class="border border-black p-1 text-[9px]">${info.sched.toUpperCase()}</td>
+                                <td class="border border-black p-1 text-[9px] font-bold">${info.sched.toUpperCase()}</td>
                             </tr>`;
                     });
                 } else {
