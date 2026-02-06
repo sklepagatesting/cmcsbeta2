@@ -1,39 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Academic Setup | CMCS VLS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Setup | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-cmcs-blue { background-color: #0070c0; }
+        .bg-cmcs-sidebar { background-color: #00b0f0; }
+        .bg-cmcs-yellow { background-color: #ffff00; }
+        .bg-cmcs-logout { background-color: #cc0000; }
+        
+        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .active-tab { background-color: #ffff00; color: black; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
+        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
+        td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
+        
+        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
+        .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; }
+        .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; }
+        .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        
+        .loading-btn { opacity: 0.5; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col font-sans">
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
+        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS VIRTUAL LEARNING SYSTEM</span></div>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
+        </div>
+    </nav>
 
-<style>
-:root{
-    --cmcs-blue:#2563eb;
-    --cmcs-sidebar:#1e40af;
-    --cmcs-yellow:#facc15;
-    --cmcs-danger:#dc2626;
-}
+    <div class="flex flex-1">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
+            <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
+            <a href="admin_setup.html" class="sidebar-link active-tab">ACADEMIC SETUP</a>
+            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
+            <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
+            <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
+        </aside>
 
-/* Tables */
-table{width:100%; border-collapse:separate; border-spacing:0 8px; font-size:12px;}
-th{font-size:11px; text-transform:uppercase; color:#64748b; text-align:left; padding:8px;}
-td{background:white; padding:10px; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;}
-tr td:first-child{border-left:1px solid #e5e7eb; border-radius:8px 0 0 8px;}
-tr td:last-child{border-right:1px solid #e5e7eb; border-radius:0 8px 8px 0;}
+        <main class="flex-1 p-6">
+            <div class="mb-10">
+                <div class="flex justify-between items-end mb-2">
+                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
+                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD NEW COURSE</button>
+                </div>
+                <table>
+                    <thead><tr><th>SCHOOL YEAR</th><th>COURSE NAME</th><th>DURATION</th><th>DESCRIPTION</th><th>ACTIONS</th></tr></thead>
+                    <tbody id="courseTableBody"></tbody>
+                </table>
+            </div>
+            </main>
+    </div>
 
-/* Sidebar */
-.sidebar-link{
-    display:flex; align-items:center; gap:10px;
-    padding:12px 18px; font-size:11px;
-    font-weight:600; color:#e0e7ff;
-    transition:.25s;
-}
-.sidebar-link:hover{background:rgba(255,255,255,.15);}
-.active-tab{
-    background:white; color:#1e40af;
+    <div id="courseModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span id="courseModalTitle">COURSE FORM</span>
+                <span class="cursor-pointer" onclick="closeModal('courseModal')">X</span>
+            </div>
+            <form id="courseForm">
+                <input type="hidden" id="editCourseId">
+                <div class="modal-body">
+                    <label class="modal-label">School Year</label>
+                    <input type="text" id="courseSY" class="modal-input" placeholder="e.g. 2025-2026" required>
+                    
+                    <label class="modal-label">Course Name (Acronym)</label>
+                    <input type="text" id="courseName" class="modal-input" placeholder="e.g. BSIT" required>
+
+                    <label class="modal-label">Duration (Years)</label>
+                    <input type="text" id="courseDuration" class="modal-input" placeholder="e.g. 4" required>
+
+                    <label class="modal-label">Full Description</label>
+                    <input type="text" id="courseDesc" class="modal-input" placeholder="e.g. Bachelor of Science in Information Technology" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="courseSaveBtn" class="btn-modal-save">SAVE RECORD</button>
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    
+                    // Live Sync Courses
+                    onSnapshot(collection(db, "courses"), (snapshot) => {
+                        const body = document.getElementById('courseTableBody');
+                        body.innerHTML = '';
+                        snapshot.forEach(d => {
+                            const r = d.data();
+                            body.innerHTML += `<tr>
+                                <td>${r.schoolYear}</td>
+                                <td class="font-bold">${r.name}</td>
+                                <td>${r.duration} Yrs</td>
+                                <td>${r.desc}</td>
+                                <td>
+                                    <span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
+                                    <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span>
+                                </td>
+                            </tr>`;
+                        });
+                    });
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
+        // --- COURSE FUNCTIONS ---
+        window.prepareAddCourse = () => {
+            document.getElementById('courseForm').reset();
+            document.getElementById('editCourseId').value = "";
+            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
+            document.getElementById('courseModal').style.display = 'flex';
+        };
+
+        window.editCourse = async (id) => {
+            const docSnap = await getDoc(doc(db, "courses", id));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('editCourseId').value = id;
+                document.getElementById('courseSY').value = data.schoolYear || "";
+                document.getElementById('courseName').value = data.name || "";
+                document.getElementById('courseDuration').value = data.duration || "";
+                document.getElementById('courseDesc').value = data.desc || "";
+                
+                document.getElementById('courseModalTitle').innerText = "EDIT COURSE";
+                document.getElementById('courseModal').style.display = 'flex';
+            }
+        };
+
+        document.getElementById('courseForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCourseId').value;
+            const btn = document.getElementById('courseSaveBtn');
+            btn.classList.add('loading-btn');
+
+            // Constructing data exactly as per your Firestore string requirements
+            const courseData = {
+                schoolYear: document.getElementById('courseSY').value,
+                name: document.getElementById('courseName').value,
+                duration: document.getElementById('courseDuration').value, // Saved as string
+                desc: document.getElementById('courseDesc').value
+            };
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "courses", id), courseData);
+                } else {
+                    await addDoc(collection(db, "courses"), courseData);
+                }
+                closeModal('courseModal');
+            } catch (error) {
+                console.error("Error saving course: ", error);
+                alert("Failed to save record.");
+            } finally {
+                btn.classList.remove('loading-btn');
+            }
+        };
+
+        window.handleDelete = async (coll, id) => {
+            if(confirm('Are you sure you want to delete this record?')) {
+                await deleteDoc(doc(db, coll, id));
+            }
+        };
+
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
+</body>
+</html>
     border-radius:12px; margin:6px;
 }
 
