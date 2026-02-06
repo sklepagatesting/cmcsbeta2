@@ -20,7 +20,7 @@
         
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
         #notifModal { z-index: 200; }
-
+        
         .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; }
@@ -34,12 +34,10 @@
         .status-pill { padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid black; display: inline-block; }
         .status-active { background-color: #28a745; color: white; }
         .status-inactive { background-color: #dc3545; color: white; }
-
         .loading-btn { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
-
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
         <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS VIRTUAL LEARNING SYSTEM</span></div>
         <div class="flex items-center h-full">
@@ -64,7 +62,15 @@
                     <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD NEW COURSE</button>
                 </div>
                 <table>
-                    <thead><tr><th>SCHOOL YEAR</th><th>COURSE NAME</th><th>DURATION</th><th>DESCRIPTION</th><th>ACTIONS</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>SCHOOL YEAR</th>
+                            <th>COURSE NAME</th>
+                            <th>DURATION</th>
+                            <th>DESCRIPTION</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
                     <tbody id="courseTableBody"></tbody>
                 </table>
             </div>
@@ -75,7 +81,17 @@
                     <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD SUBJECT</button>
                 </div>
                 <table>
-                    <thead><tr><th>CODE</th><th>SUBJECT</th><th>YEAR/SEM</th><th>TIME SCHEDULE</th><th>FACULTY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>CODE</th>
+                            <th>SUBJECT</th>
+                            <th>YEAR/SEM</th>
+                            <th>TIME SCHEDULE</th>
+                            <th>FACULTY</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
                     <tbody id="programTableBody"></tbody>
                 </table>
             </div>
@@ -100,7 +116,10 @@
 
     <div id="courseModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="courseModalTitle">COURSE FORM</span><span class="cursor-pointer" onclick="closeModal('courseModal')">X</span></div>
+            <div class="modal-header">
+                <span id="courseModalTitle">COURSE FORM</span>
+                <span class="cursor-pointer" onclick="closeModal('courseModal')">X</span>
+            </div>
             <form id="courseForm">
                 <input type="hidden" id="editCourseId">
                 <div class="modal-body">
@@ -123,23 +142,67 @@
 
     <div id="subjectModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="modal-header"><span id="subjectModalTitle">SUBJECT FORM</span><span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span></div>
+            <div class="modal-header">
+                <span id="subjectModalTitle">SUBJECT FORM</span>
+                <span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span>
+            </div>
             <form id="programForm">
                 <input type="hidden" id="editSubjectId">
                 <div class="modal-body">
                     <div class="grid grid-cols-2 gap-x-4">
-                        <div><label class="modal-label">Subject Code</label><input type="text" id="progCode" class="modal-input" required></div>
-                        <div><label class="modal-label">Subject Name</label><input type="text" id="progName" class="modal-input" required></div>
-                        <div><label class="modal-label">Year</label>
-                            <select id="progYear" class="modal-select"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select>
+                        <div>
+                            <label class="modal-label">Subject Code</label>
+                            <input type="text" id="progCode" class="modal-input" required>
                         </div>
-                        <div><label class="modal-label">Semester</label>
-                            <select id="progSem" class="modal-select"><option value="1">1st Sem</option><option value="2">2nd Sem</option></select>
+                        <div>
+                            <label class="modal-label">Subject Name</label>
+                            <input type="text" id="progName" class="modal-input" required>
                         </div>
-                        <div><label class="modal-label">Start Time</label><input type="time" id="progStart" class="modal-input" required></div>
-                        <div><label class="modal-label">End Time</label><input type="time" id="progEnd" class="modal-input" required></div>
-                        <div><label class="modal-label">Faculty</label><select id="progTeacher" class="modal-select" required></select></div>
-                        <div><label class="modal-label">Status</label>
+                        <div>
+                            <label class="modal-label">Year</label>
+                            <select id="progYear" class="modal-select">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="modal-label">Semester</label>
+                            <select id="progSem" class="modal-select">
+                                <option value="1">1st Sem</option>
+                                <option value="2">2nd Sem</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="modal-label">Days Schedule</label>
+                            <select id="progSched" class="modal-select" required>
+                                <option value="" disabled selected>Select Days</option>
+                                <option value="21">MWF</option>
+                                <option value="22">TTH</option>
+                                <option value="1">MON</option>
+                                <option value="2">TUE</option>
+                                <option value="3">WED</option>
+                                <option value="4">THU</option>
+                                <option value="5">FRI</option>
+                                <option value="23">SAT</option>
+                                <option value="24">SUN</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="modal-label">Start Time</label>
+                            <input type="time" id="progStart" class="modal-input" required>
+                        </div>
+                        <div>
+                            <label class="modal-label">End Time</label>
+                            <input type="time" id="progEnd" class="modal-input" required>
+                        </div>
+                        <div>
+                            <label class="modal-label">Faculty</label>
+                            <select id="progTeacher" class="modal-select" required></select>
+                        </div>
+                        <div>
+                            <label class="modal-label">Status</label>
                             <select id="progStatus" class="modal-select">
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
@@ -173,7 +236,11 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI Notification & Modal Handlers
+        const dayMap = { 
+            "21": "MWF", "22": "TTH", "1": "MON", "2": "TUE", 
+            "3": "WED", "4": "THU", "5": "FRI", "23": "SAT", "24": "SUN" 
+        };
+
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
@@ -198,41 +265,59 @@
             const [h, m] = t.split(':');
             const hh = parseInt(h);
             const suffix = hh >= 12 ? "PM" : "AM";
-            return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${suffix}`;
+            let hour = ((hh + 11) % 12 + 1);
+            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
         };
 
-        // Auth & Real-time Sync
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
                     
+                    // Sync Courses
                     onSnapshot(collection(db, "courses"), (snap) => {
                         const body = document.getElementById('courseTableBody');
                         body.innerHTML = '';
                         snap.forEach(d => {
                             const r = d.data();
-                            body.innerHTML += `<tr><td>${r.schoolYear}</td><td>${r.name}</td><td>${r.duration} Yrs</td><td>${r.desc}</td>
-                            <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
-                            <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span></td></tr>`;
+                            body.innerHTML += `<tr>
+                                <td>${r.schoolYear}</td>
+                                <td>${r.name}</td>
+                                <td>${r.duration} Yrs</td>
+                                <td>${r.desc}</td>
+                                <td>
+                                    <span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
+                                    <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span>
+                                </td>
+                            </tr>`;
                         });
                     });
 
+                    // Sync Subjects (Programs)
                     onSnapshot(collection(db, "programs"), (snap) => {
                         const body = document.getElementById('programTableBody');
                         body.innerHTML = '';
                         snap.forEach(d => {
                             const r = d.data();
                             const sClass = r.status === 'active' ? 'status-active' : 'status-inactive';
-                            body.innerHTML += `<tr><td class="font-bold">${r.code}</td><td>${r.name}</td><td>Y${r.year} S${r.semester}</td>
-                            <td>${formatTime(r.startTime)} - ${formatTime(r.endTime)}</td><td>${r.teacher}</td>
-                            <td><span class="status-pill ${sClass}">${r.status}</span></td>
-                            <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editSubject('${d.id}')">Edit</span>
-                            <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('programs', '${d.id}')">Delete</span></td></tr>`;
+                            const dayLabel = dayMap[r.schedule] || "TBA";
+                            body.innerHTML += `<tr>
+                                <td class="font-bold">${r.code}</td>
+                                <td>${r.name}</td>
+                                <td>Y${r.year} S${r.semester}</td>
+                                <td>${dayLabel} ${formatTime(r.startTime)} - ${formatTime(r.endTime)}</td>
+                                <td>${r.teacher}</td>
+                                <td><span class="status-pill ${sClass}">${r.status}</span></td>
+                                <td>
+                                    <span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editSubject('${d.id}')">Edit</span>
+                                    <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('programs', '${d.id}')">Delete</span>
+                                </td>
+                            </tr>`;
                         });
                     });
 
+                    // Sync Faculty Dropdown
                     onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
                         const sel = document.getElementById('progTeacher');
                         sel.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
@@ -248,7 +333,11 @@
         });
 
         // --- COURSE LOGIC ---
-        window.prepareAddCourse = () => { document.getElementById('courseModalTitle').innerText = "ADD COURSE"; document.getElementById('courseModal').style.display='flex'; };
+        window.prepareAddCourse = () => { 
+            document.getElementById('courseModalTitle').innerText = "ADD COURSE"; 
+            document.getElementById('courseModal').style.display='flex'; 
+        };
+
         window.editCourse = async (id) => {
             const d = (await getDoc(doc(db, "courses", id))).data();
             document.getElementById('editCourseId').value = id;
@@ -266,10 +355,8 @@
             const sy = document.getElementById('courseSY').value;
             const name = document.getElementById('courseName').value;
             const btn = document.getElementById('courseSaveBtn');
-            
             btn.classList.add('loading-btn');
 
-            // Check Duplication (Only if creating new)
             if(!id) {
                 const q = query(collection(db, "courses"), where("name", "==", name), where("schoolYear", "==", sy));
                 const check = await getDocs(q);
@@ -280,8 +367,15 @@
                 }
             }
 
-            const data = { schoolYear: sy, name: name, duration: document.getElementById('courseDuration').value, desc: document.getElementById('courseDesc').value };
-            if(id) await updateDoc(doc(db, "courses", id), data); else await addDoc(collection(db, "courses"), data);
+            const data = { 
+                schoolYear: sy, 
+                name: name, 
+                duration: document.getElementById('courseDuration').value, 
+                desc: document.getElementById('courseDesc').value 
+            };
+            
+            if(id) await updateDoc(doc(db, "courses", id), data); 
+            else await addDoc(collection(db, "courses"), data);
             
             btn.classList.remove('loading-btn');
             closeModal('courseModal');
@@ -289,7 +383,11 @@
         };
 
         // --- SUBJECT LOGIC ---
-        window.prepareAddSubject = () => { document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT"; document.getElementById('subjectModal').style.display='flex'; };
+        window.prepareAddSubject = () => { 
+            document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT"; 
+            document.getElementById('subjectModal').style.display='flex'; 
+        };
+
         window.editSubject = async (id) => {
             const d = (await getDoc(doc(db, "programs", id))).data();
             document.getElementById('editSubjectId').value = id;
@@ -297,6 +395,7 @@
             document.getElementById('progName').value = d.name;
             document.getElementById('progYear').value = d.year;
             document.getElementById('progSem').value = d.semester;
+            document.getElementById('progSched').value = d.schedule || "";
             document.getElementById('progStart').value = d.startTime;
             document.getElementById('progEnd').value = d.endTime;
             document.getElementById('progTeacher').value = d.teacher;
@@ -312,10 +411,8 @@
             const name = document.getElementById('progName').value;
             const teacher = document.getElementById('progTeacher').value;
             const btn = document.getElementById('subjectSaveBtn');
-
             btn.classList.add('loading-btn');
 
-            // Check Duplication (Only if creating new)
             if(!id) {
                 const q = query(collection(db, "programs"), where("code", "==", code), where("name", "==", name), where("teacher", "==", teacher));
                 const check = await getDocs(q);
@@ -327,11 +424,19 @@
             }
 
             const data = { 
-                code: code, name: name, year: document.getElementById('progYear').value, semester: document.getElementById('progSem').value,
-                startTime: document.getElementById('progStart').value, endTime: document.getElementById('progEnd').value,
-                teacher: teacher, status: document.getElementById('progStatus').value
+                code: code, 
+                name: name, 
+                year: document.getElementById('progYear').value, 
+                semester: document.getElementById('progSem').value,
+                schedule: document.getElementById('progSched').value,
+                startTime: document.getElementById('progStart').value, 
+                endTime: document.getElementById('progEnd').value,
+                teacher: teacher, 
+                status: document.getElementById('progStatus').value
             };
-            if(id) await updateDoc(doc(db, "programs", id), data); else await addDoc(collection(db, "programs"), data);
+            
+            if(id) await updateDoc(doc(db, "programs", id), data); 
+            else await addDoc(collection(db, "programs"), data);
             
             btn.classList.remove('loading-btn');
             closeModal('subjectModal');
