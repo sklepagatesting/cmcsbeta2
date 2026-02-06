@@ -10,35 +10,24 @@
         .bg-cmcs-sidebar { background-color: #00b0f0; }
         .bg-cmcs-yellow { background-color: #ffff00; }
         .bg-cmcs-logout { background-color: #cc0000; }
-        
         .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .active-tab { background-color: #ffff00; color: black; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th { border: 1px solid black; padding: 4px; text-align: left; font-weight: bold; text-transform: uppercase; background-color: #d9d9d9; }
         td { border: 1px solid black; padding: 4px; background-color: #ffffff; text-transform: uppercase; }
-        
         .filter-label { font-size: 10px; font-weight: bold; display: block; border: 1px solid black; border-bottom: none; padding: 2px 5px; width: fit-content; }
-        .filter-select { border: 1px solid black; padding: 5px; width: 100%; outline: none; text-transform: uppercase; }
-
-        /* Program Tags */
-        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 1px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; margin-bottom: 2px; }
-        
+        .filter-select { border: 1px solid black; padding: 5px; width: 100%; outline: none; }
+        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 1px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; }
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-container { background: white; border: 2px solid black; width: 450px; box-shadow: 6px 6px 0px 0px black; }
-        
-        .btn-update { color: #16a34a; text-decoration: underline; font-weight: bold; font-style: italic; cursor: pointer; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
 
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
-        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm uppercase">CMCS Virtual Learning System</span></div>
+        <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
         <div class="flex items-center h-full">
-            <div class="flex gap-4 px-6 items-center text-xs italic uppercase">
-                <span id="adminName">...</span>
-                <span id="adminEmail">...</span>
-            </div>
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">...</span></div>
             <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
     </nav>
@@ -53,65 +42,47 @@
         </aside>
 
         <main class="flex-1 p-6">
-            <div class="mb-4">
-                <h2 class="text-xs font-bold uppercase mb-2">STUDENT LIST</h2>
-                <div class="flex items-end gap-0">
-                    <div class="flex-1">
-                        <span class="filter-label">COURSE NAME</span>
-                        <select id="filterCourse" class="filter-select"></select>
-                    </div>
-                    <div class="w-32">
-                        <span class="filter-label">YEAR</span>
-                        <select id="filterYear" class="filter-select">
-                            <option value="1">1</option><option value="2">2</option>
-                            <option value="3">3</option><option value="4">4</option>
-                        </select>
-                    </div>
-                    <div class="w-32">
-                        <span class="filter-label">SEMESTER</span>
-                        <select id="filterSem" class="filter-select">
-                            <option value="1">1</option><option value="2">2</option>
-                        </select>
-                    </div>
-                    <button id="fetchBtn" class="bg-cmcs-yellow border-2 border-black px-8 py-2 font-bold text-xs ml-4 shadow-[4px_4px_0px_0px_black] active:translate-y-1 active:shadow-none transition-all">FETCH</button>
+            <div class="mb-4 flex items-end gap-0">
+                <div class="flex-1">
+                    <span class="filter-label">COURSE</span>
+                    <select id="filterCourse" class="filter-select"></select>
                 </div>
+                <div class="w-32">
+                    <span class="filter-label">YEAR</span>
+                    <select id="filterYear" class="filter-select">
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                    </select>
+                </div>
+                <div class="w-32">
+                    <span class="filter-label">SEMESTER</span>
+                    <select id="filterSem" class="filter-select">
+                        <option value="1">1</option><option value="2">2</option>
+                    </select>
+                </div>
+                <button id="fetchBtn" class="bg-cmcs-yellow border-2 border-black px-8 py-2 font-bold text-xs ml-4 shadow-[4px_4px_0px_0px_black]">FETCH</button>
             </div>
 
-            <div class="mt-8">
-                <div class="bg-cmcs-yellow border-x-2 border-t-2 border-black p-1">
-                    <h3 class="text-[10px] font-bold uppercase">STUDENT INFORMATION</h3>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th width="40">NO.</th>
-                            <th width="100">ID</th>
-                            <th>LASTNAME</th>
-                            <th>FIRSTNAME</th>
-                            <th>COURSE/YEAR/SEMESTER</th>
-                            <th>ASSIGNED PROGRAMS</th>
-                            <th width="120">ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentTableBody"></tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40">NO.</th><th width="100">ID</th><th>NAME</th><th>COURSE/YR/SEM</th><th>ASSIGNED PROGRAMS</th><th width="120">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody"></tbody>
+            </table>
         </main>
     </div>
 
     <div id="classModal" class="modal-overlay">
         <div class="modal-container">
             <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase">
-                <span>Assign Programs</span>
-                <button onclick="closeModal()" class="hover:text-yellow-300">X</button>
+                <span>Assign Programs</span><button onclick="closeModal()">X</button>
             </div>
             <div class="p-6">
                 <p id="targetStudentName" class="font-bold text-xs mb-4 uppercase underline"></p>
-                <div id="programList" class="space-y-2 max-h-60 overflow-y-auto border p-2 bg-gray-50">
-                    </div>
+                <div id="programList" class="space-y-1 max-h-60 overflow-y-auto border p-2 bg-gray-50"></div>
                 <div class="mt-6 flex justify-end gap-2">
-                    <button id="saveClassesBtn" class="bg-cmcs-yellow border-2 border-black px-4 py-2 font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_black]">Update Classes</button>
-                    <button onclick="closeModal()" class="bg-gray-200 border border-black px-4 py-2 font-bold text-[10px] uppercase">Cancel</button>
+                    <button id="saveClassesBtn" class="bg-cmcs-yellow border-2 border-black px-4 py-2 font-bold text-[10px]">UPDATE CLASSES</button>
                 </div>
             </div>
         </div>
@@ -119,10 +90,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG (Ensure this matches your Firebase Project)
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
             authDomain: "svls-289ee.firebaseapp.com",
@@ -136,74 +106,50 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentStudentId = null;
+        let cachedPrograms = [];
+        let currentStudentUid = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    document.getElementById('adminEmail').innerText = snap.data().email.toLowerCase();
-                    loadCourses();
+                    document.getElementById('adminName').innerText = snap.data().lastname.toUpperCase();
+                    // Load courses and programs ONCE on login/refresh
+                    const [courseSnap, progSnap] = await Promise.all([
+                        getDocs(collection(db, "courses")),
+                        getDocs(collection(db, "programs"))
+                    ]);
+                    
+                    const courseSel = document.getElementById('filterCourse');
+                    courseSnap.forEach(d => courseSel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
+                    
+                    cachedPrograms = progSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 }
             } else { window.location.href = "login.html"; }
         });
 
-        async function loadCourses() {
-            try {
-                const snap = await getDocs(collection(db, "courses"));
-                const sel = document.getElementById('filterCourse');
-                sel.innerHTML = '';
-                snap.forEach(d => {
-                    const name = d.data().name.toUpperCase();
-                    sel.innerHTML += `<option value="${name}">${name}</option>`;
-                });
-            } catch(e) { console.error("Course Load Error:", e); }
-        }
+        window.openClassModal = async (uid, name, currentlyAssignedJSON) => {
+            currentStudentUid = uid;
+            const currentlyAssigned = JSON.parse(decodeURIComponent(currentlyAssignedJSON));
+            document.getElementById('targetStudentName').innerText = name;
+            const listDiv = document.getElementById('programList');
+            
+            // Build list from CACHE (Zero wait time)
+            listDiv.innerHTML = cachedPrograms.map(p => {
+                const pCode = (p.code || p.id).toUpperCase();
+                const isChecked = currentlyAssigned.includes(pCode) ? 'checked' : '';
+                return `
+                    <label class="flex items-center gap-2 p-2 border-b hover:bg-white cursor-pointer">
+                        <input type="checkbox" value="${pCode}" ${isChecked} class="prog-checkbox w-4 h-4">
+                        <span class="text-[11px] font-bold">${pCode} - ${(p.title || "").toUpperCase()}</span>
+                    </label>
+                `;
+            }).join('');
+            
+            document.getElementById('classModal').style.display = 'flex';
+        };
 
         window.closeModal = () => document.getElementById('classModal').style.display = 'none';
-
-        window.openClassModal = async (uid, name) => {
-            currentStudentId = uid;
-            document.getElementById('targetStudentName').innerText = name;
-            document.getElementById('classModal').style.display = 'flex';
-            
-            const listDiv = document.getElementById('programList');
-            listDiv.innerHTML = '<span class="text-xs italic">SYNCING PROGRAMS...</span>';
-            
-            try {
-                // IMPORTANT: Ensure your collection is actually named "programs" in Firebase
-                const progSnap = await getDocs(collection(db, "programs"));
-                const studentSnap = await getDoc(doc(db, "users", uid));
-                
-                const currentProgs = studentSnap.data().assignedPrograms || [];
-                listDiv.innerHTML = '';
-                
-                if (progSnap.empty) {
-                    listDiv.innerHTML = '<span class="text-red-500 font-bold">NO PROGRAMS FOUND IN DATABASE</span>';
-                    return;
-                }
-
-                progSnap.forEach(p => {
-                    const data = p.data();
-                    // Fallback to p.id if 'code' field doesn't exist
-                    const pCode = (data.code || p.id).toUpperCase();
-                    const pTitle = (data.title || "NO TITLE").toUpperCase();
-                    
-                    const isChecked = currentProgs.includes(pCode) ? 'checked' : '';
-                    
-                    listDiv.innerHTML += `
-                        <label class="flex items-center gap-2 text-[11px] font-bold cursor-pointer hover:bg-white p-2 border-b border-gray-100">
-                            <input type="checkbox" value="${pCode}" ${isChecked} class="prog-check w-4 h-4">
-                            <span>${pCode} - ${pTitle}</span>
-                        </label>
-                    `;
-                });
-            } catch (err) {
-                console.error("DEBUG ERROR:", err);
-                listDiv.innerHTML = `<span class="text-red-600">ERROR: ${err.message}</span>`;
-            }
-        };
 
         document.getElementById('fetchBtn').onclick = async () => {
             const course = document.getElementById('filterCourse').value;
@@ -211,67 +157,59 @@
             const sem = document.getElementById('filterSem').value;
             const tbody = document.getElementById('studentTableBody');
             
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center italic">FETCHING...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center italic">Loading...</td></tr>';
 
-            try {
-                const q = query(collection(db, "users"), 
-                    where("role", "==", "student"),
-                    where("course", "==", course),
-                    where("year", "==", year)
-                );
+            const q = query(collection(db, "users"), 
+                where("role", "==", "student"),
+                where("course", "==", course),
+                where("year", "==", year)
+            );
 
-                const snap = await getDocs(q);
-                tbody.innerHTML = '';
-                let count = 1;
+            const snap = await getDocs(q);
+            tbody.innerHTML = '';
+            let count = 1;
 
-                snap.forEach(u => {
-                    const d = u.data();
-                    // Manual filter for semester
-                    if (d.semester == sem || !d.semester) { 
-                        const programs = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
-                        
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${count++}</td>
-                                <td class="font-bold">${d.studentId || '00-0-000'}</td>
-                                <td>${d.lastname}</td>
-                                <td>${d.firstname}</td>
-                                <td>${d.course} Y${d.year} S${sem}</td>
-                                <td class="flex flex-wrap gap-1">${programs}</td>
-                                <td>
-                                    <span onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="text-green-600 underline font-bold italic cursor-pointer">Update Classes</span>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                });
-                
-                if (count === 1) tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">NO STUDENTS FOUND FOR THIS FILTER</td></tr>';
-
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-red-600">FAILED TO LOAD STUDENTS</td></tr>';
-            }
+            snap.forEach(u => {
+                const d = u.data();
+                if (!d.semester || d.semester == sem) {
+                    const assigned = d.assignedPrograms || [];
+                    const assignedJSON = encodeURIComponent(JSON.stringify(assigned));
+                    const tags = assigned.map(p => `<span class="tag-green">${p}</span>`).join('');
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${count++}</td>
+                            <td class="font-bold">${d.studentId || '00-0-000'}</td>
+                            <td>${d.lastname}, ${d.firstname}</td>
+                            <td>${d.course} Y${d.year} S${sem}</td>
+                            <td>${tags}</td>
+                            <td>
+                                <button onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}', '${assignedJSON}')" class="text-green-600 underline font-bold italic">Update Classes</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
         };
 
         document.getElementById('saveClassesBtn').onclick = async () => {
-            const selected = Array.from(document.querySelectorAll('.prog-check:checked')).map(cb => cb.value);
+            const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
             const btn = document.getElementById('saveClassesBtn');
-            
-            btn.innerText = "SAVING...";
             btn.disabled = true;
+            btn.innerText = "SAVING...";
 
             try {
-                await updateDoc(doc(db, "users", currentStudentId), {
-                    assignedPrograms: selected
+                // Efficient atomic update
+                await updateDoc(doc(db, "users", currentStudentUid), {
+                    assignedPrograms: selected,
+                    lastUpdated: serverTimestamp()
                 });
                 closeModal();
-                document.getElementById('fetchBtn').click(); 
-            } catch (err) {
-                alert("UPDATE FAILED: " + err.message);
-            } finally {
-                btn.innerText = "UPDATE CLASSES";
-                btn.disabled = false;
+                document.getElementById('fetchBtn').click();
+            } catch (e) { alert("Error updating."); }
+            finally { 
+                btn.disabled = false; 
+                btn.innerText = "UPDATE CLASSES"; 
             }
         };
 
