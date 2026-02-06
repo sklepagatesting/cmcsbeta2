@@ -18,21 +18,27 @@
         th { background-color: #d9d9d9; border: 1px solid black; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
         td { border: 1px solid black; padding: 6px; background-color: #ffffff; text-transform: uppercase; }
         
-        /* Boxed Filter Design */
         .filter-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; }
         .filter-box { border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; flex: 1; }
         .filter-label { font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
         .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
 
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 600px; box-shadow: 8px 8px 0px 0px black; }
+        .modal-container { background: white; border: 2px solid black; width: 650px; box-shadow: 8px 8px 0px 0px black; }
 
+        #printMasterHeader { display: none; }
+        
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { padding: 0; }
-            .modal-overlay { position: absolute; background: white; display: block !important; inset: 0; z-index: auto; }
-            .modal-container { box-shadow: none; border: none; width: 100%; }
+            body { padding: 0; margin: 0; color: black !important; }
+            table { font-size: 9px; width: 100% !important; }
+            th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+            
+            body:not(.modal-open) #printMasterHeader { display: flex !important; flex-direction: column; align-items: center; margin-bottom: 20px; }
+            
+            body.modal-open .modal-overlay { position: static; background: white; display: block !important; }
+            body.modal-open .modal-container { box-shadow: none; border: none; width: 100%; position: static; }
+            body.modal-open aside, body.modal-open nav, body.modal-open main > *:not(.modal-overlay) { display: none !important; }
         }
     </style>
 </head>
@@ -56,6 +62,14 @@
         </aside>
 
         <main class="flex-1 p-6">
+            <div id="printMasterHeader">
+                <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-20 h-20 mb-2">
+                <h1 class="font-bold text-2xl">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                <p class="text-[10px] uppercase tracking-[0.2em] font-bold">Master Student Academic Enrollment List</p>
+                <p class="text-[9px] mt-1 italic" id="printDate"></p>
+                <hr class="border-black w-full my-4">
+            </div>
+
             <div class="flex justify-between items-end mb-4 no-print">
                 <h2 class="text-[12px] font-bold uppercase border-b-2 border-black inline-block">MASTER RECORD LIST</h2>
                 <div class="flex gap-2">
@@ -91,7 +105,7 @@
                 </div>
             </div>
 
-            <div class="bg-cmcs-blue text-white border-x border-t border-black p-1">
+            <div class="bg-cmcs-blue text-white border-x border-t border-black p-1 no-print">
                 <h3 class="text-[11px] font-bold uppercase italic text-center">Master Academic Ledger</h3>
             </div>
             <table>
@@ -100,9 +114,9 @@
                         <th width="30">NO.</th>
                         <th width="100">STUDENT ID</th>
                         <th>FULL NAME</th>
-                        <th>COURSE/YEAR/SEM</th>
+                        <th>S.Y. / COURSE / YEAR / SEM</th>
                         <th>SUBJECTS</th>
-                        <th width="80">ACTION</th>
+                        <th width="80" class="no-print">ACTION</th>
                     </tr>
                 </thead>
                 <tbody id="masterTableBody"></tbody>
@@ -117,18 +131,22 @@
                 <button onclick="closeModal('viewModal')">X</button>
             </div>
             <div id="printArea" class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="font-bold text-lg">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
-                    <p class="text-[10px] uppercase">Official Student Academic Record</p>
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
+                    <div class="text-center">
+                        <h1 class="font-bold text-lg">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                        <p class="text-[10px] uppercase font-bold tracking-widest">Official Student Academic Record</p>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 border-y border-black py-4 mb-4">
-                    <div class="text-[11px]">
+                    <div class="text-[11px] space-y-1">
                         <p><strong>NAME:</strong> <span id="vName"></span></p>
                         <p><strong>ID NUMBER:</strong> <span id="vId"></span></p>
                         <p><strong>GENDER:</strong> <span id="vGender"></span></p>
+                        <p><strong>SCHOOL YEAR:</strong> <span id="vSY"></span></p>
                     </div>
-                    <div class="text-[11px]">
+                    <div class="text-[11px] space-y-1">
                         <p><strong>COURSE:</strong> <span id="vCourse"></span></p>
                         <p><strong>YEAR/SEM:</strong> <span id="vLevel"></span></p>
                         <p><strong>EMAIL:</strong> <span id="vEmail"></span></p>
@@ -142,6 +160,10 @@
                     </thead>
                     <tbody id="vSubjectTable"></tbody>
                 </table>
+                <div class="mt-16 flex justify-between text-[10px] font-bold uppercase">
+                    <div class="border-t border-black pt-1 w-48 text-center">Registrar Signature</div>
+                    <div class="border-t border-black pt-1 w-48 text-center">School Director</div>
+                </div>
             </div>
             <div class="p-4 bg-gray-100 border-t border-black flex justify-end gap-2 no-print">
                 <button onclick="window.print()" class="bg-cmcs-yellow border border-black px-6 py-2 font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_black]">Print Individual</button>
@@ -169,22 +191,29 @@
         const auth = getAuth(app);
 
         let masterData = [];
+        let courseSYMap = {};
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    loadFilters();
+                    document.getElementById('printDate').innerText = "GENERATED ON: " + new Date().toLocaleString().toUpperCase();
+                    await loadCoursesAndSY();
                     syncData();
                 }
             } else { window.location.href = "login.html"; }
         });
 
-        async function loadFilters() {
+        async function loadCoursesAndSY() {
             const snap = await getDocs(collection(db, "courses"));
             const sel = document.getElementById('filterCourse');
-            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
+            snap.forEach(d => {
+                const data = d.data();
+                const name = data.name.toUpperCase();
+                courseSYMap[name] = data.schoolYear || "N/A";
+                sel.innerHTML += `<option value="${name}">${name}</option>`;
+            });
         }
 
         function syncData() {
@@ -212,51 +241,61 @@
             const tbody = document.getElementById('masterTableBody');
             tbody.innerHTML = '';
             filtered.forEach((s, i) => {
+                const sy = courseSYMap[s.course.toUpperCase()] || "N/A";
                 tbody.innerHTML += `
                     <tr>
-                        <td>${i+1}</td>
-                        <td class="font-bold">${s.studentId || '---'}</td>
+                        <td class="text-center">${i+1}</td>
+                        <td class="font-bold text-blue-900">${s.studentId || '---'}</td>
                         <td class="font-bold">${s.lastname}, ${s.firstname}</td>
-                        <td>${s.course} - Y${s.year} S${s.semester}</td>
+                        <td>${sy} / ${s.course} / Y${s.year} / S${s.semester}</td>
                         <td>${s.assignedPrograms ? s.assignedPrograms.length : 0} Subjects</td>
-                        <td><button onclick="viewStudent('${s.uid}')" class="text-blue-600 underline font-bold italic">VIEW</button></td>
+                        <td class="no-print"><button onclick="viewStudent('${s.uid}')" class="text-blue-600 underline font-bold italic">VIEW</button></td>
                     </tr>`;
             });
         }
 
         window.viewStudent = async (uid) => {
             const s = masterData.find(x => x.uid === uid);
+            const sy = courseSYMap[s.course.toUpperCase()] || "N/A";
+            
+            document.body.classList.add('modal-open');
             document.getElementById('vName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
             document.getElementById('vId').innerText = s.studentId || 'N/A';
             document.getElementById('vGender').innerText = (s.gender || 'N/A').toUpperCase();
             document.getElementById('vCourse').innerText = (s.course || 'N/A').toUpperCase();
             document.getElementById('vLevel').innerText = `YEAR ${s.year} / SEM ${s.semester}`;
             document.getElementById('vEmail').innerText = s.email;
+            document.getElementById('vSY').innerText = sy;
             
             const vTable = document.getElementById('vSubjectTable');
             vTable.innerHTML = '';
             
-            // Cross-reference subject names
             const progSnap = await getDocs(collection(db, "programs"));
             const progMap = {};
             progSnap.forEach(p => progMap[p.data().code] = p.data().name);
 
             if(s.assignedPrograms) {
                 s.assignedPrograms.forEach(code => {
-                    vTable.innerHTML += `<tr><td class="border border-black p-1">${code}</td><td class="border border-black p-1">${progMap[code] || '---'}</td></tr>`;
+                    vTable.innerHTML += `<tr><td class="border border-black p-1 font-bold">${code}</td><td class="border border-black p-1">${progMap[code] || '---'}</td></tr>`;
                 });
             } else {
-                vTable.innerHTML = '<tr><td colspan="2" class="p-2 text-center">No programs assigned.</td></tr>';
+                vTable.innerHTML = '<tr><td colspan="2" class="p-2 text-center italic">No subjects assigned.</td></tr>';
             }
 
             document.getElementById('viewModal').style.display = 'flex';
         };
 
+        window.closeModal = (id) => {
+            document.body.classList.remove('modal-open');
+            document.getElementById(id).style.display = 'none';
+        };
+
         window.exportCSV = () => {
-            let csv = "ID,Lastname,Firstname,Course,Year,Semester,Subjects\n";
+            let csv = "ID,Lastname,Firstname,School Year,Course,Year,Semester,Subjects\n";
             masterData.forEach(s => {
+                const sy = courseSYMap[s.course.toUpperCase()] || "N/A";
                 const subjs = s.assignedPrograms ? s.assignedPrograms.join(';') : '';
-                csv += `${s.studentId},${s.lastname},${s.firstname},${s.course},${s.year},${s.semester},"${subjs}"\n`;
+                csv += `${s.studentId},${s.lastname},${s.firstname},${sy},${s.course},${s.year},${s.semester},"${subjs}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
@@ -266,7 +305,6 @@
             a.click();
         };
 
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         document.querySelectorAll('select, input').forEach(el => el.onchange = applyFilters);
         document.getElementById('searchField').oninput = applyFilters;
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
