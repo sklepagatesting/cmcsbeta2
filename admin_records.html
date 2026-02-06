@@ -24,7 +24,7 @@
         .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
 
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 650px; box-shadow: 8px 8px 0px 0px black; }
+        .modal-container { background: white; border: 2px solid black; width: 850px; box-shadow: 8px 8px 0px 0px black; }
 
         #printMasterHeader { display: none; }
         
@@ -154,10 +154,15 @@
                     </div>
                 </div>
 
-                <h4 class="font-bold text-[10px] uppercase mb-2">Enrolled Subjects / Programs</h4>
+                <h4 class="font-bold text-[10px] uppercase mb-2">Enrolled Subjects & Class Schedule</h4>
                 <table class="w-full border-black">
                     <thead>
-                        <tr><th class="text-[9px]">CODE</th><th class="text-[9px]">SUBJECT NAME</th></tr>
+                        <tr>
+                            <th class="text-[9px]" width="80">CODE</th>
+                            <th class="text-[9px]">SUBJECT NAME</th>
+                            <th class="text-[9px]">INSTRUCTOR</th>
+                            <th class="text-[9px]">SCHEDULE</th>
+                        </tr>
                     </thead>
                     <tbody id="vSubjectTable"></tbody>
                 </table>
@@ -231,7 +236,6 @@
             const sem = document.getElementById('filterSem').value;
             const search = document.getElementById('searchField').value.toUpperCase();
 
-            // Update Print Header Info
             let filterText = `COURSE: ${course} | YEAR: ${year} | SEM: ${sem}`;
             if(search) filterText += ` | SEARCH: "${search}"`;
             document.getElementById('printFilterInfo').innerText = filterText;
@@ -255,7 +259,7 @@
                         <td class="font-bold">${s.lastname}, ${s.firstname}</td>
                         <td>${sy} / ${s.course} / Y${s.year} / S${s.semester}</td>
                         <td>${s.assignedPrograms ? s.assignedPrograms.length : 0} Subjects</td>
-                        <td class="no-print"><button onclick="viewStudent('${s.uid}')" class="text-blue-600 underline font-bold italic">VIEW</button></td>
+                        <td class="no-print"><button onclick="viewStudent('${s.uid}')" class="text-blue-600 underline font-bold italic text-[9px]">VIEW PROFILE</button></td>
                     </tr>`;
             });
         }
@@ -274,18 +278,37 @@
             document.getElementById('vSY').innerText = sy;
             
             const vTable = document.getElementById('vSubjectTable');
-            vTable.innerHTML = '';
+            vTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center italic text-[9px]">Loading schedule details...</td></tr>';
             
-            const progSnap = await getDocs(collection(db, "programs"));
-            const progMap = {};
-            progSnap.forEach(p => progMap[p.data().code] = p.data().name);
-
-            if(s.assignedPrograms) {
-                s.assignedPrograms.forEach(code => {
-                    vTable.innerHTML += `<tr><td class="border border-black p-1 font-bold">${code}</td><td class="border border-black p-1">${progMap[code] || '---'}</td></tr>`;
+            try {
+                const progSnap = await getDocs(collection(db, "programs"));
+                const progMap = {};
+                progSnap.forEach(p => {
+                    const data = p.data();
+                    progMap[data.code] = {
+                        name: data.name || '---',
+                        teacher: data.teacher || 'TBA',
+                        sched: data.schedule || 'TBA'
+                    };
                 });
-            } else {
-                vTable.innerHTML = '<tr><td colspan="2" class="p-2 text-center italic">No subjects assigned.</td></tr>';
+
+                vTable.innerHTML = '';
+                if(s.assignedPrograms && s.assignedPrograms.length > 0) {
+                    s.assignedPrograms.forEach(code => {
+                        const info = progMap[code] || { name: 'NOT FOUND', teacher: '---', sched: '---' };
+                        vTable.innerHTML += `
+                            <tr>
+                                <td class="border border-black p-1 font-bold text-[9px]">${code}</td>
+                                <td class="border border-black p-1 text-[9px]">${info.name.toUpperCase()}</td>
+                                <td class="border border-black p-1 text-[9px]">${info.teacher.toUpperCase()}</td>
+                                <td class="border border-black p-1 text-[9px]">${info.sched.toUpperCase()}</td>
+                            </tr>`;
+                    });
+                } else {
+                    vTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center italic">No subjects assigned.</td></tr>';
+                }
+            } catch (error) {
+                vTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-red-600">Error loading data.</td></tr>';
             }
 
             document.getElementById('viewModal').style.display = 'flex';
