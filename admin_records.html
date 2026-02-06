@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Record | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-cmcs-blue { background-color: #0070c0; }
+        .bg-cmcs-sidebar { background-color: #00b0f0; }
+        .bg-cmcs-yellow { background-color: #ffff00; }
+        .bg-cmcs-logout { background-color: #cc0000; }
+        
+        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .active-tab { background-color: #ffff00; color: black; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 5px; }
+        th { background-color: #d9d9d9; border: 1px solid black; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
+        td { border: 1px solid black; padding: 6px; background-color: #ffffff; text-transform: uppercase; }
+        
+        .search-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; width: 400px; }
+        .search-box { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; flex: 1; }
+        .search-label { font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .search-input { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
+
+        .tag-blue { background-color: #e1effe; border: 1px solid #0070c0; padding: 1px 4px; font-weight: bold; margin-right: 2px; font-size: 9px; display: inline-block; color: #0070c0; }
+
+        @media print {
+            .no-print { display: none; }
+            aside { display: none; }
+            main { padding: 0; width: 100%; }
+            body { background: white; }
+            .print-header { display: block !important; }
+        }
+
+        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-container { background: white; border: 2px solid black; width: 300px; box-shadow: 6px 6px 0px 0px black; }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col font-sans">
+
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm no-print">
+        <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
+        </div>
+    </nav>
+
+    <div class="flex flex-1">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col no-print">
+            <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
+            <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
+            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
+            <a href="admin_records.html" class="sidebar-link active-tab">MASTER RECORD</a>
+        </aside>
+
+        <main class="flex-1 p-6">
+            <div class="hidden print-header text-center mb-6">
+                <h1 class="font-bold text-xl">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                <p class="text-sm italic">Master Student Academic Record</p>
+                <hr class="border-black mt-2">
+            </div>
+
+            <div class="flex justify-between items-end mb-4 no-print">
+                <h2 class="text-[12px] font-bold uppercase border-b-2 border-black inline-block">MASTER RECORD LIST</h2>
+                <button onclick="window.print()" class="bg-white border border-black px-4 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-gray-100">PRINT REPORT</button>
+            </div>
+            
+            <div class="flex items-start gap-4 mb-6 no-print">
+                <div class="search-container">
+                    <div class="search-box">
+                        <span class="search-label">SEARCH BY NAME OR ID</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="TYPE HERE...">
+                    </div>
+                </div>
+                <div class="flex-1"></div>
+            </div>
+
+            <div class="bg-cmcs-blue text-white border-x border-t border-black p-1">
+                <h3 class="text-[11px] font-bold uppercase italic">Official Student Ledger</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="30">NO.</th>
+                        <th width="100">STUDENT ID</th>
+                        <th>FULL NAME</th>
+                        <th>COURSE & YEAR</th>
+                        <th>SEMESTER</th>
+                        <th>ENROLLED SUBJECTS</th>
+                        <th width="80">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="masterTableBody">
+                    <tr><td colspan="7" class="p-6 text-center italic text-gray-400">Loading Master Records...</td></tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-container text-center">
+            <div class="bg-cmcs-blue text-white p-2 font-bold text-xs uppercase">System Alert</div>
+            <div class="p-6">
+                <p id="notifMessage" class="font-bold text-[11px] uppercase"></p>
+                <button onclick="document.getElementById('notifModal').style.display='none'" class="mt-4 bg-cmcs-yellow border border-black px-6 py-1 font-bold text-[10px] uppercase">OKAY</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allStudents = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
+                    syncMasterRecords();
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
+        function syncMasterRecords() {
+            const q = query(collection(db, "users"), where("role", "==", "student"));
+            
+            // Real-time listener so records update automatically if assignment changes
+            onSnapshot(q, (snap) => {
+                allStudents = [];
+                snap.forEach(doc => {
+                    allStudents.push({ id: doc.id, ...doc.data() });
+                });
+                renderTable(allStudents);
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('masterTableBody');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">No records found.</td></tr>';
+                return;
+            }
+
+            data.sort((a, b) => (a.lastname || "").localeCompare(b.lastname || "")).forEach((s, index) => {
+                const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `<span class="tag-blue">${p}</span>`).join('') : '<span class="text-gray-400">UNASSIGNED</span>';
+                const statusColor = s.status === 'approved' ? 'text-green-600' : 'text-red-600';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td class="font-bold text-blue-800">${s.studentId || 'PENDING'}</td>
+                        <td class="font-bold">${s.lastname}, ${s.firstname}</td>
+                        <td>${s.course || 'N/A'} - Y${s.year || '0'}</td>
+                        <td>SEM ${s.semester || '1'}</td>
+                        <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
+                        <td class="font-bold ${statusColor}">${s.status}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Live Search Filter
+        document.getElementById('searchInput').oninput = (e) => {
+            const val = e.target.value.toUpperCase();
+            const filtered = allStudents.filter(s => 
+                (s.lastname && s.lastname.toUpperCase().includes(val)) ||
+                (s.firstname && s.firstname.toUpperCase().includes(val)) ||
+                (s.studentId && s.studentId.toUpperCase().includes(val))
+            );
+            renderTable(filtered);
+        };
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
+</body>
+</html>
