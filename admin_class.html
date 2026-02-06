@@ -21,17 +21,16 @@
         .filter-label { font-size: 10px; font-weight: bold; display: block; border: 1px solid black; border-bottom: none; padding: 2px 5px; width: fit-content; }
         .filter-select { border: 1px solid black; padding: 5px; width: 100%; outline: none; text-transform: uppercase; }
 
-        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 1px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; }
+        /* Program Tags */
+        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 1px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; margin-bottom: 2px; }
         
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
         .modal-container { background: white; border: 2px solid black; width: 450px; box-shadow: 6px 6px 0px 0px black; }
         
-        .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.7); z-index: 300; items-center; justify-content: center; font-weight: bold; }
+        .btn-update { color: #16a34a; text-decoration: underline; font-weight: bold; font-style: italic; cursor: pointer; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
-
-    <div id="loader" class="loading-overlay">PROCESSING...</div>
 
     <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
         <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm uppercase">CMCS Virtual Learning System</span></div>
@@ -94,9 +93,7 @@
                             <th width="120">ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody id="studentTableBody">
-                        <tr><td colspan="7" class="p-4 text-center">SELECT FILTERS AND CLICK FETCH</td></tr>
-                    </tbody>
+                    <tbody id="studentTableBody"></tbody>
                 </table>
             </div>
         </main>
@@ -106,14 +103,11 @@
         <div class="modal-container">
             <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase">
                 <span>Assign Programs</span>
-                <button onclick="closeModal()" class="hover:text-yellow-300">CLOSE [X]</button>
+                <button onclick="closeModal()" class="hover:text-yellow-300">X</button>
             </div>
             <div class="p-6">
-                <div class="mb-4 border-b pb-2">
-                    <p class="text-[9px] font-bold text-gray-500">TARGET STUDENT:</p>
-                    <p id="targetStudentName" class="font-bold text-sm uppercase"></p>
-                </div>
-                <div id="programList" class="space-y-1 max-h-60 overflow-y-auto border p-2 bg-gray-50">
+                <p id="targetStudentName" class="font-bold text-xs mb-4 uppercase underline"></p>
+                <div id="programList" class="space-y-2 max-h-60 overflow-y-auto border p-2 bg-gray-50">
                     </div>
                 <div class="mt-6 flex justify-end gap-2">
                     <button id="saveClassesBtn" class="bg-cmcs-yellow border-2 border-black px-4 py-2 font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_black]">Update Classes</button>
@@ -141,9 +135,8 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentStudentUid = null;
+        let currentStudentId = null;
 
-        // AUTH & INIT
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
@@ -165,109 +158,93 @@
             });
         }
 
-        // GLOBAL FUNCTIONS (ATTACHED TO WINDOW FOR MODAL)
-        window.closeModal = () => {
-            document.getElementById('classModal').style.display = 'none';
-        };
+        // ATTACH TO WINDOW FOR HTML ACCESS
+        window.closeModal = () => document.getElementById('classModal').style.display = 'none';
 
         window.openClassModal = async (uid, name) => {
-            currentStudentUid = uid;
+            currentStudentId = uid;
             document.getElementById('targetStudentName').innerText = name;
-            const listDiv = document.getElementById('programList');
-            listDiv.innerHTML = 'Loading programs...';
             document.getElementById('classModal').style.display = 'flex';
-
+            
+            const listDiv = document.getElementById('programList');
+            listDiv.innerHTML = '<span class="text-[10px] italic">Loading programs...</span>';
+            
             try {
-                const [progSnap, userSnap] = await Promise.all([
+                const [progSnap, studentSnap] = await Promise.all([
                     getDocs(collection(db, "programs")),
                     getDoc(doc(db, "users", uid))
                 ]);
-
-                const currentProgs = userSnap.data().assignedPrograms || [];
+                
+                const currentProgs = studentSnap.data().assignedPrograms || [];
                 listDiv.innerHTML = '';
-
+                
                 progSnap.forEach(p => {
                     const pCode = p.data().code.toUpperCase();
                     const isChecked = currentProgs.includes(pCode) ? 'checked' : '';
                     listDiv.innerHTML += `
-                        <label class="flex items-center gap-2 p-2 border-b border-gray-200 hover:bg-white cursor-pointer">
-                            <input type="checkbox" value="${pCode}" ${isChecked} class="prog-checkbox w-4 h-4">
-                            <span class="text-[11px] font-bold">${pCode} - ${p.data().title.toUpperCase()}</span>
+                        <label class="flex items-center gap-2 text-[11px] font-bold cursor-pointer hover:bg-white p-1 border-b">
+                            <input type="checkbox" value="${pCode}" ${isChecked} class="prog-check w-4 h-4">
+                            ${pCode} - ${p.data().title.toUpperCase()}
                         </label>
                     `;
                 });
-            } catch (e) {
+            } catch (err) {
                 listDiv.innerHTML = 'Error loading programs.';
             }
         };
 
-        // FETCH DATA
         document.getElementById('fetchBtn').onclick = async () => {
             const course = document.getElementById('filterCourse').value;
             const year = document.getElementById('filterYear').value;
             const sem = document.getElementById('filterSem').value;
             const tbody = document.getElementById('studentTableBody');
             
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4 italic">Fetching records...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">Fetching...</td></tr>';
 
-            try {
-                const q = query(collection(db, "users"), 
-                    where("role", "==", "student"),
-                    where("course", "==", course),
-                    where("year", "==", year)
-                );
+            const q = query(collection(db, "users"), 
+                where("role", "==", "student"),
+                where("status", "==", "approved"),
+                where("course", "==", course),
+                where("year", "==", year)
+            );
 
-                const snap = await getDocs(q);
-                tbody.innerHTML = '';
-                let count = 1;
+            const snap = await getDocs(q);
+            tbody.innerHTML = '';
+            let count = 1;
 
-                if(snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">NO STUDENTS FOUND</td></tr>';
-                    return;
+            snap.forEach(u => {
+                const d = u.data();
+                // Client side semester filter
+                if (d.semester == sem || !d.semester) { 
+                    const programs = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${count++}</td>
+                            <td class="font-bold">${d.studentId || '00-0-000'}</td>
+                            <td>${d.lastname}</td>
+                            <td>${d.firstname}</td>
+                            <td>${d.course} Y${d.year} S${sem}</td>
+                            <td>${programs}</td>
+                            <td>
+                                <span onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="btn-update">Update Classes</span>
+                            </td>
+                        </tr>
+                    `;
                 }
-
-                snap.forEach(u => {
-                    const d = u.data();
-                    // Manual filter for semester since Firestore complex queries require specific indexes
-                    if (!d.semester || d.semester == sem) {
-                        const programs = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${count++}</td>
-                                <td class="font-bold">${d.studentId || '00-0-000'}</td>
-                                <td>${d.lastname}</td>
-                                <td>${d.firstname}</td>
-                                <td>${d.course} Y${d.year} S${sem}</td>
-                                <td>${programs}</td>
-                                <td>
-                                    <button onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="text-green-600 underline font-bold italic">Update Classes</button>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                });
-            } catch (e) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-red-600 p-4">ERROR FETCHING DATA</td></tr>';
-            }
+            });
         };
 
-        // SAVE DATA
         document.getElementById('saveClassesBtn').onclick = async () => {
-            const checkboxes = document.querySelectorAll('.prog-checkbox:checked');
-            const selected = Array.from(checkboxes).map(cb => cb.value);
-            const loader = document.getElementById('loader');
-            
-            loader.style.display = 'flex';
+            const selected = Array.from(document.querySelectorAll('.prog-check:checked')).map(cb => cb.value);
             try {
-                await updateDoc(doc(db, "users", currentStudentUid), {
+                await updateDoc(doc(db, "users", currentStudentId), {
                     assignedPrograms: selected
                 });
                 closeModal();
-                document.getElementById('fetchBtn').click(); // Auto-refresh
-            } catch (e) {
-                alert("Error updating classes.");
-            } finally {
-                loader.style.display = 'none';
+                document.getElementById('fetchBtn').click(); // Refresh
+            } catch (err) {
+                alert("Update failed!");
             }
         };
 
