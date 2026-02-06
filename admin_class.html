@@ -21,10 +21,15 @@
         .filter-label { font-size: 10px; font-weight: bold; display: block; border: 1px solid black; border-bottom: none; padding: 2px 5px; width: fit-content; }
         .filter-select { border: 1px solid black; padding: 6px; width: 100%; outline: none; text-transform: uppercase; }
 
-        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 2px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; }
+        .tag-green { background-color: #00ff00; border: 1px solid black; padding: 2px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; margin-bottom: 2px; }
         
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 450px; box-shadow: 6px 6px 0px 0px black; }
+        /* Expanded width for detail */
+        .modal-container { background: white; border: 2px solid black; width: 550px; box-shadow: 8px 8px 0px 0px black; }
+        
+        .modal-student-header { background: #f3f4f6; border: 1px solid black; padding: 10px; margin-bottom: 15px; }
+        .program-row { display: grid; grid-template-columns: 30px 100px 1fr; gap: 10px; align-items: center; border-bottom: 1px solid #eee; padding: 8px 4px; }
+        .program-row:hover { background-color: #f9fafb; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
@@ -51,7 +56,7 @@
 
         <main class="flex-1 p-6">
             <div class="mb-4">
-                <h2 class="text-xs font-bold uppercase mb-2">STUDENT LIST</h2>
+                <h2 class="text-xs font-bold uppercase mb-2 italic">Class Enrollment Management</h2>
                 <div class="flex items-end gap-0">
                     <div class="flex-1">
                         <span class="filter-label">COURSE NAME</span>
@@ -70,28 +75,27 @@
                             <option value="1">1</option><option value="2">2</option>
                         </select>
                     </div>
-                    <button id="fetchBtn" class="bg-cmcs-yellow border-2 border-black px-8 py-2 font-bold text-xs ml-4 shadow-[4px_4px_0px_0px_black] active:translate-y-1 active:shadow-none transition-all uppercase">Fetch</button>
+                    <button id="fetchBtn" class="bg-cmcs-yellow border-2 border-black px-8 py-2 font-bold text-xs ml-4 shadow-[4px_4px_0px_0px_black] active:translate-y-1 active:shadow-none transition-all uppercase">Fetch Records</button>
                 </div>
             </div>
 
             <div class="mt-8">
                 <div class="bg-cmcs-yellow border-x-2 border-t-2 border-black p-1">
-                    <h3 class="text-[10px] font-bold uppercase">STUDENT INFORMATION</h3>
+                    <h3 class="text-[10px] font-bold uppercase italic text-center">Current Student Load</h3>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th width="40">NO.</th>
-                            <th width="100">ID</th>
-                            <th>LASTNAME</th>
-                            <th>FIRSTNAME</th>
-                            <th>COURSE/YEAR/SEMESTER</th>
+                            <th width="120">STUDENT ID</th>
+                            <th>LASTNAME, FIRSTNAME</th>
+                            <th>COURSE / YR / SEM</th>
                             <th>ASSIGNED PROGRAMS</th>
                             <th width="120">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody id="studentTableBody">
-                        <tr><td colspan="7" class="p-4 text-center italic">Select filters and click Fetch</td></tr>
+                        <tr><td colspan="6" class="p-6 text-center italic text-gray-400 text-xs">Set filters and click Fetch to view students.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -100,17 +104,38 @@
 
     <div id="classModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase">
-                <span>Assign Programs</span>
-                <button onclick="closeModal()" class="hover:text-yellow-300">X</button>
+            <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase border-b-2 border-black">
+                <span>Subject Assignment & Enrollment</span>
+                <button onclick="closeModal()" class="hover:text-yellow-300 font-black">X</button>
             </div>
             <div class="p-6">
-                <p id="targetStudentName" class="font-bold text-xs mb-4 uppercase underline"></p>
-                <div id="programList" class="space-y-1 max-h-60 overflow-y-auto border p-2 bg-gray-50 text-[11px] font-bold">
+                <div class="modal-student-header">
+                    <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                        <div>
+                            <span class="text-gray-500 uppercase">Student Name:</span>
+                            <p id="targetStudentName" class="text-xs uppercase text-blue-800"></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-500 uppercase">Student ID:</span>
+                            <p id="targetStudentId" class="text-xs uppercase"></p>
+                        </div>
                     </div>
-                <div class="mt-6 flex justify-end gap-2">
-                    <button id="saveClassesBtn" class="bg-cmcs-yellow border-2 border-black px-4 py-2 font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_black]">Update Classes</button>
-                    <button onclick="closeModal()" class="bg-gray-200 border border-black px-4 py-2 font-bold text-[10px] uppercase">Cancel</button>
+                </div>
+
+                <p class="text-[10px] font-black uppercase mb-2 border-b border-black">Available Subjects/Programs</p>
+                
+                <div class="grid grid-cols-[30px_100px_1fr] gap-10 px-1 py-1 bg-gray-200 border border-black text-[9px] font-bold uppercase">
+                    <span>SET</span>
+                    <span>CODE</span>
+                    <span>PROGRAM TITLE</span>
+                </div>
+
+                <div id="programList" class="max-h-72 overflow-y-auto border-x border-b border-black bg-white mb-4">
+                    </div>
+
+                <div class="flex justify-end gap-2">
+                    <button id="saveClassesBtn" class="bg-cmcs-yellow border-2 border-black px-6 py-2 font-black text-[11px] uppercase shadow-[4px_4px_0px_0px_black] hover:bg-yellow-400 transition-all">Update Load</button>
+                    <button onclick="closeModal()" class="bg-gray-100 border border-black px-6 py-2 font-bold text-[11px] uppercase">Cancel</button>
                 </div>
             </div>
         </div>
@@ -136,7 +161,6 @@
 
         let currentStudentUid = null;
 
-        // On Load: Check Auth and Fill Course Select
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
@@ -151,25 +175,25 @@
         async function loadCourses() {
             const snap = await getDocs(collection(db, "courses"));
             const sel = document.getElementById('filterCourse');
-            sel.innerHTML = '<option value="">-- SELECT --</option>';
+            sel.innerHTML = '<option value="">-- SELECT COURSE --</option>';
             snap.forEach(d => {
                 const name = d.data().name.toUpperCase();
                 sel.innerHTML += `<option value="${name}">${name}</option>`;
             });
         }
 
-        // Global functions for modal access
         window.closeModal = () => { document.getElementById('classModal').style.display = 'none'; };
 
-        window.openClassModal = async (uid, name) => {
+        window.openClassModal = async (uid, name, sid) => {
             currentStudentUid = uid;
             document.getElementById('targetStudentName').innerText = name;
+            document.getElementById('targetStudentId').innerText = sid;
             const listDiv = document.getElementById('programList');
-            listDiv.innerHTML = 'Fetching Programs...';
+            listDiv.innerHTML = '<div class="p-4 text-center italic text-xs">Accessing Database...</div>';
             document.getElementById('classModal').style.display = 'flex';
 
             try {
-                // Fetch latest programs and student data simultaneously
+                // Fetch latest programs and student data
                 const [progSnap, userSnap] = await Promise.all([
                     getDocs(collection(db, "programs")),
                     getDoc(doc(db, "users", uid))
@@ -178,34 +202,41 @@
                 const currentProgs = userSnap.data().assignedPrograms || [];
                 listDiv.innerHTML = '';
 
+                if (progSnap.empty) {
+                    listDiv.innerHTML = '<div class="p-4 text-center text-xs text-red-600">No programs found in "programs" collection.</div>';
+                    return;
+                }
+
                 progSnap.forEach(p => {
                     const data = p.data();
+                    // Maps field 'code' and 'title'. Using id as fallback for code.
                     const pCode = (data.code || p.id).toUpperCase();
-                    const pTitle = (data.title || "Untitled").toUpperCase();
+                    const pName = (data.title || data.name || "UNNAMED PROGRAM").toUpperCase();
                     const checked = currentProgs.includes(pCode) ? 'checked' : '';
                     
                     listDiv.innerHTML += `
-                        <label class="flex items-center gap-2 p-2 border-b hover:bg-white cursor-pointer">
-                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-4 h-4">
-                            <span>${pCode} - ${pTitle}</span>
-                        </label>
+                        <div class="program-row">
+                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-4 h-4 cursor-pointer accent-blue-600">
+                            <span class="text-[11px] font-bold text-blue-900 border-r pr-2">${pCode}</span>
+                            <span class="text-[10px] font-medium pl-2">${pName}</span>
+                        </div>
                     `;
                 });
             } catch (err) {
-                listDiv.innerHTML = 'Error loading programs.';
+                console.error(err);
+                listDiv.innerHTML = '<div class="p-4 text-center text-xs text-red-600 font-bold uppercase">Critical Load Error</div>';
             }
         };
 
-        // Fetch Button Logic
         document.getElementById('fetchBtn').onclick = async () => {
             const course = document.getElementById('filterCourse').value;
             const year = document.getElementById('filterYear').value;
             const sem = document.getElementById('filterSem').value;
             const tbody = document.getElementById('studentTableBody');
             
-            if(!course) { alert("Please select a course"); return; }
+            if(!course) { alert("Please select a course first."); return; }
             
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center italic text-blue-600">Syncing with database...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center italic text-blue-600">Syncing with system...</td></tr>';
 
             try {
                 const q = query(collection(db, "users"), 
@@ -220,53 +251,53 @@
                 let count = 1;
 
                 if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">No students found.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-xs">NO STUDENTS ENROLLED IN THIS CATEGORY</td></tr>';
                     return;
                 }
 
                 snap.forEach(u => {
                     const d = u.data();
-                    // Local semester check
                     if (!d.semester || d.semester == sem) {
                         const programs = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+                        const fullName = `${d.lastname}, ${d.firstname}`.toUpperCase();
+                        const studentId = d.studentId || 'N/A';
+                        
                         tbody.innerHTML += `
                             <tr>
                                 <td>${count++}</td>
-                                <td class="font-bold">${d.studentId || '00-0-000'}</td>
-                                <td>${d.lastname}</td>
-                                <td>${d.firstname}</td>
-                                <td>${d.course} Y${d.year} S${sem}</td>
+                                <td class="font-bold text-blue-800">${studentId}</td>
+                                <td class="font-bold">${fullName}</td>
+                                <td class="text-[10px]">${d.course} | Y${d.year} | S${sem}</td>
                                 <td>${programs}</td>
                                 <td>
-                                    <button onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="text-green-600 underline font-bold italic">Update Classes</button>
+                                    <button onclick="openClassModal('${u.id}', '${fullName}', '${studentId}')" class="text-green-600 underline font-black italic hover:text-green-800 transition-colors">UPDATE LOAD</button>
                                 </td>
                             </tr>
                         `;
                     }
                 });
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-600">Database connection error.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-600 font-bold uppercase">Data Retrieval Error</td></tr>';
             }
         };
 
-        // Save Button Logic
         document.getElementById('saveClassesBtn').onclick = async () => {
             const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
             const btn = document.getElementById('saveClassesBtn');
             btn.disabled = true;
-            btn.innerText = "Saving...";
+            btn.innerText = "SAVING...";
 
             try {
                 await updateDoc(doc(db, "users", currentStudentUid), {
                     assignedPrograms: selected
                 });
                 closeModal();
-                document.getElementById('fetchBtn').click(); // Refresh table automatically
+                document.getElementById('fetchBtn').click(); 
             } catch (err) {
-                alert("Failed to update records.");
+                alert("Save failed. Check connection.");
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Update Classes";
+                btn.innerText = "UPDATE LOAD";
             }
         };
 
