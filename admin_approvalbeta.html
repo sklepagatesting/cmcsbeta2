@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Approvals | CMCS VLS</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+<!-- Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+:root{
+    --cmcs-blue:#2563eb;
+    --cmcs-light:#eff6ff;
+    --cmcs-sidebar:#1e40af;
+    --cmcs-yellow:#facc15;
+    --cmcs-danger:#dc2626;
+}
+
+/* Tables */
+table{width:100%; border-collapse:separate; border-spacing:0 8px; font-size:12px;}
+th{font-size:11px; text-transform:uppercase; color:#64748b; text-align:left; padding:8px;}
+td{background:white; padding:10px; border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;}
+tr td:first-child{border-left:1px solid #e5e7eb; border-radius:8px 0 0 8px;}
+tr td:last-child{border-right:1px solid #e5e7eb; border-radius:0 8px 8px 0;}
+
+/* Modal */
+.modal-overlay{background:rgba(15,23,42,.65); position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:50;}
+.modal-container{background:white; width:560px; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.25); overflow:hidden;}
+.modal-header{background:var(--cmcs-blue); color:white; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; font-weight:600;}
+.modal-body{padding:20px;}
+.modal-footer{padding:14px 18px; background:#f8fafc; display:flex; justify-content:flex-end; gap:10px;}
+
+.modal-input,.modal-select{
+    width:100%; border:1px solid #cbd5e1; border-radius:8px;
+    padding:10px; font-size:12px;
+}
+.modal-input:focus,.modal-select:focus{outline:none; border-color:var(--cmcs-blue);}
+.modal-label{font-size:10px; font-weight:600; color:#475569; margin-bottom:4px; display:block;}
+
+.btn-primary{
+    background:var(--cmcs-yellow); padding:10px 18px;
+    border-radius:10px; font-weight:700; font-size:11px;
+}
+.btn-secondary{
+    background:#e5e7eb; padding:10px 18px;
+    border-radius:10px; font-weight:600; font-size:11px;
+}
+
+.sidebar-link{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 18px; font-size:11px;
+    font-weight:600; color:#e0e7ff;
+    transition:.25s;
+}
+.sidebar-link:hover{background:rgba(255,255,255,.15);}
+.active-tab{background:white; color:#1e40af; border-radius:12px; margin:6px;}
+.loading-btn{opacity:.5; pointer-events:none;}
+</style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex flex-col font-sans">
+
+<!-- TOP BAR -->
+<nav class="bg-white shadow flex justify-between items-center h-14 px-6">
+    <div class="flex items-center gap-3 font-bold text-sm text-blue-700">
+        <i data-lucide="graduation-cap"></i> CMCS Virtual Learning System
+    </div>
+    <div class="flex items-center gap-6 text-xs">
+        <span id="adminName" class="font-semibold">Loading...</span>
+        <button onclick="logout()" class="flex items-center gap-2 text-red-600 font-bold">
+            <i data-lucide="log-out"></i> Logout
+        </button>
+    </div>
+</nav>
+
+<div class="flex flex-1">
+
+<!-- SIDEBAR -->
+<aside class="w-60 bg-[var(--cmcs-sidebar)] p-4 space-y-2">
+    <a class="sidebar-link active-tab" href="#"><i data-lucide="check-circle"></i> Approvals</a>
+    <a class="sidebar-link" href="admin_setup.html"><i data-lucide="settings"></i> Academic Setup</a>
+    <a class="sidebar-link" href="admin_class.html"><i data-lucide="users"></i> Class Assignment</a>
+    <a class="sidebar-link" href="admin_records.html"><i data-lucide="database"></i> Master Records</a>
+    <a class="sidebar-link" href="admin_accounts.html"><i data-lucide="user-cog"></i> Accounts</a>
+</aside>
+
+<!-- CONTENT -->
+<main class="flex-1 p-8 space-y-12">
+
+<!-- STUDENTS -->
+<section class="bg-white rounded-2xl p-6 shadow">
+<div class="flex justify-between items-center mb-4">
+    <h2 class="font-bold text-sm">Student Admission Requests</h2>
+    <button onclick="openAddModal('student')" class="btn-primary hover:scale-105 transition">
+        + Manual Admission
+    </button>
+</div>
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Name</th><th>Type</th><th>Email</th><th>Course / Yr</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="studentTable"></tbody>
+</table>
+</section>
+
+<!-- FACULTY -->
+<section class="bg-white rounded-2xl p-6 shadow">
+<div class="flex justify-between items-center mb-4">
+    <h2 class="font-bold text-sm">Faculty Registration Requests</h2>
+    <button onclick="openAddModal('teacher')" class="btn-primary hover:scale-105 transition">
+        + Manual Hire
+    </button>
+</div>
+<table>
+<thead>
+<tr>
+<th>License</th><th>Name</th><th>Designation</th><th>Email</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="facultyTable"></tbody>
+</table>
+</section>
+
+</main>
+</div>
+
+<!-- NOTIFICATION MODAL -->
+<div id="notifModal" class="modal-overlay">
+<div class="modal-container w-80 text-center">
+<div class="modal-header">System Message</div>
+<div class="modal-body">
+<p id="notifMessage" class="font-semibold text-sm"></p>
+<div id="confirmActions" class="hidden flex justify-center gap-3 mt-6">
+<button id="btnYes" class="btn-primary">Proceed</button>
+<button onclick="closeModal('notifModal')" class="btn-secondary">Cancel</button>
+</div>
+<div id="alertActions" class="mt-6">
+<button onclick="closeModal('notifModal')" class="btn-primary">OK</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- USER MODAL (UNCHANGED LOGIC) -->
+<div id="userModal" class="modal-overlay">
+<div class="modal-container">
+<div class="modal-header">
+<span id="modalTitle">Admission Form</span>
+<span class="cursor-pointer" onclick="closeModal('userModal')">✕</span>
+</div>
+
+<form id="userForm">
+<input type="hidden" id="userRole">
+<div class="modal-body grid grid-cols-2 gap-4">
+<div>
+<label class="modal-label">First Name</label>
+<input id="fn" class="modal-input" required>
+</div>
+<div>
+<label class="modal-label">Last Name</label>
+<input id="ln" class="modal-input" required>
+</div>
+<div>
+<label class="modal-label">Gmail</label>
+<input id="uemail" class="modal-input u-email-input" required>
+</div>
+<div>
+<label class="modal-label">Temp Password</label>
+<input type="password" id="upass" class="modal-input" required>
+</div>
+
+<div id="studentFields" class="hidden col-span-2 grid grid-cols-2 gap-4 border-t pt-4">
+<div>
+<label class="modal-label">Status</label>
+<select id="ustatus" class="modal-select">
+<option>NEW STUDENT</option>
+<option>OLD STUDENT</option>
+<option>TRANSFEREE</option>
+</select>
+</div>
+<div>
+<label class="modal-label">Student ID</label>
+<input id="id_num" class="modal-input">
+</div>
+<div>
+<label class="modal-label">Course</label>
+<select id="ucourse" class="modal-select"></select>
+</div>
+<div>
+<label class="modal-label">Year</label>
+<select id="uyear" class="modal-select">
+<option>1</option><option>2</option><option>3</option><option>4</option>
+</select>
+</div>
+</div>
+
+<div id="facultyFields" class="hidden col-span-2 border-t pt-4">
+<label class="modal-label">License Number</label>
+<input id="license" class="modal-input">
+</div>
+</div>
+
+<div class="modal-footer">
+<button id="saveUserBtn" class="btn-primary">Register</button>
+<button type="button" onclick="closeModal('userModal')" class="btn-secondary">Cancel</button>
+</div>
+</form>
+</div>
+</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ID Formatter 00-0-000
+        document.getElementById('id_num').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, ''); 
+            if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
+            else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
+            e.target.value = val;
+        });
+
+        window.togglePassword = (id) => {
+            const el = document.getElementById(id);
+            const toggle = document.getElementById('passToggle');
+            if (el.type === 'password') {
+                el.type = 'text';
+                toggle.innerText = 'HIDE';
+            } else {
+                el.type = 'password';
+                toggle.innerText = 'SHOW';
+            }
+        };
+
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
+            document.getElementById('alertActions').className = isConfirm ? 'hidden' : 'flex justify-center mt-4';
+            if(isConfirm) document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            document.getElementById('notifModal').style.display = 'flex';
+        };
+
+        window.closeModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+            if(id === 'userModal') {
+                document.getElementById('userForm').reset();
+                document.getElementById('passToggle').innerText = 'SHOW';
+                document.getElementById('upass').type = 'password';
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
+                    startListeners();
+                    loadCourses();
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
+        function startListeners() {
+            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+                const sTable = document.getElementById('studentTable');
+                const fTable = document.getElementById('facultyTable');
+                sTable.innerHTML = ''; fTable.innerHTML = '';
+                snap.forEach(u => {
+                    const d = u.data();
+                    const actions = `<td><span onclick="handleAction('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">ADMIT</span><span onclick="handleAction('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">REJECT</span></td>`;
+                    if (d.role === 'student') sTable.innerHTML += `<tr><td>${d.studentId || '-'}</td><td class="font-bold uppercase">${d.lastname}, ${d.firstname}</td><td>${d.studentType || 'NEW'}</td><td class="text-blue-600 lowercase">${d.email}</td><td class="uppercase">${d.course} - Y${d.year}</td>${actions}</tr>`;
+                    else fTable.innerHTML += `<tr><td>${d.license || '-'}</td><td class="font-bold uppercase">${d.lastname}, ${d.firstname}</td><td class="uppercase">${d.designation || 'TEACHER'}</td><td class="text-blue-600 lowercase">${d.email}</td>${actions}</tr>`;
+                });
+            });
+        }
+
+        async function loadCourses() {
+            const snap = await getDocs(collection(db, "courses"));
+            const sel = document.getElementById('ucourse');
+            sel.innerHTML = '<option value="">-- COURSE --</option>';
+            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
+        }
+
+        window.handleAction = (uid, approved) => {
+            showNotif(approved ? "ADMIT USER?" : "REJECT REQUEST?", true, async () => {
+                if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
+                else await deleteDoc(doc(db, "users", uid));
+                showNotif("PROCESSED");
+            });
+        };
+
+        window.openAddModal = (role) => {
+            document.getElementById('userRole').value = role;
+            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL ADMISSION' : 'MANUAL HIRE';
+            document.getElementById('studentFields').className = role === 'student' ? 'block' : 'hidden';
+            document.getElementById('facultyFields').className = role === 'teacher' ? 'block' : 'hidden';
+            document.getElementById('userModal').style.display = 'flex';
+        };
+
+        document.getElementById('userForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('uemail').value.trim().toLowerCase();
+            const btn = document.getElementById('saveUserBtn');
+
+            if(!/^[a-z0-9](\.?[a-z0-9]){5,}@gmail\.com$/.test(email)) return showNotif("USE A VALID GMAIL ACCOUNT");
+
+            btn.classList.add('loading-btn');
+            try {
+                const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+                if(!check.empty) throw new Error("EMAIL ALREADY EXISTS");
+
+                const userData = {
+                    firstname: document.getElementById('fn').value.toUpperCase(),
+                    lastname: document.getElementById('ln').value.toUpperCase(),
+                    email: email,
+                    role: document.getElementById('userRole').value,
+                    status: "approved",
+                    createdAt: new Date()
+                };
+
+                if(userData.role === 'student') {
+                    userData.studentType = document.getElementById('ustatus').value.toUpperCase();
+                    userData.studentId = document.getElementById('id_num').value.toUpperCase();
+                    userData.course = document.getElementById('ucourse').value.toUpperCase();
+                    userData.year = document.getElementById('uyear').value.toUpperCase();
+                    if(!/^\d{2}-\d{1}-\d{3}$/.test(userData.studentId)) throw new Error("ID FORMAT MUST BE 00-0-000");
+                } else {
+                    userData.license = document.getElementById('license').value.toUpperCase();
+                }
+
+                await addDoc(collection(db, "users"), userData);
+                closeModal('userModal');
+                showNotif("USER SAVED");
+            } catch (err) { showNotif(err.message.toUpperCase()); }
+            finally { btn.classList.remove('loading-btn'); }
+        };
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
+
+<script>
+lucide.createIcons();
+
+/* GSAP Animations */
+gsap.from("aside",{x:-80, opacity:0, duration:.6});
+gsap.from("main section",{y:40, opacity:0, duration:.6, stagger:.2});
+</script>
+
+</body>
+</html>
