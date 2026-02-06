@@ -26,7 +26,7 @@
         .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
         .modal-label { display: block; font-size: 9px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
         .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 10px; outline: none; text-transform: uppercase; }
-        .u-email-input { text-transform: lowercase !important; } /* Emails should stay lowercase */
+        .u-email-input { text-transform: lowercase !important; }
         
         .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
         
@@ -107,16 +107,11 @@
                     <div class="grid grid-cols-2 gap-x-4">
                         <div><label class="modal-label">First Name</label><input type="text" id="fn" class="modal-input" required></div>
                         <div><label class="modal-label">Last Name</label><input type="text" id="ln" class="modal-input" required></div>
-                        <div>
-                            <label class="modal-label">Email Address (@gmail.com)</label>
-                            <input type="email" id="uemail" class="modal-input u-email-input" placeholder="example@gmail.com" required>
-                        </div>
+                        <div><label class="modal-label">Gmail (@gmail.com)</label><input type="email" id="uemail" class="modal-input u-email-input" placeholder="example@gmail.com" required></div>
                         <div class="password-container">
-                            <label class="modal-label">Temporary Password</label>
+                            <label class="modal-label">Temp Password</label>
                             <input type="password" id="upass" class="modal-input" required>
-                            <span class="eye-toggle" onclick="togglePassword('upass')">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8s0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
-                            </span>
+                            <span class="eye-toggle" onclick="togglePassword('upass')">👁️</span>
                         </div>
                     </div>
 
@@ -130,7 +125,9 @@
                                     <option value="TRANSFEREE">TRANSFEREE</option>
                                 </select>
                             </div>
-                            <div><label class="modal-label">Student ID</label><input type="text" id="id_num" class="modal-input"></div>
+                            <div><label class="modal-label">Student ID (00-0-000)</label>
+                                <input type="text" id="id_num" class="modal-input" placeholder="00-0-000" maxlength="8">
+                            </div>
                             <div><label class="modal-label">Course</label><select id="ucourse" class="modal-select"></select></div>
                             <div><label class="modal-label">Year Level</label>
                                 <select id="uyear" class="modal-select">
@@ -172,6 +169,14 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ID Formatting (00-0-000)
+        document.getElementById('id_num').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, ''); 
+            if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
+            else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
+            e.target.value = val;
+        });
+
         window.togglePassword = (id) => {
             const el = document.getElementById(id);
             el.type = el.type === 'password' ? 'text' : 'password';
@@ -206,16 +211,11 @@
                 const sTable = document.getElementById('studentTable');
                 const fTable = document.getElementById('facultyTable');
                 sTable.innerHTML = ''; fTable.innerHTML = '';
-
                 snap.forEach(u => {
                     const d = u.data();
                     const actions = `<td><span onclick="handleAction('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">ADMIT</span><span onclick="handleAction('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">REJECT</span></td>`;
-
-                    if (d.role === 'student') {
-                        sTable.innerHTML += `<tr><td>${d.studentId || '-'}</td><td class="uppercase font-bold">${d.lastname}, ${d.firstname}</td><td>${d.studentType || 'NEW'}</td><td class="text-blue-600 lowercase">${d.email}</td><td class="uppercase">${d.course} - Y${d.year}</td>${actions}</tr>`;
-                    } else if (d.role === 'teacher') {
-                        fTable.innerHTML += `<tr><td>${d.license || '-'}</td><td class="uppercase font-bold">${d.lastname}, ${d.firstname}</td><td class="uppercase">${d.designation || 'TEACHER'}</td><td class="text-blue-600 lowercase">${d.email}</td>${actions}</tr>`;
-                    }
+                    if (d.role === 'student') sTable.innerHTML += `<tr><td>${d.studentId || '-'}</td><td class="font-bold uppercase">${d.lastname}, ${d.firstname}</td><td>${d.studentType || 'NEW'}</td><td class="text-blue-600 lowercase">${d.email}</td><td class="uppercase">${d.course} - Y${d.year}</td>${actions}</tr>`;
+                    else fTable.innerHTML += `<tr><td>${d.license || '-'}</td><td class="font-bold uppercase">${d.lastname}, ${d.firstname}</td><td class="uppercase">${d.designation || 'TEACHER'}</td><td class="text-blue-600 lowercase">${d.email}</td>${actions}</tr>`;
                 });
             });
         }
@@ -231,7 +231,7 @@
             showNotif(approved ? "ADMIT USER?" : "REJECT REQUEST?", true, async () => {
                 if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
                 else await deleteDoc(doc(db, "users", uid));
-                showNotif("COMPLETED");
+                showNotif("PROCESSED");
             });
         };
 
@@ -245,50 +245,41 @@
 
         document.getElementById('userForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('saveUserBtn');
             const email = document.getElementById('uemail').value.trim().toLowerCase();
-            const role = document.getElementById('userRole').value;
+            const btn = document.getElementById('saveUserBtn');
 
-            // Gmail Check
-            const gmailRegex = /^[a-z0-9](\.?[a-z0-9]){5,}@gmail\.com$/;
-            if(!gmailRegex.test(email)) {
-                showNotif("ERROR: USE A VALID @GMAIL.COM ADDRESS");
-                return;
-            }
+            // Strict Gmail Check
+            if(!/^[a-z0-9](\.?[a-z0-9]){5,}@gmail\.com$/.test(email)) return showNotif("USE A VALID GMAIL ACCOUNT");
 
             btn.classList.add('loading-btn');
-
             try {
                 const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
-                if(!check.empty) throw new Error("EMAIL ALREADY REGISTERED");
+                if(!check.empty) throw new Error("EMAIL ALREADY EXISTS");
 
-                // CASE HANDLING: Convert to Upper Case before saving
                 const userData = {
                     firstname: document.getElementById('fn').value.toUpperCase(),
                     lastname: document.getElementById('ln').value.toUpperCase(),
-                    email: email, // Keep email lowercase
-                    role: role,
+                    email: email,
+                    role: document.getElementById('userRole').value,
                     status: "approved",
                     createdAt: new Date()
                 };
 
-                if(role === 'student') {
+                if(userData.role === 'student') {
                     userData.studentType = document.getElementById('ustatus').value.toUpperCase();
                     userData.studentId = document.getElementById('id_num').value.toUpperCase();
                     userData.course = document.getElementById('ucourse').value.toUpperCase();
                     userData.year = document.getElementById('uyear').value.toUpperCase();
+                    if(!/^\d{2}-\d{1}-\d{3}$/.test(userData.studentId)) throw new Error("ID FORMAT MUST BE 00-0-000");
                 } else {
                     userData.license = document.getElementById('license').value.toUpperCase();
                 }
 
                 await addDoc(collection(db, "users"), userData);
                 closeModal('userModal');
-                showNotif("USER SAVED SUCCESSFULLY");
-            } catch (err) {
-                showNotif(err.message.toUpperCase());
-            } finally {
-                btn.classList.remove('loading-btn');
-            }
+                showNotif("USER SAVED");
+            } catch (err) { showNotif(err.message.toUpperCase()); }
+            finally { btn.classList.remove('loading-btn'); }
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
