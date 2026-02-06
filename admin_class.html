@@ -6,7 +6,6 @@
     <title>Class Assignment | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Exact color matches from reference */
         .bg-cmcs-blue { background-color: #0070c0; }
         .bg-cmcs-sidebar { background-color: #00b0f0; }
         .bg-cmcs-yellow { background-color: #ffff00; }
@@ -17,38 +16,38 @@
         .sidebar-link:hover { background-color: rgba(255,255,255,0.1); }
         .active-tab { background-color: #ffff00 !important; color: black !important; }
         
-        /* Boxed Filter Design from image_56d925.png */
+        /* Table Styling */
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th { border: 1px solid black; padding: 4px; text-align: left; font-weight: bold; text-transform: uppercase; background-color: #d9d9d9; }
         td { border: 1px solid black; padding: 4px; background-color: #ffffff; text-transform: uppercase; }
         
-        .filter-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 35px; }
+        /* Boxed Filter Design */
+        .filter-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; }
         .filter-box { border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; flex: 1; }
-        .filter-label { font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
-        .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; }
+        .filter-label { font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1; margin-bottom: 2px; color: #333; }
+        .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; cursor: pointer; }
         
-        /* Assigned Program Tags */
         .tag-green { background-color: #00ff00; border: 1px solid black; padding: 1px 4px; font-weight: bold; margin-right: 3px; font-size: 10px; display: inline-block; }
         
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 1px solid black; width: 500px; box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.2); }
+        .modal-container { background: white; border: 2px solid black; width: 500px; box-shadow: 6px 6px 0px 0px black; }
+        .program-row { display: grid; grid-template-columns: 30px 100px 1fr; gap: 10px; align-items: center; border-bottom: 1px solid #eee; padding: 8px 4px; }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
 
-    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-10 px-4">
-        <div class="font-bold text-sm uppercase tracking-tight">CMCS Virtual Learning System</div>
-        <div class="flex items-center gap-6">
-            <div class="flex gap-4 items-center text-[11px] font-bold uppercase italic">
-                <span id="adminName">LASTNAME, FIRSTNAME</span>
-                <span id="adminEmail">EMAIL@GMAIL.COM</span>
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
+        <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
+        <div class="flex items-center h-full">
+            <div class="flex gap-4 px-6 items-center text-xs italic uppercase">
+                <span id="adminName">Loading...</span>
             </div>
-            <button onclick="logout()" class="bg-cmcs-logout h-10 px-6 text-white font-bold text-xs uppercase hover:bg-red-700">Logout</button>
+            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
         </div>
     </nav>
 
     <div class="flex flex-1">
-        <aside class="w-48 bg-cmcs-sidebar flex flex-col pt-4">
+        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
             <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
             <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
             <a href="admin_class.html" class="sidebar-link active-tab">CLASS ASSIGNMENT</a>
@@ -56,10 +55,10 @@
             <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
         </aside>
 
-        <main class="flex-1 p-4">
+        <main class="flex-1 p-6">
             <h2 class="text-[11px] font-bold uppercase mb-2">STUDENT LIST</h2>
             
-            <div class="flex items-start gap-3 mb-6">
+            <div class="flex items-start gap-4 mb-6">
                 <div class="filter-container flex-1">
                     <div class="filter-box" style="flex: 2;">
                         <span class="filter-label">COURSE NAME</span>
@@ -68,18 +67,21 @@
                     <div class="filter-box">
                         <span class="filter-label">YEAR</span>
                         <select id="filterYear" class="filter-select">
-                            <option value="1">1</option><option value="2">2</option>
-                            <option value="3">3</option><option value="4">4</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
                         </select>
                     </div>
                     <div class="filter-box" style="border-right: none;">
                         <span class="filter-label">SEMESTER</span>
                         <select id="filterSem" class="filter-select">
-                            <option value="1">1</option><option value="2">2</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
                         </select>
                     </div>
                 </div>
-                <button id="fetchBtn" class="bg-cmcs-yellow border border-black px-10 h-[35px] font-bold text-xs uppercase hover:bg-yellow-400">Fetch</button>
+                <button id="fetchBtn" class="bg-cmcs-yellow border border-black px-10 h-[38px] font-bold text-xs uppercase shadow-[3px_3px_0px_0px_black] active:translate-y-1 active:shadow-none transition-all">Fetch</button>
             </div>
 
             <div class="bg-cmcs-yellow border-x border-t border-black p-1">
@@ -88,39 +90,46 @@
             <table>
                 <thead>
                     <tr>
-                        <th width="30">NO.</th>
-                        <th width="100">ID</th>
-                        <th width="150">LASTNAME</th>
-                        <th width="150">FIRSTNAME</th>
-                        <th width="180">COURE/YEAR/ SEMESTER</th>
+                        <th width="40">NO.</th>
+                        <th width="110">ID</th>
+                        <th>LASTNAME</th>
+                        <th>FIRSTNAME</th>
+                        <th width="150">COURE/YEAR/SEMESTER</th>
                         <th>ASSIGNED PROGRAMS</th>
                         <th width="120">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody id="studentTableBody">
-                    </tbody>
+                    <tr><td colspan="7" class="p-6 text-center italic text-gray-400">Select filters and click Fetch</td></tr>
+                </tbody>
             </table>
         </main>
     </div>
 
     <div id="classModal" class="modal-overlay">
         <div class="modal-container">
-            <div class="bg-cmcs-blue text-white p-2 font-bold text-xs flex justify-between uppercase">
+            <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase">
                 <span>Subject Enrollment</span>
-                <button onclick="closeModal()">X</button>
+                <button onclick="closeModal()" class="hover:text-yellow-300 font-bold">X</button>
             </div>
-            <div class="p-5">
-                <div class="mb-4">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Assigning for:</span>
-                    <p id="targetStudentName" class="text-xs font-bold uppercase border-b border-black pb-1"></p>
+            <div class="p-6">
+                <div class="mb-4 bg-gray-50 p-2 border border-black">
+                    <span class="text-[9px] font-bold text-gray-500 uppercase">Enrolling Student:</span>
+                    <p id="targetStudentName" class="text-xs font-black uppercase text-blue-800"></p>
+                </div>
+
+                <div class="grid grid-cols-[30px_100px_1fr] gap-10 px-1 py-1 bg-gray-200 border border-black text-[9px] font-bold uppercase mb-1">
+                    <span>SET</span>
+                    <span>CODE</span>
+                    <span>SUBJECT NAME</span>
                 </div>
                 
-                <div id="programList" class="space-y-1 max-h-60 overflow-y-auto border border-black p-2 mb-4 bg-gray-50">
+                <div id="programList" class="max-h-64 overflow-y-auto border border-black bg-white mb-4">
                     </div>
 
                 <div class="flex justify-end gap-2">
-                    <button id="saveClassesBtn" class="bg-cmcs-yellow border border-black px-6 py-2 font-bold text-[10px] uppercase hover:bg-yellow-400">Save Record</button>
-                    <button onclick="closeModal()" class="bg-gray-200 border border-black px-6 py-2 font-bold text-[10px] uppercase">Cancel</button>
+                    <button id="saveClassesBtn" class="bg-cmcs-yellow border border-black px-6 py-2 font-bold text-[10px] uppercase shadow-[3px_3px_0px_0px_black]">Save Record</button>
+                    <button onclick="closeModal()" class="bg-gray-100 border border-black px-6 py-2 font-bold text-[10px] uppercase">Cancel</button>
                 </div>
             </div>
         </div>
@@ -128,7 +137,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
@@ -151,7 +160,6 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    document.getElementById('adminEmail').innerText = snap.data().email.toLowerCase();
                     loadCourses();
                 }
             } else { window.location.href = "login.html"; }
@@ -160,7 +168,7 @@
         async function loadCourses() {
             const snap = await getDocs(collection(db, "courses"));
             const sel = document.getElementById('filterCourse');
-            sel.innerHTML = '';
+            sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
             snap.forEach(d => {
                 const name = d.data().name.toUpperCase();
                 sel.innerHTML += `<option value="${name}">${name}</option>`;
@@ -173,29 +181,36 @@
             currentStudentUid = uid;
             document.getElementById('targetStudentName').innerText = name;
             const listDiv = document.getElementById('programList');
-            listDiv.innerHTML = '<span class="text-[10px]">Loading Subjects...</span>';
+            listDiv.innerHTML = '<div class="p-4 text-center text-[10px]">Fetching Subjects...</div>';
             document.getElementById('classModal').style.display = 'flex';
 
             try {
+                // Fetch the student's current enrollment and all subjects
                 const [progSnap, userSnap] = await Promise.all([
                     getDocs(collection(db, "programs")),
                     getDoc(doc(db, "users", uid))
                 ]);
-                const currentProgs = userSnap.data().assignedPrograms || [];
+
+                const enrolled = userSnap.data().assignedPrograms || [];
                 listDiv.innerHTML = '';
+
                 progSnap.forEach(p => {
                     const data = p.data();
-                    const pCode = (data.code || p.id).toUpperCase();
-                    const pTitle = (data.title || data.subject || "No Name").toUpperCase();
-                    const checked = currentProgs.includes(pCode) ? 'checked' : '';
+                    const pCode = (data.code || "").toUpperCase();
+                    const pName = (data.name || "UNNAMED SUBJECT").toUpperCase(); // Fixed: using .name as per Academic Setup
+                    const checked = enrolled.includes(pCode) ? 'checked' : '';
+                    
                     listDiv.innerHTML += `
-                        <label class="flex items-center gap-3 p-1 border-b border-gray-200 hover:bg-white cursor-pointer">
-                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-3 h-3 accent-blue-700">
-                            <span class="text-[10px] font-bold text-blue-800">${pCode}</span>
-                            <span class="text-[10px] font-medium">${pTitle}</span>
-                        </label>`;
+                        <div class="program-row px-2 hover:bg-gray-50">
+                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-3 h-3 accent-blue-600 cursor-pointer">
+                            <span class="text-[10px] font-bold text-blue-900 border-r pr-2">${pCode}</span>
+                            <span class="text-[10px] font-medium pl-1">${pName}</span>
+                        </div>
+                    `;
                 });
-            } catch (err) { listDiv.innerHTML = 'Load Error.'; }
+            } catch (err) {
+                listDiv.innerHTML = '<div class="p-4 text-red-600 text-[10px]">Error loading database.</div>';
+            }
         };
 
         document.getElementById('fetchBtn').onclick = async () => {
@@ -204,7 +219,8 @@
             const sem = document.getElementById('filterSem').value;
             const tbody = document.getElementById('studentTableBody');
             
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center italic">Loading...</td></tr>';
+            if(!course) return alert("Select a Course");
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center italic text-blue-600">Accessing records...</td></tr>';
 
             const q = query(collection(db, "users"), 
                 where("role", "==", "student"),
@@ -216,20 +232,28 @@
             const snap = await getDocs(q);
             tbody.innerHTML = '';
             let count = 1;
+
+            if (snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-xs font-bold text-red-500">NO STUDENTS FOUND</td></tr>';
+                return;
+            }
+
             snap.forEach(u => {
                 const d = u.data();
                 if (!d.semester || d.semester == sem) {
-                    const tags = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '';
+                    const subjects = d.assignedPrograms ? d.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+                    const fullName = `${d.lastname}, ${d.firstname}`.toUpperCase();
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td>${count++}</td>
-                            <td>${d.studentId || '00-0-000'}</td>
-                            <td>${d.lastname}</td>
-                            <td>${d.firstname}</td>
+                            <td class="font-black text-blue-800">${d.studentId || '00-0-000'}</td>
+                            <td class="font-bold">${d.lastname}</td>
+                            <td class="font-bold">${d.firstname}</td>
                             <td>${d.course} Y${d.year} S${sem}</td>
-                            <td>${tags}</td>
+                            <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
                             <td>
-                                <button onclick="openClassModal('${u.id}', '${d.lastname}, ${d.firstname}')" class="text-green-600 underline font-bold italic text-[10px] hover:text-green-800">Update Classes</button>
+                                <button onclick="openClassModal('${u.id}', '${fullName}')" class="text-green-600 underline font-black italic text-[10px] hover:text-green-800">Update Classes</button>
                             </td>
                         </tr>`;
                 }
@@ -238,9 +262,22 @@
 
         document.getElementById('saveClassesBtn').onclick = async () => {
             const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
-            await updateDoc(doc(db, "users", currentStudentUid), { assignedPrograms: selected });
-            closeModal();
-            document.getElementById('fetchBtn').click(); 
+            const btn = document.getElementById('saveClassesBtn');
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            try {
+                await updateDoc(doc(db, "users", currentStudentUid), {
+                    assignedPrograms: selected
+                });
+                closeModal();
+                document.getElementById('fetchBtn').click(); 
+            } catch (err) {
+                alert("Database Update Failed");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Save Record";
+            }
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
