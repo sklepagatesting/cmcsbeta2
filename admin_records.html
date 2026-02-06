@@ -18,28 +18,27 @@
         th { background-color: #d9d9d9; border: 1px solid black; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
         td { border: 1px solid black; padding: 6px; background-color: #ffffff; text-transform: uppercase; }
         
-        .search-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; width: 400px; }
-        .search-box { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; flex: 1; }
-        .search-label { font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
-        .search-input { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
-
-        .tag-blue { background-color: #e1effe; border: 1px solid #0070c0; padding: 1px 4px; font-weight: bold; margin-right: 2px; font-size: 9px; display: inline-block; color: #0070c0; }
-
-        @media print {
-            .no-print { display: none; }
-            aside { display: none; }
-            main { padding: 0; width: 100%; }
-            body { background: white; }
-            .print-header { display: block !important; }
-        }
+        /* Boxed Filter Design */
+        .filter-container { border: 1px solid black; padding: 1px; display: flex; align-items: stretch; height: 38px; background: white; }
+        .filter-box { border-right: 1px solid black; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; flex: 1; }
+        .filter-label { font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1; margin-bottom: 2px; }
+        .filter-select { outline: none; background: transparent; font-size: 11px; width: 100%; font-weight: bold; text-transform: uppercase; }
 
         .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 300px; box-shadow: 6px 6px 0px 0px black; }
+        .modal-container { background: white; border: 2px solid black; width: 600px; box-shadow: 8px 8px 0px 0px black; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { padding: 0; }
+            .modal-overlay { position: absolute; background: white; display: block !important; inset: 0; z-index: auto; }
+            .modal-container { box-shadow: none; border: none; width: 100%; }
+        }
     </style>
 </head>
 <body class="bg-white min-h-screen flex flex-col font-sans">
 
-    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm no-print">
+    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 no-print">
         <div class="flex items-center px-4 gap-2 font-bold text-sm uppercase">CMCS Virtual Learning System</div>
         <div class="flex items-center h-full">
             <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
@@ -53,32 +52,47 @@
             <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
             <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
             <a href="admin_records.html" class="sidebar-link active-tab">MASTER RECORD</a>
+            <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
         </aside>
 
         <main class="flex-1 p-6">
-            <div class="hidden print-header text-center mb-6">
-                <h1 class="font-bold text-xl">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
-                <p class="text-sm italic">Master Student Academic Record</p>
-                <hr class="border-black mt-2">
-            </div>
-
             <div class="flex justify-between items-end mb-4 no-print">
                 <h2 class="text-[12px] font-bold uppercase border-b-2 border-black inline-block">MASTER RECORD LIST</h2>
-                <button onclick="window.print()" class="bg-white border border-black px-4 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-gray-100">PRINT REPORT</button>
+                <div class="flex gap-2">
+                    <button onclick="exportCSV()" class="bg-green-600 text-white border border-black px-4 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-green-700 uppercase">Export CSV</button>
+                    <button onclick="window.print()" class="bg-white border border-black px-4 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-gray-100 uppercase">Print All</button>
+                </div>
             </div>
             
             <div class="flex items-start gap-4 mb-6 no-print">
-                <div class="search-container">
-                    <div class="search-box">
-                        <span class="search-label">SEARCH BY NAME OR ID</span>
-                        <input type="text" id="searchInput" class="search-input" placeholder="TYPE HERE...">
+                <div class="filter-container flex-1">
+                    <div class="filter-box" style="flex: 2;">
+                        <span class="filter-label">COURSE</span>
+                        <select id="filterCourse" class="filter-select"><option value="ALL">ALL COURSES</option></select>
+                    </div>
+                    <div class="filter-box">
+                        <span class="filter-label">YEAR</span>
+                        <select id="filterYear" class="filter-select">
+                            <option value="ALL">ALL</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                        </select>
+                    </div>
+                    <div class="filter-box" style="border-right: none;">
+                        <span class="filter-label">SEM</span>
+                        <select id="filterSem" class="filter-select">
+                            <option value="ALL">ALL</option><option value="1">1</option><option value="2">2</option>
+                        </select>
                     </div>
                 </div>
-                <div class="flex-1"></div>
+                <div class="filter-container w-64">
+                    <div class="filter-box" style="border:none;">
+                        <span class="filter-label">SEARCH NAME/ID</span>
+                        <input type="text" id="searchField" class="filter-select outline-none" placeholder="...">
+                    </div>
+                </div>
             </div>
 
             <div class="bg-cmcs-blue text-white border-x border-t border-black p-1">
-                <h3 class="text-[11px] font-bold uppercase italic">Official Student Ledger</h3>
+                <h3 class="text-[11px] font-bold uppercase italic text-center">Master Academic Ledger</h3>
             </div>
             <table>
                 <thead>
@@ -86,25 +100,52 @@
                         <th width="30">NO.</th>
                         <th width="100">STUDENT ID</th>
                         <th>FULL NAME</th>
-                        <th>COURSE & YEAR</th>
-                        <th>SEMESTER</th>
-                        <th>ENROLLED SUBJECTS</th>
-                        <th width="80">STATUS</th>
+                        <th>COURSE/YEAR/SEM</th>
+                        <th>SUBJECTS</th>
+                        <th width="80">ACTION</th>
                     </tr>
                 </thead>
-                <tbody id="masterTableBody">
-                    <tr><td colspan="7" class="p-6 text-center italic text-gray-400">Loading Master Records...</td></tr>
-                </tbody>
+                <tbody id="masterTableBody"></tbody>
             </table>
         </main>
     </div>
 
-    <div id="notifModal" class="modal-overlay">
-        <div class="modal-container text-center">
-            <div class="bg-cmcs-blue text-white p-2 font-bold text-xs uppercase">System Alert</div>
-            <div class="p-6">
-                <p id="notifMessage" class="font-bold text-[11px] uppercase"></p>
-                <button onclick="document.getElementById('notifModal').style.display='none'" class="mt-4 bg-cmcs-yellow border border-black px-6 py-1 font-bold text-[10px] uppercase">OKAY</button>
+    <div id="viewModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="bg-cmcs-blue text-white p-3 font-bold text-xs flex justify-between uppercase no-print">
+                <span>Student Profile Details</span>
+                <button onclick="closeModal('viewModal')">X</button>
+            </div>
+            <div id="printArea" class="p-8">
+                <div class="text-center mb-6">
+                    <h1 class="font-bold text-lg">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                    <p class="text-[10px] uppercase">Official Student Academic Record</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 border-y border-black py-4 mb-4">
+                    <div class="text-[11px]">
+                        <p><strong>NAME:</strong> <span id="vName"></span></p>
+                        <p><strong>ID NUMBER:</strong> <span id="vId"></span></p>
+                        <p><strong>GENDER:</strong> <span id="vGender"></span></p>
+                    </div>
+                    <div class="text-[11px]">
+                        <p><strong>COURSE:</strong> <span id="vCourse"></span></p>
+                        <p><strong>YEAR/SEM:</strong> <span id="vLevel"></span></p>
+                        <p><strong>EMAIL:</strong> <span id="vEmail"></span></p>
+                    </div>
+                </div>
+
+                <h4 class="font-bold text-[10px] uppercase mb-2">Enrolled Subjects / Programs</h4>
+                <table class="w-full border-black">
+                    <thead>
+                        <tr><th class="text-[9px]">CODE</th><th class="text-[9px]">SUBJECT NAME</th></tr>
+                    </thead>
+                    <tbody id="vSubjectTable"></tbody>
+                </table>
+            </div>
+            <div class="p-4 bg-gray-100 border-t border-black flex justify-end gap-2 no-print">
+                <button onclick="window.print()" class="bg-cmcs-yellow border border-black px-6 py-2 font-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_black]">Print Individual</button>
+                <button onclick="closeModal('viewModal')" class="bg-white border border-black px-6 py-2 font-bold text-[10px] uppercase">Close</button>
             </div>
         </div>
     </div>
@@ -127,69 +168,107 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let allStudents = [];
+        let masterData = [];
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    syncMasterRecords();
+                    loadFilters();
+                    syncData();
                 }
             } else { window.location.href = "login.html"; }
         });
 
-        function syncMasterRecords() {
-            const q = query(collection(db, "users"), where("role", "==", "student"));
-            
-            // Real-time listener so records update automatically if assignment changes
-            onSnapshot(q, (snap) => {
-                allStudents = [];
-                snap.forEach(doc => {
-                    allStudents.push({ id: doc.id, ...doc.data() });
-                });
-                renderTable(allStudents);
+        async function loadFilters() {
+            const snap = await getDocs(collection(db, "courses"));
+            const sel = document.getElementById('filterCourse');
+            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
+        }
+
+        function syncData() {
+            onSnapshot(query(collection(db, "users"), where("role", "==", "student")), (snap) => {
+                masterData = [];
+                snap.forEach(d => masterData.push({ uid: d.id, ...d.data() }));
+                applyFilters();
             });
         }
 
-        function renderTable(data) {
+        function applyFilters() {
+            const course = document.getElementById('filterCourse').value;
+            const year = document.getElementById('filterYear').value;
+            const sem = document.getElementById('filterSem').value;
+            const search = document.getElementById('searchField').value.toUpperCase();
+
+            const filtered = masterData.filter(s => {
+                const matchCourse = course === 'ALL' || (s.course && s.course.toUpperCase() === course);
+                const matchYear = year === 'ALL' || s.year == year;
+                const matchSem = sem === 'ALL' || s.semester == sem;
+                const matchSearch = !search || s.lastname.toUpperCase().includes(search) || s.studentId.includes(search);
+                return matchCourse && matchYear && matchSem && matchSearch;
+            });
+
             const tbody = document.getElementById('masterTableBody');
             tbody.innerHTML = '';
-            
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center">No records found.</td></tr>';
-                return;
-            }
-
-            data.sort((a, b) => (a.lastname || "").localeCompare(b.lastname || "")).forEach((s, index) => {
-                const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `<span class="tag-blue">${p}</span>`).join('') : '<span class="text-gray-400">UNASSIGNED</span>';
-                const statusColor = s.status === 'approved' ? 'text-green-600' : 'text-red-600';
-                
+            filtered.forEach((s, i) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td class="text-center">${index + 1}</td>
-                        <td class="font-bold text-blue-800">${s.studentId || 'PENDING'}</td>
+                        <td>${i+1}</td>
+                        <td class="font-bold">${s.studentId || '---'}</td>
                         <td class="font-bold">${s.lastname}, ${s.firstname}</td>
-                        <td>${s.course || 'N/A'} - Y${s.year || '0'}</td>
-                        <td>SEM ${s.semester || '1'}</td>
-                        <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
-                        <td class="font-bold ${statusColor}">${s.status}</td>
-                    </tr>
-                `;
+                        <td>${s.course} - Y${s.year} S${s.semester}</td>
+                        <td>${s.assignedPrograms ? s.assignedPrograms.length : 0} Subjects</td>
+                        <td><button onclick="viewStudent('${s.uid}')" class="text-blue-600 underline font-bold italic">VIEW</button></td>
+                    </tr>`;
             });
         }
 
-        // Live Search Filter
-        document.getElementById('searchInput').oninput = (e) => {
-            const val = e.target.value.toUpperCase();
-            const filtered = allStudents.filter(s => 
-                (s.lastname && s.lastname.toUpperCase().includes(val)) ||
-                (s.firstname && s.firstname.toUpperCase().includes(val)) ||
-                (s.studentId && s.studentId.toUpperCase().includes(val))
-            );
-            renderTable(filtered);
+        window.viewStudent = async (uid) => {
+            const s = masterData.find(x => x.uid === uid);
+            document.getElementById('vName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+            document.getElementById('vId').innerText = s.studentId || 'N/A';
+            document.getElementById('vGender').innerText = (s.gender || 'N/A').toUpperCase();
+            document.getElementById('vCourse').innerText = (s.course || 'N/A').toUpperCase();
+            document.getElementById('vLevel').innerText = `YEAR ${s.year} / SEM ${s.semester}`;
+            document.getElementById('vEmail').innerText = s.email;
+            
+            const vTable = document.getElementById('vSubjectTable');
+            vTable.innerHTML = '';
+            
+            // Cross-reference subject names
+            const progSnap = await getDocs(collection(db, "programs"));
+            const progMap = {};
+            progSnap.forEach(p => progMap[p.data().code] = p.data().name);
+
+            if(s.assignedPrograms) {
+                s.assignedPrograms.forEach(code => {
+                    vTable.innerHTML += `<tr><td class="border border-black p-1">${code}</td><td class="border border-black p-1">${progMap[code] || '---'}</td></tr>`;
+                });
+            } else {
+                vTable.innerHTML = '<tr><td colspan="2" class="p-2 text-center">No programs assigned.</td></tr>';
+            }
+
+            document.getElementById('viewModal').style.display = 'flex';
         };
 
+        window.exportCSV = () => {
+            let csv = "ID,Lastname,Firstname,Course,Year,Semester,Subjects\n";
+            masterData.forEach(s => {
+                const subjs = s.assignedPrograms ? s.assignedPrograms.join(';') : '';
+                csv += `${s.studentId},${s.lastname},${s.firstname},${s.course},${s.year},${s.semester},"${subjs}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'CMCS_Master_Records.csv');
+            a.click();
+        };
+
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        document.querySelectorAll('select, input').forEach(el => el.onchange = applyFilters);
+        document.getElementById('searchField').oninput = applyFilters;
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
