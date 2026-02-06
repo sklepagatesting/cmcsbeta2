@@ -261,7 +261,7 @@
             try {
                 await updateDoc(doc(db, "users", currentStudentUid), { assignedPrograms: selected });
                 closeModal('classModal');
-                showNotif("STUDENT ENROLLMENT UPDATED SUCCESSFULLY");
+                showNotif("STUDENT SUBJECT LOAD UPDATED SUCCESSFULLY");
                 document.getElementById('fetchBtn').click(); 
             } catch (err) { showNotif("SAVE FAILED. CHECK NETWORK."); }
             finally { btn.disabled = false; btn.innerText = "SAVE RECORD"; }
