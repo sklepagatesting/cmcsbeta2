@@ -25,9 +25,14 @@
         .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
         .modal-label { display: block; font-size: 9px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 10px; outline: none; }
+        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 10px; outline: none; text-transform: uppercase; }
+        .u-email-input { text-transform: lowercase !important; } /* Emails should stay lowercase */
+        
         .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
         
+        .password-container { position: relative; width: 100%; }
+        .eye-toggle { position: absolute; right: 10px; top: 28px; cursor: pointer; opacity: 0.6; }
+
         .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .loading-btn { opacity: 0.5; pointer-events: none; }
@@ -49,26 +54,17 @@
             <a href="admin_setup.html" class="sidebar-link">ACADEMIC SETUP</a>
             <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
             <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
+            <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
         </aside>
 
         <main class="flex-1 p-6">
             <div class="mb-10">
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">STUDENT ADMISSION REQUESTS</h2>
-                    <button onclick="openAddModal('student')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL STUDENT ADMISSION</button>
+                    <button onclick="openAddModal('student')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL ADMISSION</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>STUDENT ID</th>
-                            <th>NAME</th>
-                            <th>GENDER</th>
-                            <th>EMAIL</th>
-                            <th>COURSE / YR / SEM</th>
-                            <th>MOBILE</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>STUDENT ID</th><th>NAME</th><th>TYPE</th><th>EMAIL</th><th>COURSE / YR</th><th>ACTIONS</th></tr></thead>
                     <tbody id="studentTable"></tbody>
                 </table>
             </div>
@@ -76,19 +72,10 @@
             <div>
                 <div class="flex justify-between items-end mb-2">
                     <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">FACULTY REGISTRATION REQUESTS</h2>
-                    <button onclick="openAddModal('teacher')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL FACULTY HIRE</button>
+                    <button onclick="openAddModal('teacher')" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ MANUAL HIRE</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>LICENSE NO.</th>
-                            <th>NAME</th>
-                            <th>GENDER</th>
-                            <th>DESIGNATION</th>
-                            <th>EMAIL</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>LICENSE NO.</th><th>NAME</th><th>DESIGNATION</th><th>EMAIL</th><th>ACTIONS</th></tr></thead>
                     <tbody id="facultyTable"></tbody>
                 </table>
             </div>
@@ -120,52 +107,47 @@
                     <div class="grid grid-cols-2 gap-x-4">
                         <div><label class="modal-label">First Name</label><input type="text" id="fn" class="modal-input" required></div>
                         <div><label class="modal-label">Last Name</label><input type="text" id="ln" class="modal-input" required></div>
-                        
                         <div>
-                            <label class="modal-label">Gender</label>
-                            <select id="gender" class="modal-select" required>
-                                <option value="Male">Male</option><option value="Female">Female</option>
-                            </select>
+                            <label class="modal-label">Email Address (@gmail.com)</label>
+                            <input type="email" id="uemail" class="modal-input u-email-input" placeholder="example@gmail.com" required>
                         </div>
-                        <div><label class="modal-label">Email Address</label><input type="email" id="uemail" class="modal-input" required></div>
+                        <div class="password-container">
+                            <label class="modal-label">Temporary Password</label>
+                            <input type="password" id="upass" class="modal-input" required>
+                            <span class="eye-toggle" onclick="togglePassword('upass')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8s0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
+                            </span>
+                        </div>
                     </div>
 
                     <div id="studentFields" class="hidden border-t pt-2 mt-2">
                         <div class="grid grid-cols-2 gap-x-4">
+                            <div><label class="modal-label">Status Type</label>
+                                <select id="ustatus" class="modal-select">
+                                    <option value="">-- SELECT --</option>
+                                    <option value="NEW STUDENT">NEW STUDENT</option>
+                                    <option value="OLD STUDENT">OLD STUDENT</option>
+                                    <option value="TRANSFEREE">TRANSFEREE</option>
+                                </select>
+                            </div>
                             <div><label class="modal-label">Student ID</label><input type="text" id="id_num" class="modal-input"></div>
-                            <div><label class="modal-label">Date of Birth</label><input type="date" id="dob" class="modal-input"></div>
-                            <div><label class="modal-label">Mobile Number</label><input type="tel" id="mobile" class="modal-input"></div>
                             <div><label class="modal-label">Course</label><select id="ucourse" class="modal-select"></select></div>
                             <div><label class="modal-label">Year Level</label>
                                 <select id="uyear" class="modal-select">
-                                    <option value="1">1st Year</option><option value="2">2nd Year</option>
-                                    <option value="3">3rd Year</option><option value="4">4th Year</option>
-                                </select>
-                            </div>
-                            <div><label class="modal-label">Semester</label>
-                                <select id="usem" class="modal-select">
-                                    <option value="1">1st Sem</option><option value="2">2nd Sem</option>
+                                    <option value="1">1ST YEAR</option><option value="2">2ND YEAR</option>
+                                    <option value="3">3RD YEAR</option><option value="4">4TH YEAR</option>
                                 </select>
                             </div>
                         </div>
-                        <label class="modal-label">Address</label>
-                        <input type="text" id="uaddress" class="modal-input">
                     </div>
 
                     <div id="facultyFields" class="hidden border-t pt-2 mt-2">
-                        <div class="grid grid-cols-2 gap-x-4">
-                            <div><label class="modal-label">License Number (7 Digits)</label><input type="text" id="license" class="modal-input" pattern="[0-9]{7}"></div>
-                            <div><label class="modal-label">Designation</label>
-                                <select id="designation" class="modal-select">
-                                    <option value="Subject Teacher">Subject Teacher</option>
-                                    <option value="Substitute">Substitute</option>
-                                </select>
-                            </div>
-                        </div>
+                        <label class="modal-label">License Number</label>
+                        <input type="text" id="license" class="modal-input">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" id="saveUserBtn" class="btn-modal-save">CONFIRM REGISTRATION</button>
+                    <button type="submit" id="saveUserBtn" class="btn-modal-save">REGISTER USER</button>
                     <button type="button" class="btn-modal-cancel" onclick="closeModal('userModal')">CANCEL</button>
                 </div>
             </form>
@@ -190,7 +172,11 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // UI NOTIFS
+        window.togglePassword = (id) => {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        };
+
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             document.getElementById('confirmActions').className = isConfirm ? 'flex justify-center gap-2 mt-4' : 'hidden';
@@ -204,12 +190,11 @@
             if(id === 'userModal') document.getElementById('userForm').reset();
         };
 
-        // AUTH & REAL-TIME LISTENER
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
                     startListeners();
                     loadCourses();
                 }
@@ -224,31 +209,12 @@
 
                 snap.forEach(u => {
                     const d = u.data();
-                    const name = `${d.lastname}, ${d.firstname}`;
-                    const actions = `<td>
-                        <span onclick="handleAction('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">ADMIT</span>
-                        <span onclick="handleAction('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">REJECT</span>
-                    </td>`;
+                    const actions = `<td><span onclick="handleAction('${u.id}', true)" class="text-green-600 font-bold underline cursor-pointer mr-3">ADMIT</span><span onclick="handleAction('${u.id}', false)" class="text-red-600 font-bold underline cursor-pointer">REJECT</span></td>`;
 
                     if (d.role === 'student') {
-                        sTable.innerHTML += `<tr>
-                            <td class="font-bold">${d.studentId || 'NO ID'}</td>
-                            <td class="uppercase">${name}</td>
-                            <td>${d.gender}</td>
-                            <td class="text-blue-600 underline">${d.email}</td>
-                            <td>${d.course} / ${d.year} / ${d.semester}</td>
-                            <td>${d.mobile || 'N/A'}</td>
-                            ${actions}
-                        </tr>`;
+                        sTable.innerHTML += `<tr><td>${d.studentId || '-'}</td><td class="uppercase font-bold">${d.lastname}, ${d.firstname}</td><td>${d.studentType || 'NEW'}</td><td class="text-blue-600 lowercase">${d.email}</td><td class="uppercase">${d.course} - Y${d.year}</td>${actions}</tr>`;
                     } else if (d.role === 'teacher') {
-                        fTable.innerHTML += `<tr>
-                            <td class="font-bold">${d.license || 'N/A'}</td>
-                            <td class="uppercase">${name}</td>
-                            <td>${d.gender}</td>
-                            <td>${d.designation}</td>
-                            <td class="text-blue-600 underline">${d.email}</td>
-                            ${actions}
-                        </tr>`;
+                        fTable.innerHTML += `<tr><td>${d.license || '-'}</td><td class="uppercase font-bold">${d.lastname}, ${d.firstname}</td><td class="uppercase">${d.designation || 'TEACHER'}</td><td class="text-blue-600 lowercase">${d.email}</td>${actions}</tr>`;
                     }
                 });
             });
@@ -257,23 +223,21 @@
         async function loadCourses() {
             const snap = await getDocs(collection(db, "courses"));
             const sel = document.getElementById('ucourse');
-            sel.innerHTML = '';
-            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`);
+            sel.innerHTML = '<option value="">-- COURSE --</option>';
+            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
         }
 
         window.handleAction = (uid, approved) => {
-            const msg = approved ? "ADMIT THIS USER TO THE SYSTEM?" : "DELETE THIS REGISTRATION REQUEST?";
-            showNotif(msg, true, async () => {
+            showNotif(approved ? "ADMIT USER?" : "REJECT REQUEST?", true, async () => {
                 if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
                 else await deleteDoc(doc(db, "users", uid));
-                showNotif(approved ? "USER ADMITTED" : "REQUEST DELETED");
+                showNotif("COMPLETED");
             });
         };
 
-        // MANUAL ADMISSION LOGIC
         window.openAddModal = (role) => {
             document.getElementById('userRole').value = role;
-            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL STUDENT ADMISSION' : 'MANUAL FACULTY REGISTRATION';
+            document.getElementById('modalTitle').innerText = role === 'student' ? 'MANUAL ADMISSION' : 'MANUAL HIRE';
             document.getElementById('studentFields').className = role === 'student' ? 'block' : 'hidden';
             document.getElementById('facultyFields').className = role === 'teacher' ? 'block' : 'hidden';
             document.getElementById('userModal').style.display = 'flex';
@@ -282,46 +246,49 @@
         document.getElementById('userForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveUserBtn');
-            const email = document.getElementById('uemail').value.toLowerCase();
+            const email = document.getElementById('uemail').value.trim().toLowerCase();
             const role = document.getElementById('userRole').value;
 
-            btn.classList.add('loading-btn');
-
-            // Duplicate Email Check
-            const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
-            if(!check.empty) {
-                showNotif("ERROR: EMAIL ALREADY IN USE");
-                btn.classList.remove('loading-btn');
+            // Gmail Check
+            const gmailRegex = /^[a-z0-9](\.?[a-z0-9]){5,}@gmail\.com$/;
+            if(!gmailRegex.test(email)) {
+                showNotif("ERROR: USE A VALID @GMAIL.COM ADDRESS");
                 return;
             }
 
-            const userData = {
-                firstname: document.getElementById('fn').value,
-                lastname: document.getElementById('ln').value,
-                gender: document.getElementById('gender').value,
-                email: email,
-                role: role,
-                status: "approved",
-                createdAt: new Date()
-            };
+            btn.classList.add('loading-btn');
 
-            if(role === 'student') {
-                userData.studentId = document.getElementById('id_num').value;
-                userData.birthdate = document.getElementById('dob').value;
-                userData.mobile = document.getElementById('mobile').value;
-                userData.course = document.getElementById('ucourse').value;
-                userData.year = document.getElementById('uyear').value;
-                userData.semester = document.getElementById('usem').value;
-                userData.address = document.getElementById('uaddress').value;
-            } else {
-                userData.license = document.getElementById('license').value;
-                userData.designation = document.getElementById('designation').value;
+            try {
+                const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+                if(!check.empty) throw new Error("EMAIL ALREADY REGISTERED");
+
+                // CASE HANDLING: Convert to Upper Case before saving
+                const userData = {
+                    firstname: document.getElementById('fn').value.toUpperCase(),
+                    lastname: document.getElementById('ln').value.toUpperCase(),
+                    email: email, // Keep email lowercase
+                    role: role,
+                    status: "approved",
+                    createdAt: new Date()
+                };
+
+                if(role === 'student') {
+                    userData.studentType = document.getElementById('ustatus').value.toUpperCase();
+                    userData.studentId = document.getElementById('id_num').value.toUpperCase();
+                    userData.course = document.getElementById('ucourse').value.toUpperCase();
+                    userData.year = document.getElementById('uyear').value.toUpperCase();
+                } else {
+                    userData.license = document.getElementById('license').value.toUpperCase();
+                }
+
+                await addDoc(collection(db, "users"), userData);
+                closeModal('userModal');
+                showNotif("USER SAVED SUCCESSFULLY");
+            } catch (err) {
+                showNotif(err.message.toUpperCase());
+            } finally {
+                btn.classList.remove('loading-btn');
             }
-
-            await addDoc(collection(db, "users"), userData);
-            btn.classList.remove('loading-btn');
-            closeModal('userModal');
-            showNotif("ACCOUNT CREATED SUCCESSFULLY");
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
