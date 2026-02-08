@@ -5,145 +5,246 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Setup | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        accent: '#f59e0b',
+                        danger: '#ef4444',
+                        success: '#10b981'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .bg-cmcs-blue { background-color: #0070c0; }
-        .bg-cmcs-sidebar { background-color: #00b0f0; }
-        .bg-cmcs-yellow { background-color: #ffff00; }
-        .bg-cmcs-logout { background-color: #cc0000; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .sidebar-link { padding: 12px 20px; display: block; color: white; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .active-tab { background-color: #ffff00; color: black; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; }
-        th { background-color: #d9d9d9; border: 1px solid #7f7f7f; padding: 6px; text-align: left; font-weight: bold; text-transform: uppercase; }
-        td { border: 1px solid #7f7f7f; padding: 6px; background-color: #ffffff; }
-        
-        .modal-overlay { background-color: rgba(0,0,0,0.6); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-container { background: white; border: 2px solid black; width: 480px; box-shadow: 6px 6px 0px 0px black; }
-        .modal-header { background-color: #0070c0; color: white; padding: 10px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
-        .modal-body { padding: 20px; }
-        .modal-label { display: block; font-size: 10px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .modal-input, .modal-select { width: 100%; border: 1px solid #7f7f7f; padding: 6px; font-size: 11px; margin-bottom: 12px; outline: none; }
-        .modal-footer { padding: 12px; display: flex; justify-content: flex-end; gap: 8px; background: #f0f0f0; border-top: 1px solid #7f7f7f; }
-
-        .day-checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #f9f9f9; padding: 8px; border: 1px solid #7f7f7f; margin-bottom: 12px; }
-        .day-item { display: flex; align-items: center; gap: 4px; font-size: 9px; font-weight: bold; }
-
-        .btn-modal-save { background-color: #ffff00; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-modal-cancel { background-color: #d9d9d9; border: 1px solid black; padding: 6px 20px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        
-        .status-pill { padding: 2px 8px; border-radius: 2px; font-size: 10px; font-weight: bold; text-transform: uppercase; border: 1px solid black; display: inline-block; }
-        .status-active { background-color: #28a745; color: white; }
-        .status-inactive { background-color: #dc3545; color: white; }
-        .loading-btn { opacity: 0.5; pointer-events: none; }
+        /* Consistent Table Styling */
+        table thead th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .status-pill { padding: 2px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
     </style>
 </head>
-<body class="bg-white min-h-screen flex flex-col font-sans">
-    <nav class="bg-cmcs-blue text-white flex justify-between items-center h-12 shadow-sm">
-        <div class="flex items-center px-4 gap-2"><span class="font-bold text-sm">CMCS VIRTUAL LEARNING SYSTEM</span></div>
-        <div class="flex items-center h-full">
-            <div class="flex gap-4 px-6 items-center text-xs italic uppercase"><span id="adminName">Loading...</span></div>
-            <button onclick="logout()" class="bg-cmcs-logout h-full px-8 text-white font-bold text-xs uppercase">Logout</button>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+            </div>
         </div>
-    </nav>
 
-    <div class="flex flex-1">
-        <aside class="w-48 bg-cmcs-sidebar flex flex-col">
-            <a href="admin_approval.html" class="sidebar-link">APPROVALS</a>
-            <a href="admin_setup.html" class="sidebar-link active-tab">ACADEMIC SETUP</a>
-            <a href="admin_class.html" class="sidebar-link">CLASS ASSIGNMENT</a>
-            <a href="admin_records.html" class="sidebar-link">MASTER RECORD</a>
-            <a href="admin_accounts.html" class="sidebar-link">ACCOUNTS</a>
-        </aside>
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
+            <a href="admin_approval.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
+            </a>
+            <a href="admin_setup.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+                <i class="fa-solid fa-school w-5"></i> <span class="font-medium text-sm">Academic Setup</span>
+            </a>
+            <a href="admin_class.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">Class Assignment</span>
+            </a>
+            <a href="admin_records.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-folder-open w-5"></i> <span class="font-medium text-sm">Master Record</span>
+            </a>
+            <a href="admin_accounts.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-users-gear w-5"></i> <span class="font-medium text-sm">Accounts</span>
+            </a>
+        </nav>
 
-        <main class="flex-1 p-6">
-            <div class="mb-10">
-                <div class="flex justify-between items-end mb-2">
-                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">COURSES</h2>
-                    <button onclick="prepareAddCourse()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD NEW COURSE</button>
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-white">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-white truncate" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400">Administrator</p>
                 </div>
-                <table>
-                    <thead><tr><th>SCHOOL YEAR</th><th>COURSE NAME</th><th>DURATION</th><th>DESCRIPTION</th><th>ACTIONS</th></tr></thead>
-                    <tbody id="courseTableBody"></tbody>
-                </table>
             </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> LOGOUT
+            </button>
+        </div>
+    </aside>
 
-            <div>
-                <div class="flex justify-between items-end mb-2">
-                    <h2 class="text-[12px] font-bold uppercase border-b-2 border-black">SUBJECT PROGRAM</h2>
-                    <button onclick="prepareAddSubject()" class="bg-cmcs-yellow border border-black px-3 py-1 text-[10px] font-bold shadow-[2px_2px_0px_0px_black] hover:bg-yellow-400">+ ADD SUBJECT</button>
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <h1 class="text-xl font-bold text-gray-800">Academic Setup</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full"><i class="fa-regular fa-calendar mr-1"></i> SY 2025-2026</span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Course Management</h2>
+                        <p class="text-xs text-gray-500 mt-1">Configure active degree programs and durations</p>
+                    </div>
+                    <button onclick="prepareAddCourse()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> ADD NEW COURSE
+                    </button>
                 </div>
-                <table>
-                    <thead><tr><th>CODE</th><th>SUBJECT</th><th>COURSE / YR / SEM</th><th>SCHEDULE</th><th>FACULTY</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
-                    <tbody id="programTableBody"></tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 font-semibold">
+                            <tr>
+                                <th class="px-6 py-3">School Year</th>
+                                <th class="px-6 py-3">Course Name</th>
+                                <th class="px-6 py-3">Duration</th>
+                                <th class="px-6 py-3">Description</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">Syncing courses...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </main>
-    </div>
 
-    <div id="courseModal" class="modal-overlay">
-        <div class="modal-container">
-            <div class="modal-header">
-                <span id="courseModalTitle">COURSE FORM</span>
-                <span class="cursor-pointer" onclick="closeModal('courseModal')">X</span>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Program</h2>
+                        <p class="text-xs text-gray-500 mt-1">Manage curriculum, schedules, and faculty loading</p>
+                    </div>
+                    <button onclick="prepareAddSubject()" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book"></i> ADD SUBJECT
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 font-semibold">
+                            <tr>
+                                <th class="px-6 py-3">Code & Subject</th>
+                                <th class="px-6 py-3">Course / Yr / Sem</th>
+                                <th class="px-6 py-3">Schedule</th>
+                                <th class="px-6 py-3">Faculty</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 italic">Syncing curriculum...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <form id="courseForm">
+        </div>
+    </main>
+
+    <div id="courseModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="courseModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Course Form</span>
+                <button onclick="closeModal('courseModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="courseForm" class="p-6 space-y-4">
                 <input type="hidden" id="editCourseId">
-                <div class="modal-body">
-                    <label class="modal-label">School Year</label>
-                    <input type="text" id="courseSY" class="modal-input" placeholder="e.g. 2025-2026" required>
-                    <label class="modal-label">Course Name</label>
-                    <input type="text" id="courseName" class="modal-input" placeholder="e.g. BSIT" required>
-                    <label class="modal-label">Duration (Years)</label>
-                    <input type="text" id="courseDuration" class="modal-input" placeholder="e.g. 4" required>
-                    <label class="modal-label">Description</label>
-                    <input type="text" id="courseDesc" class="modal-input" placeholder="Bachelor of Science in..." required>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">School Year</label>
+                    <input type="text" id="courseSY" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2025-2026" required>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" id="courseSaveBtn" class="btn-modal-save">SAVE RECORD</button>
-                    <button type="button" class="btn-modal-cancel" onclick="closeModal('courseModal')">CANCEL</button>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Course Name</label>
+                    <input type="text" id="courseName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="subjectModal" class="modal-overlay">
-        <div class="modal-container">
-            <div class="modal-header">
-                <span id="subjectModalTitle">SUBJECT FORM</span>
-                <span class="cursor-pointer" onclick="closeModal('subjectModal')">X</span>
-            </div>
-            <form id="programForm">
-                <input type="hidden" id="editSubjectId">
-                <div class="modal-body">
-                    <div class="grid grid-cols-2 gap-x-4">
-                        <div class="col-span-1"><label class="modal-label">Subject Code</label><input type="text" id="progCode" class="modal-input" required></div>
-                        <div class="col-span-1"><label class="modal-label">Subject Name</label><input type="text" id="progName" class="modal-input" required></div>
-                        <div class="col-span-2"><label class="modal-label">Under Course</label><select id="progCourse" class="modal-select" required></select></div>
-                        <div><label class="modal-label">Year Level</label><select id="progYear" class="modal-select"><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option></select></div>
-                        <div><label class="modal-label">Semester</label><select id="progSem" class="modal-select"><option value="1">1st Sem</option><option value="2">2nd Sem</option></select></div>
-                        <div class="col-span-2">
-                            <label class="modal-label">Select Days</label>
-                            <div class="day-checkbox-grid">
-                                <label class="day-item"><input type="checkbox" name="days" value="M"> M</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="T"> T</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="W"> W</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="TH"> TH</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="F"> F</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="S"> S</label>
-                                <label class="day-item"><input type="checkbox" name="days" value="SUN"> SUN</label>
-                            </div>
-                        </div>
-                        <div><label class="modal-label">Start Time</label><input type="time" id="progStart" class="modal-input" required></div>
-                        <div><label class="modal-label">End Time</label><input type="time" id="progEnd" class="modal-input" required></div>
-                        <div class="col-span-2"><label class="modal-label">Faculty In-charge</label><select id="progTeacher" class="modal-select" required></select></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Duration (Years)</label>
+                        <input type="number" id="courseDuration" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" id="subjectSaveBtn" class="btn-modal-save">SAVE RECORD</button>
-                    <button type="button" class="btn-modal-cancel" onclick="closeModal('subjectModal')">CANCEL</button>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">Description</label>
+                    <textarea id="courseDesc" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" rows="2" required></textarea>
+                </div>
+                <div class="pt-4 border-t flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('courseModal')" class="px-4 py-2 text-xs font-bold text-gray-500 bg-gray-100 rounded-lg">CANCEL</button>
+                    <button type="submit" id="courseSaveBtn" class="px-4 py-2 text-xs font-bold text-white bg-success rounded-lg shadow-md">SAVE RECORD</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="subjectModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="subjectModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Setup</span>
+                <button onclick="closeModal('subjectModal')" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="overflow-y-auto p-6">
+                <form id="programForm" class="space-y-4">
+                    <input type="hidden" id="editSubjectId">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Subject Code</label>
+                            <input type="text" id="progCode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Subject Name</label>
+                            <input type="text" id="progName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Under Course</label>
+                            <select id="progCourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Year Level</label>
+                            <select id="progYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Semester</label>
+                            <select id="progSem" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="1">1st Sem</option><option value="2">2nd Sem</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Schedule Days</label>
+                            <div class="grid grid-cols-7 gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="M"> M</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="T"> T</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="W"> W</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="TH"> TH</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="F"> F</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="S"> S</label>
+                                <label class="flex flex-col items-center gap-1 text-[10px] font-bold"><input type="checkbox" name="days" value="SUN"> SUN</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Start Time</label>
+                            <input type="time" id="progStart" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">End Time</label>
+                            <input type="time" id="progEnd" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-gray-500 mb-1">Faculty In-charge</label>
+                            <select id="progTeacher" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" required></select>
+                        </div>
+                    </div>
+                    <div class="pt-4 mt-2 border-t flex justify-end gap-3">
+                        <button type="button" onclick="closeModal('subjectModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100">CANCEL</button>
+                        <button type="submit" id="subjectSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-primary shadow-md">SAVE SUBJECT</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -152,6 +253,7 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // CONFIG (Same as yours)
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
             authDomain: "svls-289ee.firebaseapp.com",
@@ -179,7 +281,6 @@
                 if (snap.exists()) {
                     document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
                     
-                    // COURSE SYNC
                     onSnapshot(collection(db, "courses"), (snap) => {
                         const body = document.getElementById('courseTableBody');
                         const progCourseSel = document.getElementById('progCourse');
@@ -188,25 +289,41 @@
                         
                         snap.forEach(d => {
                             const r = d.data();
-                            body.innerHTML += `<tr><td>${r.schoolYear}</td><td>${r.name}</td><td>${r.duration} Yrs</td><td>${r.desc}</td>
-                                <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editCourse('${d.id}')">Edit</span>
-                                <span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('courses', '${d.id}')">Delete</span></td></tr>`;
+                            body.innerHTML += `
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 font-medium">${r.schoolYear}</td>
+                                    <td class="px-6 py-4 font-bold text-primary">${r.name}</td>
+                                    <td class="px-6 py-4">${r.duration} Years</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500">${r.desc}</td>
+                                    <td class="px-6 py-4 text-right space-x-3">
+                                        <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>`;
                             progCourseSel.innerHTML += `<option value="${r.name}">${r.name.toUpperCase()}</option>`;
                         });
                     });
 
-                    // SUBJECT SYNC
                     onSnapshot(collection(db, "programs"), (snap) => {
                         const body = document.getElementById('programTableBody');
                         body.innerHTML = '';
                         snap.forEach(d => {
                             const r = d.data();
-                            body.innerHTML += `<tr><td class="font-bold">${r.code}</td><td>${r.name}</td><td>${(r.course || '').toUpperCase()} / Y${r.year} S${r.semester}</td><td class="font-bold">${r.schedule || ''} ${formatTime(r.startTime)} - ${formatTime(r.endTime)}</td><td>${r.teacher}</td><td><span class="status-pill ${r.status === 'active' ? 'status-active' : 'status-inactive'}">${r.status}</span></td>
-                                <td><span class="text-blue-600 font-bold underline cursor-pointer mr-2" onclick="editSubject('${d.id}')">Edit</span><span class="text-red-600 font-bold underline cursor-pointer" onclick="handleDelete('programs', '${d.id}')">Delete</span></td></tr>`;
+                            body.innerHTML += `
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4"><div class="font-bold">${r.code}</div><div class="text-xs text-gray-500">${r.name}</div></td>
+                                    <td class="px-6 py-4 text-xs font-medium uppercase">${r.course} / Y${r.year} S${r.semester}</td>
+                                    <td class="px-6 py-4"><span class="text-xs font-bold text-slate-600">${r.schedule}</span><br><span class="text-[10px] text-gray-400">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</span></td>
+                                    <td class="px-6 py-4 text-xs italic">${r.teacher}</td>
+                                    <td class="px-6 py-4"><span class="status-pill ${r.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}">${r.status}</span></td>
+                                    <td class="px-6 py-4 text-right space-x-3">
+                                        <button onclick="editSubject('${d.id}')" class="text-blue-600 hover:text-blue-800 font-bold"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="handleDelete('programs', '${d.id}')" class="text-red-400 hover:text-red-600 font-bold"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>`;
                         });
                     });
 
-                    // TEACHER DROPDOWN
                     onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
                         const sel = document.getElementById('progTeacher');
                         sel.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
@@ -216,7 +333,7 @@
             } else { window.location.href = "login.html"; }
         });
 
-        // --- COURSE LOGIC ---
+        // ACTIONS
         window.prepareAddCourse = () => {
             document.getElementById('courseForm').reset();
             document.getElementById('editCourseId').value = "";
@@ -239,7 +356,7 @@
             e.preventDefault();
             const id = document.getElementById('editCourseId').value;
             const btn = document.getElementById('courseSaveBtn');
-            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
             const data = {
                 schoolYear: document.getElementById('courseSY').value,
                 name: document.getElementById('courseName').value,
@@ -248,11 +365,10 @@
             };
             if(id) await updateDoc(doc(db, "courses", id), data);
             else await addDoc(collection(db, "courses"), data);
-            btn.classList.remove('loading-btn');
+            btn.innerHTML = 'SAVE RECORD';
             closeModal('courseModal');
         };
 
-        // --- SUBJECT LOGIC ---
         window.prepareAddSubject = () => {
             document.getElementById('programForm').reset();
             document.getElementById('editSubjectId').value = "";
@@ -281,7 +397,7 @@
             e.preventDefault();
             const id = document.getElementById('editSubjectId').value;
             const btn = document.getElementById('subjectSaveBtn');
-            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
             const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
             const data = {
                 code: document.getElementById('progCode').value,
@@ -297,14 +413,13 @@
             };
             if(id) await updateDoc(doc(db, "programs", id), data);
             else await addDoc(collection(db, "programs"), data);
-            btn.classList.remove('loading-btn');
+            btn.innerHTML = 'SAVE SUBJECT';
             closeModal('subjectModal');
         };
 
-        window.handleDelete = async (coll, id) => { if(confirm('Delete this record?')) await deleteDoc(doc(db, coll, id)); };
+        window.handleDelete = async (coll, id) => { if(confirm('Are you sure you want to delete this record permanently?')) await deleteDoc(doc(db, coll, id)); };
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
-    </html>
-                                   
+</html>
