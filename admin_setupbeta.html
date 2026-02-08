@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script>
         tailwind.config = {
             theme: {
@@ -33,7 +32,6 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-
     <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
@@ -81,12 +79,11 @@
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-8">
-            
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Available Courses</h2>
-                        <p class="text-xs text-gray-500 mt-1">Manage institutional programs and durations</p>
+                        <p class="text-xs text-gray-500 mt-1 uppercase">Manage institutional programs and durations</p>
                     </div>
                     <button onclick="prepareAddCourse()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> ADD NEW COURSE
@@ -114,7 +111,7 @@
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Program</h2>
-                        <p class="text-xs text-gray-500 mt-1">Curriculum scheduling and faculty assignment</p>
+                        <p class="text-xs text-gray-500 mt-1 uppercase">Curriculum scheduling and faculty assignment</p>
                     </div>
                     <button onclick="prepareAddSubject()" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-book-medical"></i> ADD SUBJECT
@@ -152,7 +149,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">School Year</label>
-                        <input type="text" id="courseSY" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="2025-2026" required>
+                        <input type="text" id="courseSY" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="2025-2026" required>
                     </div>
                     <div class="col-span-1">
                         <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Course Name</label>
@@ -160,11 +157,11 @@
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Duration (Years)</label>
-                        <input type="number" id="courseDuration" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="4" required>
+                        <input type="number" id="courseDuration" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="4" required>
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Full Description</label>
-                        <textarea id="courseDesc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Bachelor of Science in..." required></textarea>
+                        <textarea id="courseDesc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="BACHELOR OF SCIENCE IN..." required></textarea>
                     </div>
                 </div>
                 <div class="pt-4 flex justify-end gap-3">
@@ -186,7 +183,6 @@
             <div class="overflow-y-auto p-6">
                 <form id="programForm" class="space-y-6">
                     <input type="hidden" id="editSubjectId">
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="pb-2 md:col-span-2 border-b border-gray-100"><h4 class="text-xs font-bold text-primary uppercase">General Info</h4></div>
                         <div>
@@ -199,44 +195,46 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Under Course Program</label>
-                            <select id="progCourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required></select>
+                            <select id="progCourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Year Level</label>
-                            <select id="progYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option><option value="4">Year 4</option>
+                            <select id="progYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                                <option value="1">YEAR 1</option>
+                                <option value="2">YEAR 2</option>
+                                <option value="3">YEAR 3</option>
+                                <option value="4">YEAR 4</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Semester</label>
-                            <select id="progSem" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="1">1st Semester</option><option value="2">2nd Semester</option>
+                            <select id="progSem" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                                <option value="1ST SEMESTER">1ST SEMESTER</option>
+                                <option value="2ND SEMESTER">2ND SEMESTER</option>
+                                <option value="SUMMER">SUMMER</option>
                             </select>
                         </div>
-
                         <div class="pb-2 md:col-span-2 border-b border-gray-100 mt-2"><h4 class="text-xs font-bold text-primary uppercase">Schedule & Faculty</h4></div>
-                        
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Weekly Schedule</label>
                             <div class="flex flex-wrap gap-2">
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="M" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold">MON</span>
+                                    <input type="checkbox" name="days" value="M" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">MON</span>
                                 </label>
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="T" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold">TUE</span>
+                                    <input type="checkbox" name="days" value="T" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">TUE</span>
                                 </label>
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="W" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold">WED</span>
+                                    <input type="checkbox" name="days" value="W" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">WED</span>
                                 </label>
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="TH" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold">THU</span>
+                                    <input type="checkbox" name="days" value="TH" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">THU</span>
                                 </label>
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold">FRI</span>
+                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">FRI</span>
                                 </label>
                             </div>
                         </div>
-
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Start Time</label>
                             <input type="time" id="progStart" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
@@ -247,10 +245,9 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Assigned Faculty In-charge</label>
-                            <select id="progTeacher" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required></select>
+                            <select id="progTeacher" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
                         </div>
                     </div>
-
                     <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
                         <button type="button" onclick="closeModal('subjectModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition uppercase">Cancel</button>
                         <button type="submit" id="subjectSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-primary hover:bg-blue-700 shadow-md transition flex items-center gap-2 uppercase">
@@ -293,17 +290,17 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
-                    document.getElementById('adminInitial').innerText = data.firstname[0] + data.lastname[0];
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
                     
                     // COURSE SYNC
                     onSnapshot(collection(db, "courses"), (snap) => {
                         const body = document.getElementById('courseTableBody');
                         const progCourseSel = document.getElementById('progCourse');
                         body.innerHTML = '';
-                        progCourseSel.innerHTML = '<option value="" disabled selected>Select Course</option>';
+                        progCourseSel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
                         
-                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">No courses found.</td></tr>';
+                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES FOUND.</td></tr>';
                         
                         snap.forEach(d => {
                             const r = d.data();
@@ -311,8 +308,8 @@
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
                                     <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
-                                    <td class="px-6 py-4">${r.duration} Years</td>
-                                    <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate">${r.desc}</td>
+                                    <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
                                     <td class="px-6 py-4 text-right space-x-2">
                                         <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
                                         <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
@@ -327,19 +324,19 @@
                         const body = document.getElementById('programTableBody');
                         body.innerHTML = '';
                         
-                        if(snap.empty) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">No subjects scheduled.</td></tr>';
+                        if(snap.empty) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects scheduled.</td></tr>';
 
                         snap.forEach(d => {
                             const r = d.data();
                             body.innerHTML += `
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="hover:bg-gray-50 transition-colors uppercase">
                                     <td class="px-6 py-4">
                                         <div class="font-bold text-gray-900">${r.code}</div>
-                                        <div class="text-[10px] text-gray-500 uppercase">${r.name}</div>
+                                        <div class="text-[10px] text-gray-500">${r.name}</div>
                                     </td>
                                     <td class="px-6 py-4 text-xs font-medium">
-                                        <span class="bg-gray-100 px-2 py-1 rounded">${r.course.toUpperCase()}</span>
-                                        <span class="ml-1 text-gray-400">Y${r.year} S${r.semester}</span>
+                                        <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                                        <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
                                     </td>
                                     <td class="px-6 py-4 text-xs">
                                         <div class="font-bold text-primary">${r.schedule}</div>
@@ -362,8 +359,11 @@
                     // TEACHER DROPDOWN
                     onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
                         const sel = document.getElementById('progTeacher');
-                        sel.innerHTML = '<option value="" disabled selected>Select Faculty</option>';
-                        snap.forEach(d => sel.innerHTML += `<option value="${d.data().lastname}, ${d.data().firstname}">${d.data().lastname}, ${d.data().firstname}</option>`);
+                        sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
+                        snap.forEach(d => {
+                            const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
+                            sel.innerHTML += `<option value="${name}">${name}</option>`;
+                        });
                     });
                 }
             } else { window.location.href = "login.html"; }
@@ -373,7 +373,7 @@
         window.prepareAddCourse = () => {
             document.getElementById('courseForm').reset();
             document.getElementById('editCourseId').value = "";
-            document.getElementById('courseModalTitle').innerText = "Add New Course";
+            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
             document.getElementById('courseModal').style.display = 'flex';
         };
 
@@ -384,7 +384,7 @@
             document.getElementById('courseName').value = d.name;
             document.getElementById('courseDuration').value = d.duration;
             document.getElementById('courseDesc').value = d.desc;
-            document.getElementById('courseModalTitle').innerText = "Edit Course Details";
+            document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
             document.getElementById('courseModal').style.display = 'flex';
         };
 
@@ -393,29 +393,29 @@
             const id = document.getElementById('editCourseId').value;
             const btn = document.getElementById('courseSaveBtn');
             btn.classList.add('loading-btn');
-            btn.innerHTML = '<span class="loader"></span> Saving...';
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
             
             const data = {
-                schoolYear: document.getElementById('courseSY').value,
+                schoolYear: document.getElementById('courseSY').value.toUpperCase(),
                 name: document.getElementById('courseName').value.toUpperCase(),
-                duration: String(document.getElementById('courseDuration').value),
-                desc: document.getElementById('courseDesc').value
+                duration: String(document.getElementById('courseDuration').value).toUpperCase(),
+                desc: document.getElementById('courseDesc').value.toUpperCase()
             };
             
             try {
                 if(id) await updateDoc(doc(db, "courses", id), data);
                 else await addDoc(collection(db, "courses"), data);
                 closeModal('courseModal');
-            } catch (err) { alert("Error saving course."); }
+            } catch (err) { alert("ERROR SAVING COURSE."); }
             
             btn.classList.remove('loading-btn');
-            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE RECORD';
         };
 
         window.prepareAddSubject = () => {
             document.getElementById('programForm').reset();
             document.getElementById('editSubjectId').value = "";
-            document.getElementById('subjectModalTitle').innerText = "Add Subject to Program";
+            document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
             document.getElementById('subjectModal').style.display = 'flex';
         };
 
@@ -432,7 +432,7 @@
             document.getElementById('progTeacher').value = d.teacher;
             const savedDays = d.schedule ? d.schedule.split('-') : [];
             document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
-            document.getElementById('subjectModalTitle').innerText = "Edit Subject Schedule";
+            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
             document.getElementById('subjectModal').style.display = 'flex';
         };
 
@@ -441,31 +441,33 @@
             const id = document.getElementById('editSubjectId').value;
             const btn = document.getElementById('subjectSaveBtn');
             btn.classList.add('loading-btn');
-            
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
+
             const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
             const data = {
                 code: document.getElementById('progCode').value.toUpperCase(),
                 name: document.getElementById('progName').value.toUpperCase(),
-                course: document.getElementById('progCourse').value,
-                year: document.getElementById('progYear').value,
-                semester: document.getElementById('progSem').value,
-                schedule: selectedDays,
+                course: document.getElementById('progCourse').value.toUpperCase(),
+                year: document.getElementById('progYear').value.toUpperCase(),
+                semester: document.getElementById('progSem').value.toUpperCase(),
+                schedule: selectedDays.toUpperCase(),
                 startTime: document.getElementById('progStart').value,
                 endTime: document.getElementById('progEnd').value,
-                teacher: document.getElementById('progTeacher').value,
-                status: 'active'
+                teacher: document.getElementById('progTeacher').value.toUpperCase(),
+                status: 'ACTIVE'
             };
             
             try {
                 if(id) await updateDoc(doc(db, "programs", id), data);
                 else await addDoc(collection(db, "programs"), data);
                 closeModal('subjectModal');
-            } catch (err) { alert("Error saving subject."); }
+            } catch (err) { alert("ERROR SAVING SUBJECT."); }
             btn.classList.remove('loading-btn');
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE PROGRAM';
         };
 
         window.handleDelete = async (coll, id) => { 
-            if(confirm('Are you sure you want to permanently delete this record?')) await deleteDoc(doc(db, coll, id)); 
+            if(confirm('ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?')) await deleteDoc(doc(db, coll, id)); 
         };
         
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
