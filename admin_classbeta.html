@@ -1,207 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Class Assignment | CMCS VLS</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-<style>
-    .bg-cmcs-blue { background-color:#0070c0 }
-    .bg-cmcs-sidebar { background-color:#00b0f0 }
-    .bg-cmcs-yellow { background-color:#ffff00 }
-    .bg-cmcs-logout { background-color:#cc0000 }
-
-    .sidebar-link {
-        padding:12px 20px;
-        color:white;
-        font-weight:bold;
-        text-transform:uppercase;
-        font-size:13px;
-        border-bottom:1px solid rgba(255,255,255,.25);
-        transition:.2s;
-    }
-    .sidebar-link:hover { background:#0096d6 }
-    .active-tab { background:#ffff00;color:black }
-
-    table { width:100%; border-collapse:collapse; font-size:11px }
-    th { background:#d9d9d9; border:1px solid #7f7f7f; padding:6px; font-weight:bold }
-    td { border:1px solid #7f7f7f; padding:6px; background:white; text-transform:uppercase }
-
-    .filter-container {
-        border:1px solid black;
-        height:38px;
-        display:flex;
-        background:white;
-    }
-    .filter-box {
-        flex:1;
-        padding:0 8px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        border-right:1px solid black;
-    }
-    .filter-label { font-size:9px;font-weight:bold;text-transform:uppercase }
-    .filter-select { background:none;outline:none;font-size:11px;font-weight:bold }
-
-    .tag-green {
-        background:#00ff00;
-        border:1px solid black;
-        padding:1px 4px;
-        font-size:10px;
-        font-weight:bold;
-    }
-
-    .modal-overlay {
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.6);
-        display:none;
-        align-items:center;
-        justify-content:center;
-        z-index:100;
-    }
-    .modal-container {
-        background:white;
-        border:2px solid black;
-        width:520px;
-        box-shadow:6px 6px 0 black;
-    }
-    .modal-header {
-        background:#0070c0;
-        color:white;
-        padding:10px;
-        font-weight:bold;
-        text-transform:uppercase;
-        display:flex;
-        justify-content:space-between;
-    }
-
-    .btn-modal-save {
-        background:#ffff00;
-        border:1px solid black;
-        padding:6px 18px;
-        font-size:10px;
-        font-weight:bold;
-        box-shadow:3px 3px 0 black;
-    }
-    .btn-modal-cancel {
-        background:#d9d9d9;
-        border:1px solid black;
-        padding:6px 18px;
-        font-size:10px;
-        font-weight:bold;
-    }
-
-    .program-row {
-        display:grid;
-        grid-template-columns:30px 100px 1fr;
-        padding:6px;
-        border-bottom:1px solid #eee;
-        align-items:center;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Assignment | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        accent: '#f59e0b',
+                        danger: '#ef4444',
+                        success: '#10b981'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
 
-<body class="min-h-screen flex flex-col font-sans">
-
-<nav class="bg-cmcs-blue h-12 flex justify-between items-center text-white">
-    <div class="px-4 font-bold uppercase text-sm">CMCS Virtual Learning System</div>
-    <div class="flex items-center h-full">
-        <span id="adminName" class="px-6 italic text-xs uppercase">Loading...</span>
-        <button onclick="logout()" class="bg-cmcs-logout h-full px-8 font-bold text-xs uppercase">Logout</button>
-    </div>
-</nav>
-
-<div class="flex flex-1">
-<aside class="w-48 bg-cmcs-sidebar flex flex-col sidebar">
-    <a class="sidebar-link" href="admin_approvalbeta.html">Approvals</a>
-    <a class="sidebar-link" href="admin_setupbeta.html">Academic Setup</a>
-    <a class="sidebar-link active-tab" href="#">Class Assignment</a>
-    <a class="sidebar-link" href="admin_recordsbeta.html">Master Record</a>
-    <a class="sidebar-link" href="admin_accountsbeta.html">Accounts</a>
-</aside>
-
-<main class="flex-1 p-6 page">
-    <h2 class="text-xs font-bold uppercase border-b-2 border-black inline-block mb-4">Student List</h2>
-
-    <div class="flex gap-4 mb-6 filters">
-        <div class="filter-container flex-1">
-            <div class="filter-box flex-[2]">
-                <span class="filter-label">Course</span>
-                <select id="filterCourse" class="filter-select"></select>
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Year</span>
-                <select id="filterYear" class="filter-select">
-                    <option>1</option><option>2</option><option>3</option><option>4</option>
-                </select>
-            </div>
-            <div class="filter-box border-none">
-                <span class="filter-label">Semester</span>
-                <select id="filterSem" class="filter-select">
-                    <option>1</option><option>2</option>
-                </select>
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
             </div>
         </div>
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
+            <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
+            </a>
+            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-school w-5"></i> <span class="font-medium text-sm">Academic Setup</span>
+            </a>
+            <a href="admin_classbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+                <i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">Class Assignment</span>
+            </a>
+            <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-folder-open w-5"></i> <span class="font-medium text-sm">Master Record</span>
+            </a>
+            <a href="admin_accountsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-users-gear w-5"></i> <span class="font-medium text-sm">Accounts</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white" id="adminInitial">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-white truncate" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> LOGOUT
+            </button>
+        </div>
+    </aside>
 
-        <div class="filter-container w-64">
-            <div class="filter-box border-none">
-                <span class="filter-label">Search</span>
-                <input id="searchField" class="filter-select" placeholder="Name or ID" />
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <h1 class="text-xl font-bold text-gray-800">Class Assignment</h1>
+            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <i class="fa-solid fa-user-tag mr-1"></i> Student Enrollment Management
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-6">
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Select Course</label>
+                        <select id="filterCourse" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Year</label>
+                            <select id="filterYear" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                <option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option><option value="4">4th</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Sem</label>
+                            <select id="filterSem" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium">
+                                <option value="1">1st</option><option value="2">2nd</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Search Directory</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-300 text-xs"></i>
+                            <input type="text" id="searchField" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="Name or ID...">
+                        </div>
+                    </div>
+                    <button id="fetchBtn" class="bg-primary hover:bg-blue-700 text-white h-[38px] rounded-lg text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> FETCH RECORDS
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                    <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Student List</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100">
+                            <tr>
+                                <th class="px-6 py-3" width="60">No.</th>
+                                <th class="px-6 py-3">Student ID</th>
+                                <th class="px-6 py-3">Name</th>
+                                <th class="px-6 py-3">Academic Info</th>
+                                <th class="px-6 py-3">Assigned Load</th>
+                                <th class="px-6 py-3 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-gray-50 text-sm text-gray-700">
+                            <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">Configure filters and click fetch to load students.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+    </main>
 
-        <button id="fetchBtn"
-            class="bg-cmcs-yellow border border-black px-10 font-bold text-xs uppercase shadow-[2px_2px_0_black]">
-            Fetch
-        </button>
+    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 text-center transform transition-all">
+            <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-circle-exclamation text-xl"></i>
+            </div>
+            <h3 class="text-sm font-bold text-gray-800 uppercase mb-2">System Alert</h3>
+            <p id="notifMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <button onclick="closeModal('notifModal')" class="w-full bg-secondary text-white py-2 rounded-lg text-xs font-bold hover:bg-slate-800 transition">OKAY</button>
+        </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th width="40">No</th>
-                <th width="120">ID</th>
-                <th>Lastname</th>
-                <th>Firstname</th>
-                <th width="160">Course/Yr/Sem</th>
-                <th>Assigned Programs</th>
-                <th width="120">Actions</th>
-            </tr>
-        </thead>
-        <tbody id="studentTableBody">
-            <tr><td colspan="7" class="p-6 text-center italic text-gray-400">Select filters and click Fetch</td></tr>
-        </tbody>
-    </table>
-</main>
-</div>
+    <div id="classModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <span class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Enrollment</span>
+                <button onclick="closeModal('classModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-4">
+                    <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xs" id="studentInitial">??</div>
+                    <div>
+                        <p class="text-[10px] font-bold text-primary uppercase">Enrollment Target:</p>
+                        <p id="targetStudentName" class="text-sm font-black text-gray-800 uppercase"></p>
+                    </div>
+                </div>
 
-<!-- GSAP -->
-<script>
-gsap.from(".sidebar a", { x:-30, opacity:0, stagger:.08, duration:.5 });
-gsap.from(".page", { opacity:0, y:20, duration:.5 });
+                <div class="bg-gray-50 border border-gray-100 rounded-lg overflow-hidden">
+                    <div class="grid grid-cols-[40px_100px_1fr] gap-4 px-4 py-2 bg-gray-100 text-[10px] font-black text-gray-400 uppercase">
+                        <span>Set</span><span>Code</span><span>Subject Name</span>
+                    </div>
+                    <div id="programList" class="divide-y divide-gray-100 bg-white">
+                        </div>
+                </div>
+            </div>
 
-document.getElementById("fetchBtn").addEventListener("click", () => {
-    gsap.from("#studentTableBody tr", { opacity:0, y:10, stagger:.04, duration:.4 });
-});
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onclick="closeModal('classModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition uppercase">Cancel</button>
+                <button id="saveClassesBtn" class="px-6 py-2 rounded-lg text-xs font-bold text-white bg-success hover:bg-emerald-600 shadow-md transition flex items-center gap-2 uppercase">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Save Record
+                </button>
+            </div>
+        </div>
+    </div>
 
-window.animateModalIn = el => {
-    el.style.display="flex";
-    gsap.fromTo(el.querySelector(".modal-container"),
-        { scale:.8, opacity:0 },
-        { scale:1, opacity:1, duration:.3, ease:"back.out(1.7)" });
-};
-window.animateModalOut = el => {
-    gsap.to(el.querySelector(".modal-container"),
-        { scale:.8, opacity:0, duration:.2, onComplete:()=>el.style.display="none" });
-};
-</script>
-
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -220,7 +203,7 @@ window.animateModalOut = el => {
         const auth = getAuth(app);
 
         let currentStudentUid = null;
-        let fetchedStudents = []; // Store data for search
+        let fetchedStudents = [];
 
         window.showNotif = (msg) => {
             document.getElementById('notifMessage').innerText = msg;
@@ -233,7 +216,9 @@ window.animateModalOut = el => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = data.firstname[0] + data.lastname[0];
                     loadCourses();
                 }
             } else { window.location.href = "login.html"; }
@@ -249,7 +234,6 @@ window.animateModalOut = el => {
             });
         }
 
-        // Modified Render function to support filtering
         function renderTable(students) {
             const tbody = document.getElementById('studentTableBody');
             const sem = document.getElementById('filterSem').value;
@@ -257,25 +241,39 @@ window.animateModalOut = el => {
             let count = 1;
 
             if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-red-600 font-bold">NO RECORDS MATCHED</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-400 font-medium">NO MATCHING RECORDS FOUND</td></tr>';
                 return;
             }
 
             students.forEach(s => {
-                const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+                const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `
+                    <span class="inline-block bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] px-2 py-0.5 rounded font-bold mr-1 mb-1">
+                        ${p}
+                    </span>`).join('') : '<span class="text-gray-300 text-[10px] uppercase">No Load</span>';
+                
                 tbody.innerHTML += `
-                    <tr>
-                        <td>${count++}</td>
-                        <td class="font-bold text-blue-800">${s.studentId || '00-0-000'}</td>
-                        <td>${s.lastname}</td><td>${s.firstname}</td>
-                        <td>${s.course} Y${s.year} S${sem}</td>
-                        <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
-                        <td><button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="text-green-600 underline font-bold italic text-[10px]">UPDATE LOAD</button></td>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-xs font-bold text-gray-400">${count++}</td>
+                        <td class="px-6 py-4 font-bold text-primary">${s.studentId || '00-0-000'}</td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900 uppercase">${s.lastname}, ${s.firstname}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs">
+                            <span class="text-gray-500 uppercase">${s.course}</span>
+                            <div class="text-[10px] text-gray-400">YEAR ${s.year} • SEM ${sem}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap max-w-xs">${subjects}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-600 px-3 py-1 rounded text-[10px] font-black transition-all">
+                                UPDATE LOAD
+                            </button>
+                        </td>
                     </tr>`;
             });
         }
 
-        // Search Input Event
         document.getElementById('searchField').oninput = (e) => {
             const queryStr = e.target.value.toUpperCase();
             const filtered = fetchedStudents.filter(s => 
@@ -289,8 +287,10 @@ window.animateModalOut = el => {
         window.openClassModal = async (uid, name) => {
             currentStudentUid = uid;
             document.getElementById('targetStudentName').innerText = name;
+            document.getElementById('studentInitial').innerText = name.split(',')[0][0] + (name.split(' ')[1] ? name.split(' ')[1][0] : '');
+            
             const listDiv = document.getElementById('programList');
-            listDiv.innerHTML = '<div class="p-4 text-[10px] italic">Accessing database...</div>';
+            listDiv.innerHTML = '<div class="p-8 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2">SYNCING SUBJECTS...</p></div>';
             document.getElementById('classModal').style.display = 'flex';
 
             try {
@@ -305,14 +305,15 @@ window.animateModalOut = el => {
                     const pCode = (data.code || "").toUpperCase();
                     const pName = (data.name || "UNNAMED SUBJECT").toUpperCase();
                     const checked = enrolled.includes(pCode) ? 'checked' : '';
+                    
                     listDiv.innerHTML += `
-                        <div class="program-row px-2">
-                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-3 h-3 accent-blue-600">
-                            <span class="text-[10px] font-bold text-blue-900 border-r pr-2">${pCode}</span>
-                            <span class="text-[10px] font-medium pl-1">${pName}</span>
+                        <div class="grid grid-cols-[40px_100px_1fr] gap-4 items-center px-4 py-3 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                            <input type="checkbox" value="${pCode}" ${checked} class="prog-checkbox w-4 h-4 text-primary rounded accent-primary">
+                            <span class="text-[10px] font-black text-gray-800 border-r border-gray-100 pr-2">${pCode}</span>
+                            <span class="text-xs font-medium text-gray-600">${pName}</span>
                         </div>`;
                 });
-            } catch (err) { listDiv.innerHTML = 'Error loading subjects.'; }
+            } catch (err) { listDiv.innerHTML = '<div class="p-4 text-danger text-xs font-bold">Error loading database.</div>'; }
         };
 
         document.getElementById('fetchBtn').onclick = async () => {
@@ -320,9 +321,12 @@ window.animateModalOut = el => {
             const year = document.getElementById('filterYear').value;
             const sem = document.getElementById('filterSem').value;
             const tbody = document.getElementById('studentTableBody');
-            
+            const btn = document.getElementById('fetchBtn');
+                        
             if(!course) { showNotif("PLEASE SELECT A COURSE FIRST"); return; }
-            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center italic">Fetching students...</td></tr>';
+            
+            btn.innerHTML = '<span class="loader"></span> FETCHING...';
+            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2">SEARCHING RECORDS...</p></td></tr>';
 
             try {
                 const q = query(collection(db, "users"), 
@@ -333,37 +337,38 @@ window.animateModalOut = el => {
                 );
 
                 const snap = await getDocs(q);
-                fetchedStudents = [];
-                
+                fetchedStudents = [];                                
                 snap.forEach(u => {
                     const d = u.data();
                     if (!d.semester || d.semester == sem) {
                         fetchedStudents.push({ uid: u.id, ...d });
                     }
-                });
-                
+                });                                
                 renderTable(fetchedStudents);
-                document.getElementById('searchField').value = ''; // Reset search box on new fetch
+                document.getElementById('searchField').value = '';
             } catch (e) { showNotif("ERROR CONNECTING TO DATABASE"); }
+            finally { btn.innerHTML = '<i class="fa-solid fa-rotate"></i> FETCH RECORDS'; }
         };
 
         document.getElementById('saveClassesBtn').onclick = async () => {
             const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
             const btn = document.getElementById('saveClassesBtn');
             btn.disabled = true;
-            btn.innerText = "SAVING...";
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
 
             try {
                 await updateDoc(doc(db, "users", currentStudentUid), { assignedPrograms: selected });
                 closeModal('classModal');
                 showNotif("STUDENT SUBJECT LOAD UPDATED SUCCESSFULLY");
                 document.getElementById('fetchBtn').click(); 
-            } catch (err) { showNotif("SAVE FAILED. CHECK NETWORK."); }
-            finally { btn.disabled = false; btn.innerText = "SAVE RECORD"; }
+             } catch (err) { showNotif("SAVE FAILED. CHECK NETWORK."); }
+            finally { 
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SAVE RECORD'; 
+            }
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
-
 </body>
-      </html>
+</html>
