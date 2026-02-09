@@ -14,21 +14,19 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#2563eb', // Modern Blue
-                        secondary: '#1e293b', // Slate Dark
-                        danger: '#ef4444', // Red
-                        success: '#10b981' // Emerald
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        danger: '#ef4444',
+                        success: '#10b981'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar for table containers */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         
-        /* Table Styles to match Approvals Beta */
         .modern-table thead th {
             font-size: 11px;
             text-transform: uppercase;
@@ -93,11 +91,10 @@
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-6 items-end">
                 <div class="w-48">
                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">View Role</label>
-                    <select id="roleFilter" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-bold text-gray-700 outline-none focus:ring-2 focus:ring-primary/20">
+                    <select id="roleFilter" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-bold text-gray-700 outline-none">
                         <option value="ALL">ALL USERS</option>
                         <option value="student">STUDENTS</option>
                         <option value="teacher">TEACHERS</option>
@@ -107,7 +104,7 @@
                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Search Directory</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-gray-400 text-xs"></i>
-                        <input type="text" id="userSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium outline-none focus:ring-2 focus:ring-primary/20" placeholder="SEARCH BY NAME OR ID NUMBER...">
+                        <input type="text" id="userSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium outline-none" placeholder="SEARCH BY NAME OR ID NUMBER...">
                     </div>
                 </div>
             </div>
@@ -125,13 +122,29 @@
                                 <th class="text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100">
-                            </tbody>
+                        <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
+
+    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-bell text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
+            <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
+            <div id="confirmActions" class="hidden flex justify-center gap-3">
+                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
+                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+            </div>
+            <div id="alertActions" class="flex justify-center">
+                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -153,13 +166,34 @@
 
         let allUsers = [];
 
+        // Notification System
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            const confirmDiv = document.getElementById('confirmActions');
+            const alertDiv = document.getElementById('alertActions');
+            if (isConfirm) {
+                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
+                alertDiv.classList.add('hidden');
+                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            } else {
+                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
+                alertDiv.classList.remove('hidden');
+            }
+            document.getElementById('notifModal').classList.remove('hidden');
+            document.getElementById('notifModal').classList.add('flex');
+        };
+
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        };
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
-                    const fullName = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminName').innerText = fullName;
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
                     document.getElementById('adminInitial').innerText = data.firstname.charAt(0).toUpperCase();
                     syncUsers();
                 }
@@ -190,16 +224,13 @@
             filtered.forEach(u => {
                 const isBlocked = u.status === 'disabled';
                 const dept = u.role === 'student' ? u.course : 'FACULTY';
-
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50/30 transition-all">
                         <td class="px-6 py-4">
                             <div class="font-bold text-gray-800">${u.studentId || 'N/A'}</div>
                             <div class="text-[10px] text-primary font-bold uppercase">${u.role}</div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-gray-800 uppercase">${u.lastname}, ${u.firstname}</div>
-                        </td>
+                        <td class="px-6 py-4 font-bold uppercase text-gray-800">${u.lastname}, ${u.firstname}</td>
                         <td class="px-6 py-4 text-xs lowercase text-gray-500">${u.email}</td>
                         <td class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">${dept || '---'}</td>
                         <td class="px-6 py-4">
@@ -209,35 +240,30 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
-                                <button onclick="toggleBlock('${u.uid}', '${u.status}')" 
-                                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-[10px] font-bold hover:bg-slate-800 hover:text-white transition-all">
+                                <button onclick="handleBlock('${u.uid}', '${u.status}')" class="px-3 py-2 rounded-lg border border-gray-200 text-[10px] font-bold hover:bg-slate-800 hover:text-white transition-all">
                                     <i class="fa-solid ${!isBlocked ? 'fa-ban' : 'fa-circle-check'}"></i> ${!isBlocked ? 'BLOCK' : 'UNBLOCK'}
                                 </button>
-                                <button onclick="deleteUser('${u.uid}')" 
-                                    class="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">
+                                <button onclick="handleDelete('${u.uid}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">
                                     <i class="fa-solid fa-trash-can"></i> DELETE
                                 </button>
                             </div>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
 
-        window.toggleBlock = async (uid, currentStatus) => {
+        window.handleBlock = (uid, currentStatus) => {
             const isApproved = currentStatus === 'approved';
-            const newStatus = isApproved ? 'disabled' : 'approved';
-            const msg = isApproved ? "Block this user? They will no longer be able to sign in." : "Restore access for this user?";
-            
-            if(confirm(msg)) {
-                await updateDoc(doc(db, "users", uid), { status: newStatus });
-            }
+            const msg = isApproved ? "Are you sure you want to BLOCK this user?" : "Restore access for this user?";
+            showNotif(msg, true, async () => {
+                await updateDoc(doc(db, "users", uid), { status: isApproved ? 'disabled' : 'approved' });
+            });
         };
 
-        window.deleteUser = async (uid) => {
-            if(confirm("PERMANENTLY DELETE THIS ACCOUNT? This cannot be undone.")) {
+        window.handleDelete = (uid) => {
+            showNotif("PERMANENTLY DELETE THIS ACCOUNT? This action cannot be reversed.", true, async () => {
                 await deleteDoc(doc(db, "users", uid));
-            }
+            });
         };
 
         document.getElementById('roleFilter').onchange = renderTable;
