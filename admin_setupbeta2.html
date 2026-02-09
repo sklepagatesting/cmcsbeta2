@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,10 +29,12 @@
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-btn { opacity: 0.7; pointer-events: none; }
+        .active-link { background-color: #2563eb !important; color: white !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
@@ -44,7 +45,7 @@
             <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
             </a>
-            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg active-link transition-colors">
                 <i class="fa-solid fa-school w-5"></i> <span class="font-medium text-sm">Academic Setup</span>
             </a>
             <a href="admin_classbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
@@ -59,10 +60,10 @@
         </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white" id="adminInitial">AD</div>
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white uppercase" id="adminInitial">AD</div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-medium text-white truncate" id="adminName">Loading...</p>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-tighter">Administrator</p>
+                    <p class="text-xs font-medium text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
                 </div>
             </div>
             <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
@@ -74,7 +75,7 @@
     <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
             <h1 class="text-xl font-bold text-gray-800">Academic Setup</h1>
-            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full uppercase font-bold tracking-tight">
                 <i class="fa-solid fa-calendar-days mr-1"></i> Management Console
             </div>
         </header>
@@ -92,13 +93,13 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                        <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
                             <tr>
-                                <th class="px-6 py-3">School Year</th>
-                                <th class="px-6 py-3">Course Name</th>
-                                <th class="px-6 py-3">Duration</th>
-                                <th class="px-6 py-3">Description</th>
-                                <th class="px-6 py-3 text-right">Actions</th>
+                                <th class="px-6 py-4">School Year</th>
+                                <th class="px-6 py-4">Course Name</th>
+                                <th class="px-6 py-4">Duration</th>
+                                <th class="px-6 py-4">Description</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
@@ -120,18 +121,17 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                        <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
                             <tr>
-                                <th class="px-6 py-3">Code & Subject</th>
-                                <th class="px-6 py-3">Course / Yr / Sem</th>
-                                <th class="px-6 py-3">Schedule</th>
-                                <th class="px-6 py-3">Faculty</th>
-                                <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3 text-right">Actions</th>
+                                <th class="px-6 py-4">Code & Subject</th>
+                                <th class="px-6 py-4">Course / Yr / Sem</th>
+                                <th class="px-6 py-4">Schedule</th>
+                                <th class="px-6 py-4">Faculty</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
-                            <tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 italic">Fetching subject data...</td></tr>
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic uppercase">Fetching subject data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -235,7 +235,7 @@
                                     <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">FRI</span>
                                 </label>
                                 <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
-                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">SAT</span>
+                                    <input type="checkbox" name="days" value="SAT" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">SAT</span>
                                 </label>
                             </div>
                         </div>
@@ -263,254 +263,253 @@
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60]">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-bell text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
+            <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
+            <div id="confirmActions" class="hidden flex justify-center gap-3">
+                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
+                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+            </div>
+            <div id="alertActions" class="flex justify-center">
+                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
+            </div>
+        </div>
+    </div>
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-        authDomain: "svls-289ee.firebaseapp.com",
-        projectId: "svls-289ee",
-        storageBucket: "svls-289ee.firebasestorage.app",
-        messagingSenderId: "500705386198",
-        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const formatTime = (t) => {
-        if(!t) return "";
-        const [h, m] = t.split(':');
-        const hh = parseInt(h);
-        const suffix = hh >= 12 ? "PM" : "AM";
-        let hour = ((hh + 11) % 12 + 1);
-        return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
-    };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-    // SYSTEM NOTIFICATION MODAL LOGIC
-    window.showNotif = (msg, isConfirm = false, onYes = null) => {
-        document.getElementById('notifMessage').innerText = msg;
-        const confirmDiv = document.getElementById('confirmActions');
-        const alertDiv = document.getElementById('alertActions');
-        
-        if (isConfirm) {
-            confirmDiv.classList.remove('hidden');
-            confirmDiv.classList.add('flex');
-            alertDiv.classList.add('hidden');
-            document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-        } else {
-            confirmDiv.classList.add('hidden');
-            confirmDiv.classList.remove('flex');
-            alertDiv.classList.remove('hidden');
-        }
-        
-        const modal = document.getElementById('notifModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    };
+        const formatTime = (t) => {
+            if(!t) return "";
+            const [h, m] = t.split(':');
+            const hh = parseInt(h);
+            const suffix = hh >= 12 ? "PM" : "AM";
+            let hour = ((hh + 11) % 12 + 1);
+            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+        };
 
-    window.closeModal = (id) => {
-        const modal = document.getElementById(id);
-        if(modal) {
-            modal.style.display = 'none'; // For Form Modals
-            modal.classList.add('hidden'); // For Notif Modal
+        // System Notification Modal
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            const confirmDiv = document.getElementById('confirmActions');
+            const alertDiv = document.getElementById('alertActions');
+            if (isConfirm) {
+                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
+                alertDiv.classList.add('hidden');
+                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            } else {
+                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
+                alertDiv.classList.remove('hidden');
+            }
+            document.getElementById('notifModal').classList.remove('hidden');
+            document.getElementById('notifModal').classList.add('flex');
+        };
+
+        window.closeModal = (id) => {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
             modal.classList.remove('flex');
-        }
-    };
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                
-                // COURSE SYNC (STATUS COLUMN REMOVED)
-                onSnapshot(collection(db, "courses"), (snap) => {
-                    const body = document.getElementById('courseTableBody');
-                    const progCourseSel = document.getElementById('progCourse');
-                    body.innerHTML = '';
-                    progCourseSel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
-                    
-                    if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES FOUND.</td></tr>';
-                    
-                    snap.forEach(d => {
-                        const r = d.data();
-                        body.innerHTML += `
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
-                                <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
-                                <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
-                                <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
-                                <td class="px-6 py-4 text-right space-x-2">
-                                    <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-transform active:scale-90"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 p-2 transition-transform active:scale-90"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>`;
-                        progCourseSel.innerHTML += `<option value="${r.name}">${r.name.toUpperCase()}</option>`;
-                    });
-                });
-
-                // SUBJECT SYNC (STATUS COLUMN REMOVED)
-                onSnapshot(collection(db, "programs"), (snap) => {
-                    const body = document.getElementById('programTableBody');
-                    body.innerHTML = '';
-                    
-                    if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects scheduled.</td></tr>';
-
-                    snap.forEach(d => {
-                        const r = d.data();
-                        body.innerHTML += `
-                            <tr class="hover:bg-gray-50 transition-colors uppercase">
-                                <td class="px-6 py-4">
-                                    <div class="font-bold text-gray-900">${r.code}</div>
-                                    <div class="text-[10px] text-gray-500">${r.name}</div>
-                                </td>
-                                <td class="px-6 py-4 text-xs font-medium">
-                                    <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
-                                    <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
-                                </td>
-                                <td class="px-6 py-4 text-xs">
-                                    <div class="font-bold text-primary">${r.schedule}</div>
-                                    <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
-                                </td>
-                                <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
-                                <td class="px-6 py-4 text-right space-x-2">
-                                    <button onclick="editSubject('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-transform active:scale-90"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="handleDelete('programs', '${d.id}')" class="text-red-400 hover:text-red-600 p-2 transition-transform active:scale-90"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>`;
-                    });
-                });
-
-                // TEACHER DROPDOWN SYNC
-                onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
-                    const sel = document.getElementById('progTeacher');
-                    sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
-                    snap.forEach(d => {
-                        const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
-                        sel.innerHTML += `<option value="${name}">${name}</option>`;
-                    });
-                });
-            }
-        } else { window.location.href = "login.html"; }
-    });
-
-    // ACTIONS: COURSE
-    window.prepareAddCourse = () => {
-        document.getElementById('courseForm').reset();
-        document.getElementById('editCourseId').value = "";
-        document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
-        document.getElementById('courseModal').style.display = 'flex';
-    };
-
-    window.editCourse = async (id) => {
-        const d = (await getDoc(doc(db, "courses", id))).data();
-        document.getElementById('editCourseId').value = id;
-        document.getElementById('courseSY').value = d.schoolYear;
-        document.getElementById('courseName').value = d.name;
-        document.getElementById('courseDuration').value = d.duration;
-        document.getElementById('courseDesc').value = d.desc;
-        document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
-        document.getElementById('courseModal').style.display = 'flex';
-    };
-
-    document.getElementById('courseForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editCourseId').value;
-        const btn = document.getElementById('courseSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span> SAVING...';
-        
-        const data = {
-            schoolYear: document.getElementById('courseSY').value.toUpperCase(),
-            name: document.getElementById('courseName').value.toUpperCase(),
-            duration: String(document.getElementById('courseDuration').value).toUpperCase(),
-            desc: document.getElementById('courseDesc').value.toUpperCase()
+            if(id !== 'notifModal') modal.style.display = 'none';
         };
-        
-        try {
-            if(id) await updateDoc(doc(db, "courses", id), data);
-            else await addDoc(collection(db, "courses"), data);
-            closeModal('courseModal');
-            showNotif("Course record saved successfully.");
-        } catch (err) { showNotif("Error saving course record."); }
-        
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE RECORD';
-    };
 
-    // ACTIONS: SUBJECT/PROGRAM
-    window.prepareAddSubject = () => {
-        document.getElementById('programForm').reset();
-        document.getElementById('editSubjectId').value = "";
-        document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
-        document.getElementById('subjectModal').style.display = 'flex';
-    };
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                                        
+                    // COURSE SYNC
+                    onSnapshot(collection(db, "courses"), (snap) => {
+                        const body = document.getElementById('courseTableBody');
+                        const progCourseSel = document.getElementById('progCourse');
+                        body.innerHTML = '';
+                        progCourseSel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES FOUND.</td></tr>';
+                        snap.forEach(d => {
+                            const r = d.data();
+                            body.innerHTML += `
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
+                                    <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
+                                    <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                                    <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
+                                </tr>`;
+                            progCourseSel.innerHTML += `<option value="${r.name}">${r.name.toUpperCase()}</option>`;
+                        });
+                    });
 
-    window.editSubject = async (id) => {
-        const d = (await getDoc(doc(db, "programs", id))).data();
-        document.getElementById('editSubjectId').value = id;
-        document.getElementById('progCode').value = d.code;
-        document.getElementById('progName').value = d.name;
-        document.getElementById('progCourse').value = d.course || "";
-        document.getElementById('progYear').value = d.year;
-        document.getElementById('progSem').value = d.semester;
-        document.getElementById('progStart').value = d.startTime;
-        document.getElementById('progEnd').value = d.endTime;
-        document.getElementById('progTeacher').value = d.teacher;
-        const savedDays = d.schedule ? d.schedule.split('-') : [];
-        document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
-        document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
-        document.getElementById('subjectModal').style.display = 'flex';
-    };
+                    // SUBJECT SYNC
+                    onSnapshot(collection(db, "programs"), (snap) => {
+                        const body = document.getElementById('programTableBody');
+                        body.innerHTML = '';
+                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects scheduled.</td></tr>';
+                        snap.forEach(d => {
+                            const r = d.data();
+                            body.innerHTML += `
+                                <tr class="hover:bg-gray-50 transition-colors uppercase">
+                                    <td class="px-6 py-4">
+                                        <div class="font-bold text-gray-900">${r.code}</div>
+                                        <div class="text-[10px] text-gray-500">${r.name}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs font-medium">
+                                        <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                                        <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs">
+                                        <div class="font-bold text-primary">${r.schedule}</div>
+                                        <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <button onclick="editSubject('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="handleDelete('programs', '${d.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                                    </td>
+                                </tr>`;
+                        });
+                    });
 
-    document.getElementById('programForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editSubjectId').value;
-        const btn = document.getElementById('subjectSaveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span> SAVING...';
-
-        const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
-        const data = {
-            code: document.getElementById('progCode').value.toUpperCase(),
-            name: document.getElementById('progName').value.toUpperCase(),
-            course: document.getElementById('progCourse').value.toUpperCase(),
-            year: document.getElementById('progYear').value.toUpperCase(),
-            semester: document.getElementById('progSem').value.toUpperCase(),
-            schedule: selectedDays.toUpperCase(),
-            startTime: document.getElementById('progStart').value,
-            endTime: document.getElementById('progEnd').value,
-            teacher: document.getElementById('progTeacher').value.toUpperCase()
-        };
-        
-        try {
-            if(id) await updateDoc(doc(db, "programs", id), data);
-            else await addDoc(collection(db, "programs"), data);
-            closeModal('subjectModal');
-            showNotif("Subject schedule updated.");
-        } catch (err) { showNotif("Error saving subject schedule."); }
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE PROGRAM';
-    };
-
-    // SYSTEM DELETE MESSAGE WITH MODAL
-    window.handleDelete = (coll, id) => { 
-        showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
-            try {
-                await deleteDoc(doc(db, coll, id));
-                showNotif("Record deleted successfully.");
-            } catch (err) {
-                showNotif("Error deleting record.");
-            }
+                    // TEACHER DROPDOWN
+                    onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
+                        const sel = document.getElementById('progTeacher');
+                        sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
+                        snap.forEach(d => {
+                            const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
+                            sel.innerHTML += `<option value="${name}">${name}</option>`;
+                        });
+                    });
+                }
+            } else { window.location.href = "login.html"; }
         });
-    };
 
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-</script>
+        // ACTION: Course
+        window.prepareAddCourse = () => {
+            document.getElementById('courseForm').reset();
+            document.getElementById('editCourseId').value = "";
+            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
+            document.getElementById('courseModal').style.display = 'flex';
+            document.getElementById('courseModal').classList.remove('hidden');
+        };
+
+        window.editCourse = async (id) => {
+            const d = (await getDoc(doc(db, "courses", id))).data();
+            document.getElementById('editCourseId').value = id;
+            document.getElementById('courseSY').value = d.schoolYear;
+            document.getElementById('courseName').value = d.name;
+            document.getElementById('courseDuration').value = d.duration;
+            document.getElementById('courseDesc').value = d.desc;
+            document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
+            document.getElementById('courseModal').style.display = 'flex';
+            document.getElementById('courseModal').classList.remove('hidden');
+        };
+
+        document.getElementById('courseForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCourseId').value;
+            const btn = document.getElementById('courseSaveBtn');
+            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
+            const data = {
+                schoolYear: document.getElementById('courseSY').value.toUpperCase(),
+                name: document.getElementById('courseName').value.toUpperCase(),
+                duration: String(document.getElementById('courseDuration').value).toUpperCase(),
+                desc: document.getElementById('courseDesc').value.toUpperCase()
+            };
+            try {
+                if(id) await updateDoc(doc(db, "courses", id), data);
+                else await addDoc(collection(db, "courses"), data);
+                closeModal('courseModal');
+            } catch (err) { showNotif("ERROR SAVING COURSE."); }
+            btn.classList.remove('loading-btn');
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE RECORD';
+        };
+
+        // ACTION: Subject
+        window.prepareAddSubject = () => {
+            document.getElementById('programForm').reset();
+            document.getElementById('editSubjectId').value = "";
+            document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
+            document.getElementById('subjectModal').style.display = 'flex';
+            document.getElementById('subjectModal').classList.remove('hidden');
+        };
+
+        window.editSubject = async (id) => {
+            const d = (await getDoc(doc(db, "programs", id))).data();
+            document.getElementById('editSubjectId').value = id;
+            document.getElementById('progCode').value = d.code;
+            document.getElementById('progName').value = d.name;
+            document.getElementById('progCourse').value = d.course || "";
+            document.getElementById('progYear').value = d.year;
+            document.getElementById('progSem').value = d.semester;
+            document.getElementById('progStart').value = d.startTime;
+            document.getElementById('progEnd').value = d.endTime;
+            document.getElementById('progTeacher').value = d.teacher;
+            const savedDays = d.schedule ? d.schedule.split('-') : [];
+            document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
+            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
+            document.getElementById('subjectModal').style.display = 'flex';
+            document.getElementById('subjectModal').classList.remove('hidden');
+        };
+
+        document.getElementById('programForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editSubjectId').value;
+            const btn = document.getElementById('subjectSaveBtn');
+            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
+            const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
+            const data = {
+                code: document.getElementById('progCode').value.toUpperCase(),
+                name: document.getElementById('progName').value.toUpperCase(),
+                course: document.getElementById('progCourse').value.toUpperCase(),
+                year: document.getElementById('progYear').value.toUpperCase(),
+                semester: document.getElementById('progSem').value.toUpperCase(),
+                schedule: selectedDays.toUpperCase(),
+                startTime: document.getElementById('progStart').value,
+                endTime: document.getElementById('progEnd').value,
+                teacher: document.getElementById('progTeacher').value.toUpperCase(),
+                status: 'ACTIVE'
+            };
+            try {
+                if(id) await updateDoc(doc(db, "programs", id), data);
+                else await addDoc(collection(db, "programs"), data);
+                closeModal('subjectModal');
+            } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
+            btn.classList.remove('loading-btn');
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE PROGRAM';
+        };
+
+        // System Delete with Modal
+        window.handleDelete = (coll, id) => { 
+            showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
+                await deleteDoc(doc(db, coll, id));
+            });
+        };
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
 </body>
 </html>
