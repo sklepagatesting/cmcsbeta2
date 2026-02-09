@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col font-sans">
+
+    <nav class="bg-[#0070c0] text-white p-0 flex justify-between items-center h-16 shadow-lg sticky top-0 z-50">
+        <div class="flex items-center px-6 gap-2">
+            <span class="font-bold text-xl"><i class="fa-solid fa-layer-group"></i></span>
+            <h1 class="font-bold text-lg tracking-tight uppercase">CMCS Virtual Learning System</h1>
+        </div>
+        
+        <div class="flex items-center h-full">
+            <a href="admin_edit.html" title="Account Settings" class="flex gap-4 px-6 items-center h-full hover:bg-[#005da1] transition-all group border-l border-white/10">
+                <div class="flex flex-col items-end">
+                    <span id="adminName" class="font-bold text-sm tracking-tight">Loading Profile...</span>
+                    <span id="adminEmail" class="text-[10px] font-bold opacity-70 group-hover:opacity-100 uppercase tracking-tighter">Email@gmail.com</span>
+                </div>
+                <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-[#0070c0] transition-all duration-300">
+                    <i class="fa-solid fa-user-gear text-sm"></i>
+                </div>
+            </a>
+            
+            <button onclick="logout()" class="bg-[#cc0000] hover:bg-red-700 h-full px-10 text-white font-black text-xs uppercase tracking-widest transition-colors border-l border-white/10">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-1 flex flex-col items-center justify-center p-8">
+        <div class="mb-10 text-center">
+            <h2 class="text-3xl font-black text-slate-800 uppercase tracking-tighter">Admin Control Panel</h2>
+            <p class="text-gray-400 text-xs font-bold uppercase tracking-[0.2em] mt-2">Manage your academic infrastructure</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
+            
+            <a href="admin_approvalbeta.html" class="bg-[#00b0f0] hover:translate-y-[-5px] flex flex-col items-center justify-center text-white p-10 rounded-2xl shadow-xl group transition-all duration-300">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-check-to-slot text-3xl"></i>
+                </div>
+                <span class="font-bold text-xl uppercase tracking-tighter">Approvals</span>
+                <p class="text-[10px] opacity-80 mt-1 uppercase font-medium">Verify New Users</p>
+            </a>
+
+            <a href="admin_setupbeta.html" class="bg-[#1cc024] hover:translate-y-[-5px] flex flex-col items-center justify-center text-white p-10 rounded-2xl shadow-xl group transition-all duration-300">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-school text-3xl"></i>
+                </div>
+                <span class="font-bold text-xl uppercase tracking-tighter">Academic Setup</span>
+                <p class="text-[10px] opacity-80 mt-1 uppercase font-medium">School Configuration</p>
+            </a>
+
+            <a href="admin_classbeta.html" class="bg-[#ffc000] hover:translate-y-[-5px] flex flex-col items-center justify-center text-white p-10 rounded-2xl shadow-xl group transition-all duration-300">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-chalkboard-user text-3xl"></i>
+                </div>
+                <span class="font-bold text-xl uppercase tracking-tighter">Class Assignment</span>
+                <p class="text-[10px] opacity-80 mt-1 uppercase font-medium">Teacher & Student Linking</p>
+            </a>
+
+            <a href="admin_recordsbeta.html" class="bg-[#7030a0] hover:translate-y-[-5px] flex flex-col items-center justify-center text-white p-10 rounded-2xl shadow-xl group transition-all duration-300">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-folder-open text-3xl"></i>
+                </div>
+                <span class="font-bold text-xl uppercase tracking-tighter">Master Record</span>
+                <p class="text-[10px] opacity-80 mt-1 uppercase font-medium">Database Archives</p>
+            </a>
+
+            <a href="admin_accountsbeta.html" class="bg-[#444444] hover:translate-y-[-5px] flex flex-col items-center justify-center text-white p-10 rounded-2xl shadow-xl group transition-all duration-300">
+                <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-users-gear text-3xl"></i>
+                </div>
+                <span class="font-bold text-xl uppercase tracking-tighter">User Accounts</span>
+                <p class="text-[10px] opacity-80 mt-1 uppercase font-medium">Permission Management</p>
+            </a>
+
+            <div class="bg-white border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300 p-10 rounded-2xl">
+                <i class="fa-solid fa-circle-plus text-3xl mb-2"></i>
+                <span class="font-bold text-xs uppercase">Future Module</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white p-6 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto flex justify-between items-center text-gray-400">
+            <p class="text-[10px] font-bold uppercase tracking-widest">Copyright 2026 CMCS. All Rights Reserved</p>
+            <div class="flex gap-4">
+                <i class="fa-solid fa-shield-check text-green-500 text-[10px]"></i>
+                <span class="text-[10px] font-bold uppercase tracking-widest italic">Secure Admin Session</span>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`;
+                    document.getElementById('adminEmail').innerText = user.email.toLowerCase();
+                } else {
+                    window.location.href = "login.html";
+                }
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = "login.html";
+            });
+        };
+    </script>
+</body>
+</html>
