@@ -82,10 +82,13 @@
 
         <div class="flex-1 overflow-y-auto p-8 space-y-8">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <div>
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center bg-gray-50/50 gap-4">
+                    <div class="flex-1">
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Available Courses</h2>
-                        <p class="text-xs text-gray-500 mt-1 uppercase">Manage institutional programs and durations</p>
+                        <div class="mt-2 relative max-w-xs">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="courseSearch" placeholder="SEARCH COURSES..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20">
+                        </div>
                     </div>
                     <button onclick="prepareAddCourse()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> ADD NEW COURSE
@@ -102,18 +105,19 @@
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
-                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">Fetching course data...</td></tr>
-                        </tbody>
+                        <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <div>
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center bg-gray-50/50 gap-4">
+                    <div class="flex-1">
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Program</h2>
-                        <p class="text-xs text-gray-500 mt-1 uppercase">Curriculum scheduling and faculty assignment</p>
+                        <div class="mt-2 relative max-w-xs">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="subjectSearch" placeholder="SEARCH SUBJECTS OR FACULTY..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20">
+                        </div>
                     </div>
                     <button onclick="prepareAddSubject()" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-book-medical"></i> ADD SUBJECT
@@ -127,12 +131,11 @@
                                 <th class="px-6 py-4">Course / Yr / Sem</th>
                                 <th class="px-6 py-4">Schedule</th>
                                 <th class="px-6 py-4">Faculty</th>
+                                <th class="px-6 py-4">Status</th>
                                 <th class="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
-                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic uppercase">Fetching subject data...</td></tr>
-                        </tbody>
+                        <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
             </div>
@@ -185,7 +188,16 @@
                 <form id="programForm" class="space-y-6">
                     <input type="hidden" id="editSubjectId">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="pb-2 md:col-span-2 border-b border-gray-100"><h4 class="text-xs font-bold text-primary uppercase">General Info</h4></div>
+                        <div class="pb-2 md:col-span-2 border-b border-gray-100 flex justify-between items-center">
+                            <h4 class="text-xs font-bold text-primary uppercase">General Info</h4>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Status:</label>
+                                <select id="progStatus" class="bg-gray-100 border-none rounded px-2 py-1 text-[10px] font-bold text-gray-700 outline-none">
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
+                                </select>
+                            </div>
+                        </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Subject Code</label>
                             <input type="text" id="progCode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
@@ -297,6 +309,9 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        let masterCourses = [];
+        let masterSubjects = [];
+
         const formatTime = (t) => {
             if(!t) return "";
             const [h, m] = t.split(':');
@@ -306,7 +321,6 @@
             return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
         };
 
-        // System Notification Modal
         window.showNotif = (msg, isConfirm = false, onYes = null) => {
             document.getElementById('notifMessage').innerText = msg;
             const confirmDiv = document.getElementById('confirmActions');
@@ -324,10 +338,8 @@
         };
 
         window.closeModal = (id) => {
-            const modal = document.getElementById(id);
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            if(id !== 'notifModal') modal.style.display = 'none';
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -338,61 +350,19 @@
                     document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
                     document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
                                         
-                    // COURSE SYNC
                     onSnapshot(collection(db, "courses"), (snap) => {
-                        const body = document.getElementById('courseTableBody');
-                        const progCourseSel = document.getElementById('progCourse');
-                        body.innerHTML = '';
-                        progCourseSel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
-                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES FOUND.</td></tr>';
-                        snap.forEach(d => {
-                            const r = d.data();
-                            body.innerHTML += `
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
-                                    <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
-                                    <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
-                                    <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
-                                    <td class="px-6 py-4 text-right space-x-2">
-                                        <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                                    </td>
-                                </tr>`;
-                            progCourseSel.innerHTML += `<option value="${r.name}">${r.name.toUpperCase()}</option>`;
-                        });
+                        masterCourses = [];
+                        snap.forEach(d => masterCourses.push({ id: d.id, ...d.data() }));
+                        renderCourses();
+                        updateCourseDropdown();
                     });
 
-                    // SUBJECT SYNC
                     onSnapshot(collection(db, "programs"), (snap) => {
-                        const body = document.getElementById('programTableBody');
-                        body.innerHTML = '';
-                        if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects scheduled.</td></tr>';
-                        snap.forEach(d => {
-                            const r = d.data();
-                            body.innerHTML += `
-                                <tr class="hover:bg-gray-50 transition-colors uppercase">
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-900">${r.code}</div>
-                                        <div class="text-[10px] text-gray-500">${r.name}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-xs font-medium">
-                                        <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
-                                        <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-xs">
-                                        <div class="font-bold text-primary">${r.schedule}</div>
-                                        <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
-                                    <td class="px-6 py-4 text-right space-x-2">
-                                        <button onclick="editSubject('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                                        <button onclick="handleDelete('programs', '${d.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                                    </td>
-                                </tr>`;
-                        });
+                        masterSubjects = [];
+                        snap.forEach(d => masterSubjects.push({ id: d.id, ...d.data() }));
+                        renderSubjects();
                     });
 
-                    // TEACHER DROPDOWN
                     onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
                         const sel = document.getElementById('progTeacher');
                         sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
@@ -405,13 +375,87 @@
             } else { window.location.href = "login.html"; }
         });
 
-        // ACTION: Course
+        function renderCourses() {
+            const search = document.getElementById('courseSearch').value.toUpperCase();
+            const body = document.getElementById('courseTableBody');
+            body.innerHTML = '';
+            
+            const filtered = masterCourses.filter(c => c.name.toUpperCase().includes(search) || c.schoolYear.includes(search));
+            
+            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES MATCHING SEARCH.</td></tr>';
+
+            filtered.forEach(r => {
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
+                        <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
+                        <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                        <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button onclick="editCourse('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="handleDelete('courses', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function renderSubjects() {
+            const search = document.getElementById('subjectSearch').value.toUpperCase();
+            const body = document.getElementById('programTableBody');
+            body.innerHTML = '';
+
+            const filtered = masterSubjects.filter(s => 
+                s.name.toUpperCase().includes(search) || 
+                s.code.toUpperCase().includes(search) || 
+                s.teacher.toUpperCase().includes(search)
+            );
+
+            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects matching search.</td></tr>';
+
+            filtered.forEach(r => {
+                const statusColor = r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors uppercase">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">${r.code}</div>
+                            <div class="text-[10px] text-gray-500">${r.name}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-medium">
+                            <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                            <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs">
+                            <div class="font-bold text-primary">${r.schedule}</div>
+                            <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusColor}">${r.status || 'ACTIVE'}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button onclick="editSubject('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="handleDelete('programs', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function updateCourseDropdown() {
+            const sel = document.getElementById('progCourse');
+            const current = sel.value;
+            sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+            masterCourses.forEach(c => {
+                sel.innerHTML += `<option value="${c.name}">${c.name.toUpperCase()}</option>`;
+            });
+            sel.value = current;
+        }
+
         window.prepareAddCourse = () => {
             document.getElementById('courseForm').reset();
             document.getElementById('editCourseId').value = "";
             document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
-            document.getElementById('courseModal').style.display = 'flex';
             document.getElementById('courseModal').classList.remove('hidden');
+            document.getElementById('courseModal').classList.add('flex');
         };
 
         window.editCourse = async (id) => {
@@ -422,8 +466,8 @@
             document.getElementById('courseDuration').value = d.duration;
             document.getElementById('courseDesc').value = d.desc;
             document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
-            document.getElementById('courseModal').style.display = 'flex';
             document.getElementById('courseModal').classList.remove('hidden');
+            document.getElementById('courseModal').classList.add('flex');
         };
 
         document.getElementById('courseForm').onsubmit = async (e) => {
@@ -444,16 +488,16 @@
                 closeModal('courseModal');
             } catch (err) { showNotif("ERROR SAVING COURSE."); }
             btn.classList.remove('loading-btn');
-            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE RECORD';
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
         };
 
-        // ACTION: Subject
         window.prepareAddSubject = () => {
             document.getElementById('programForm').reset();
             document.getElementById('editSubjectId').value = "";
+            document.getElementById('progStatus').value = "ACTIVE";
             document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
-            document.getElementById('subjectModal').style.display = 'flex';
             document.getElementById('subjectModal').classList.remove('hidden');
+            document.getElementById('subjectModal').classList.add('flex');
         };
 
         window.editSubject = async (id) => {
@@ -467,11 +511,12 @@
             document.getElementById('progStart').value = d.startTime;
             document.getElementById('progEnd').value = d.endTime;
             document.getElementById('progTeacher').value = d.teacher;
+            document.getElementById('progStatus').value = d.status || "ACTIVE";
             const savedDays = d.schedule ? d.schedule.split('-') : [];
             document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
             document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
-            document.getElementById('subjectModal').style.display = 'flex';
             document.getElementById('subjectModal').classList.remove('hidden');
+            document.getElementById('subjectModal').classList.add('flex');
         };
 
         document.getElementById('programForm').onsubmit = async (e) => {
@@ -491,7 +536,7 @@
                 startTime: document.getElementById('progStart').value,
                 endTime: document.getElementById('progEnd').value,
                 teacher: document.getElementById('progTeacher').value.toUpperCase(),
-                status: 'ACTIVE'
+                status: document.getElementById('progStatus').value.toUpperCase()
             };
             try {
                 if(id) await updateDoc(doc(db, "programs", id), data);
@@ -499,15 +544,17 @@
                 closeModal('subjectModal');
             } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
             btn.classList.remove('loading-btn');
-            btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE PROGRAM';
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Program';
         };
 
-        // System Delete with Modal
         window.handleDelete = (coll, id) => { 
             showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
                 await deleteDoc(doc(db, coll, id));
             });
         };
+
+        document.getElementById('courseSearch').oninput = renderCourses;
+        document.getElementById('subjectSearch').oninput = renderSubjects;
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
