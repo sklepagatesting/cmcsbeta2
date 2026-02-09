@@ -7,9 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #strengthBar { transition: width 0.3s ease-in-out; height: 4px; border-radius: 2px; }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #1e293b; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-6">
@@ -17,7 +18,7 @@
     <div id="notifModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl text-center">
             <div id="notifIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"></div>
-            <h3 id="notifTitle" class="font-black uppercase tracking-widest text-sm mb-1">System Message</h3>
+            <h3 id="notifTitle" class="font-black uppercase tracking-widest text-sm mb-1 text-slate-800">System Message</h3>
             <p id="notifMessage" class="text-[11px] text-gray-500 font-bold uppercase leading-relaxed mb-6"></p>
             <button onclick="closeNotif()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Acknowledge</button>
         </div>
@@ -26,13 +27,10 @@
     <div id="loginGate" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
             <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-shield-halved text-2xl"></i>
-                </div>
-                <h3 class="font-bold uppercase tracking-widest text-lg">Security Access</h3>
-                <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Re-verify to enable editing</p>
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 italic font-black">VLS</div>
+                <h3 class="font-bold uppercase tracking-widest text-lg text-slate-800">Security Access</h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Re-verify to manage administrators</p>
             </div>
-            
             <div class="space-y-3">
                 <input type="email" id="gateEmail" placeholder="Current Email" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
                 <div class="relative">
@@ -41,9 +39,7 @@
                         <i id="gateIcon" class="fa-solid fa-eye"></i>
                     </button>
                 </div>
-                <button id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">
-                    Verify & Unlock
-                </button>
+                <button id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">Verify & Unlock</button>
                 <a href="admin_setupbeta.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel & Return</a>
             </div>
         </div>
@@ -52,53 +48,74 @@
     <div id="editArea" class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hidden">
         <div class="bg-slate-900 p-8 text-center relative">
             <a href="admin_setupbeta.html" class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
-            <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">--</div>
-            <h2 class="text-white font-bold uppercase tracking-wider text-sm">Update Account</h2>
+            <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">A</div>
+            <h2 class="text-white font-bold uppercase tracking-wider text-sm">System Administration</h2>
+        </div>
+
+        <div class="flex border-b border-gray-100 bg-gray-50/50">
+            <button onclick="switchTab('my-profile')" id="tab-update" class="flex-1 py-4 text-[10px] font-bold uppercase tracking-widest tab-active">My Profile</button>
+            <button onclick="switchTab('new-admin')" id="tab-new" class="flex-1 py-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-500">Add New Admin</button>
         </div>
 
         <form id="updateProfileForm" class="p-8 space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">First Name</label>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">First Name</label>
                     <input type="text" id="fn" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Last Name</label>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Last Name</label>
                     <input type="text" id="ln" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
                 </div>
             </div>
-            
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Login Email</label>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">Login Email</label>
                 <input type="email" id="editEmail" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
             </div>
-            
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Account Password</label>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">Update Password</label>
                 <div class="relative">
-                    <input type="password" id="editPw" oninput="checkStrength(this.value)" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
-                    <button type="button" onclick="togglePassword('editPw', 'editIcon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                        <i id="editIcon" class="fa-solid fa-eye"></i>
-                    </button>
+                    <input type="password" id="editPw" oninput="checkStrength(this.value, 'strengthBar1', 'strengthText1')" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
                 </div>
-                <div class="mt-2 px-1">
-                    <div class="bg-gray-200 w-full rounded-full overflow-hidden">
-                        <div id="strengthBar" style="width: 0%"></div>
-                    </div>
-                    <p id="strengthText" class="text-[9px] font-bold uppercase mt-1 text-gray-400">Strength: Weak</p>
+                <div class="mt-2">
+                    <div class="bg-gray-100 w-full h-1 rounded-full overflow-hidden"><div id="strengthBar1" style="width: 0%"></div></div>
+                    <p id="strengthText1" class="text-[8px] font-bold uppercase mt-1 text-gray-400">Strength: Weak</p>
                 </div>
             </div>
-            
-            <button type="submit" id="saveBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-green-600 transition-all uppercase tracking-widest text-xs mt-4">
-                Save All Changes
-            </button>
+            <button type="submit" id="saveBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-green-600 transition-all uppercase tracking-widest text-xs mt-4">Save My Changes</button>
+        </form>
+
+        <form id="newAdminForm" class="p-8 space-y-4 hidden">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">First Name</label>
+                    <input type="text" id="newFn" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase">Last Name</label>
+                    <input type="text" id="newLn" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">Admin Email</label>
+                <input type="email" id="newEmail" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+            </div>
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">Admin Password</label>
+                <input type="password" id="newPw" oninput="checkStrength(this.value, 'strengthBar2', 'strengthText2')" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+                <div class="mt-2">
+                    <div class="bg-gray-100 w-full h-1 rounded-full overflow-hidden"><div id="strengthBar2" style="width: 0%"></div></div>
+                    <p id="strengthText2" class="text-[8px] font-bold uppercase mt-1 text-gray-400">Strength: Weak</p>
+                </div>
+            </div>
+            <button type="submit" id="createBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-all uppercase tracking-widest text-xs mt-4 italic">Authorize New Admin</button>
         </form>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, updatePassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, updatePassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
@@ -115,25 +132,132 @@
         let currentUser = null;
         let redirectOnClose = false;
 
-        // Custom Modal Logic
+        // AUTH CHECK
+        onAuthStateChanged(auth, async (user) => {
+            if (user) { 
+                currentUser = user; 
+            } else { 
+                window.location.href = "login.html"; 
+            }
+        });
+
+        // UI: TAB SWITCHING
+        window.switchTab = (target) => {
+            const upForm = document.getElementById('updateProfileForm');
+            const newForm = document.getElementById('newAdminForm');
+            const upTab = document.getElementById('tab-update');
+            const newTab = document.getElementById('tab-new');
+
+            if (target === 'my-profile') {
+                upForm.classList.remove('hidden'); newForm.classList.add('hidden');
+                upTab.classList.add('tab-active'); newTab.classList.remove('tab-active');
+            } else {
+                upForm.classList.add('hidden'); newForm.classList.remove('hidden');
+                upTab.classList.remove('tab-active'); newTab.classList.add('tab-active');
+            }
+        };
+
+        // STEP 1: VERIFY CURRENT ADMIN TO UNLOCK ACCESS
+        document.getElementById('verifyBtn').onclick = async () => {
+            const email = document.getElementById('gateEmail').value.trim();
+            const pass = document.getElementById('gatePw').value;
+            const btn = document.getElementById('verifyBtn');
+
+            if(!email || !pass) return showNotif("Credentials required.", "error");
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+
+            try {
+                const credential = EmailAuthProvider.credential(email, pass);
+                await reauthenticateWithCredential(currentUser, credential);
+
+                const snap = await getDoc(doc(db, "users", currentUser.uid));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    if(d.role !== 'admin') throw new Error("Unauthorized role.");
+                    
+                    document.getElementById('fn').value = d.firstname;
+                    document.getElementById('ln').value = d.lastname;
+                    document.getElementById('editEmail').value = d.email;
+                    document.getElementById('editPw').value = d.password || pass;
+                    document.getElementById('profileCircle').innerText = (d.firstname[0] + d.lastname[0]).toUpperCase();
+                    
+                    document.getElementById('loginGate').style.display = 'none';
+                    document.getElementById('editArea').classList.remove('hidden');
+                }
+            } catch (err) {
+                showNotif("Verification Failed: " + err.message, "error");
+                btn.disabled = false; btn.innerText = "Verify & Unlock";
+            }
+        };
+
+        // NEW ADMIN CREATION
+        document.getElementById('newAdminForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('createBtn');
+            const email = document.getElementById('newEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('newPw').value;
+            const fname = document.getElementById('newFn').value.toUpperCase();
+            const lname = document.getElementById('newLn').value.toUpperCase();
+
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span> AUTHORIZING...';
+
+            try {
+                // Note: Creating a user automatically signs you in as them. 
+                // We store the current admin's UID to prevent logout if possible, 
+                // but standard Firebase web behavior will switch the session.
+                const newAdminCred = await createUserWithEmailAndPassword(auth, email, pass);
+                
+                await setDoc(doc(db, "users", newAdminCred.user.uid), {
+                    firstname: fname,
+                    lastname: lname,
+                    email: email,
+                    password: pass,
+                    role: "admin",
+                    status: "approved",
+                    createdAt: new Date()
+                });
+
+                showNotif("New Administrator Created. You will need to log in again.", "success", true);
+                
+            } catch (err) {
+                showNotif("Creation Failed: " + err.message, "error");
+                btn.disabled = false; btn.innerText = "Authorize New Admin";
+            }
+        };
+
+        // EXISTING UPDATE PROFILE LOGIC
+        document.getElementById('updateProfileForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            const newFn = document.getElementById('fn').value.toUpperCase();
+            const newLn = document.getElementById('ln').value.toUpperCase();
+            const newEmail = document.getElementById('editEmail').value;
+            const newPw = document.getElementById('editPw').value;
+
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span> SAVING...';
+
+            try {
+                if(newEmail !== currentUser.email) await updateEmail(currentUser, newEmail);
+                if(newPw) await updatePassword(currentUser, newPw);
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    firstname: newFn, lastname: newLn, email: newEmail, password: newPw
+                });
+                showNotif("Profile updated successfully!", "success", true);
+            } catch (err) {
+                showNotif("Update Failed: " + err.message, "error");
+                btn.disabled = false; btn.innerText = "Save My Changes";
+            }
+        };
+
+        // UTILITIES
         window.showNotif = (msg, type = 'success', redirect = false) => {
             const modal = document.getElementById('notifModal');
             const iconBox = document.getElementById('notifIcon');
-            const title = document.getElementById('notifTitle');
-            const message = document.getElementById('notifMessage');
             redirectOnClose = redirect;
-
-            if(type === 'success') {
-                iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600";
-                iconBox.innerHTML = '<i class="fa-solid fa-check text-xl"></i>';
-                title.innerText = "Success";
-            } else {
-                iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-600";
-                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xl"></i>';
-                title.innerText = "Error";
-            }
-
-            message.innerText = msg;
+            iconBox.className = type === 'success' ? "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600" : "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-600";
+            iconBox.innerHTML = type === 'success' ? '<i class="fa-solid fa-check text-xl"></i>' : '<i class="fa-solid fa-triangle-exclamation text-xl"></i>';
+            document.getElementById('notifTitle').innerText = type === 'success' ? "Success" : "Error";
+            document.getElementById('notifMessage').innerText = msg;
             modal.style.display = 'flex';
         };
 
@@ -149,79 +273,12 @@
             icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash');
         };
 
-        window.checkStrength = (p) => {
-            const bar = document.getElementById('strengthBar');
-            const text = document.getElementById('strengthText');
-            if (p.length < 6) { bar.style.width = '30%'; bar.className = 'bg-red-500'; text.innerText = "Strength: Weak"; }
-            else if (p.length < 10) { bar.style.width = '60%'; bar.className = 'bg-yellow-500'; text.innerText = "Strength: Medium"; }
-            else { bar.style.width = '100%'; bar.className = 'bg-green-500'; text.innerText = "Strength: Strong"; }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user; } 
-            else { window.location.href = "login.html"; }
-        });
-
-        // STEP 1: VERIFY LOGIN GATE
-        document.getElementById('verifyBtn').onclick = async () => {
-            const email = document.getElementById('gateEmail').value.trim();
-            const pass = document.getElementById('gatePw').value;
-            const btn = document.getElementById('verifyBtn');
-
-            if(!email || !pass) { showNotif("Enter your current credentials.", "error"); return; }
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span>';
-
-            try {
-                const credential = EmailAuthProvider.credential(email, pass);
-                await reauthenticateWithCredential(currentUser, credential);
-
-                const snap = await getDoc(doc(db, "users", currentUser.uid));
-                if (snap.exists()) {
-                    const d = snap.data();
-                    document.getElementById('fn').value = d.firstname;
-                    document.getElementById('ln').value = d.lastname;
-                    document.getElementById('editEmail').value = d.email;
-                    document.getElementById('editPw').value = d.password || pass;
-                    checkStrength(d.password || pass);
-                    document.getElementById('profileCircle').innerText = (d.firstname[0] + d.lastname[0]).toUpperCase();
-                    document.getElementById('loginGate').style.display = 'none';
-                    document.getElementById('editArea').classList.remove('hidden');
-                }
-            } catch (err) {
-                showNotif("Access Denied: " + err.message, "error");
-                btn.disabled = false;
-                btn.innerText = "Verify & Unlock";
-            }
-        };
-
-        // STEP 2: SAVE UPDATES
-        document.getElementById('updateProfileForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('saveBtn');
-            const newFn = document.getElementById('fn').value.toUpperCase();
-            const newLn = document.getElementById('ln').value.toUpperCase();
-            const newEmail = document.getElementById('editEmail').value;
-            const newPw = document.getElementById('editPw').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span> SAVING...';
-
-            try {
-                if(newEmail !== currentUser.email) await updateEmail(currentUser, newEmail);
-                if(newPw) await updatePassword(currentUser, newPw);
-
-                await updateDoc(doc(db, "users", currentUser.uid), {
-                    firstname: newFn, lastname: newLn, email: newEmail, password: newPw
-                });
-
-                showNotif("Account settings updated successfully!", "success", true);
-
-            } catch (err) {
-                showNotif("Update Failed: " + err.message, "error");
-                btn.disabled = false;
-                btn.innerText = "Save All Changes";
-            }
+        window.checkStrength = (p, barId, textId) => {
+            const bar = document.getElementById(barId);
+            const text = document.getElementById(textId);
+            if (p.length < 6) { bar.style.width = '30%'; bar.className = 'bg-red-500 h-full'; text.innerText = "Strength: Weak"; }
+            else if (p.length < 10) { bar.style.width = '60%'; bar.className = 'bg-yellow-500 h-full'; text.innerText = "Strength: Medium"; }
+            else { bar.style.width = '100%'; bar.className = 'bg-green-500 h-full'; text.innerText = "Strength: Strong"; }
         };
     </script>
 </body>
