@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Assignment | CMCS VLS</title>
+    <title>Academic Setup | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,13 +25,16 @@
     </script>
     <style>
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .prog-checkbox:checked + span { color: #2563eb; font-weight: 700; }
+        .loading-btn { opacity: 0.7; pointer-events: none; }
+        .active-link { background-color: #2563eb !important; color: white !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20">
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
@@ -42,10 +45,10 @@
             <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
             </a>
-            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg active-link transition-colors">
                 <i class="fa-solid fa-school w-5"></i> <span class="font-medium text-sm">Academic Setup</span>
             </a>
-            <a href="admin_classbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+            <a href="admin_classbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">Class Assignment</span>
             </a>
             <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
@@ -56,44 +59,160 @@
             </a>
         </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-    <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">
-            AD
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white uppercase" id="adminInitial">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> LOGOUT
+            </button>
         </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
-            <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
-                <i class="fa-solid fa-gear text-[8px]"></i> Account Settings
-            </p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white"></i>
-    </a>
-    
-    <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-    </button>
-</div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
-            <h1 class="text-xl font-bold text-gray-800">Class Assignment</h1>
-            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
-                <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span> Enrollment Live
+            <h1 class="text-xl font-bold text-gray-800">Academic Setup</h1>
+            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full uppercase font-bold tracking-tight">
+                <i class="fa-solid fa-calendar-days mr-1"></i> Management Console
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-widest">Target Course</label>
-                        <select id="filterCourse" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold"></select>
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center bg-gray-50/50 gap-4">
+                    <div class="flex-1">
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Available Courses</h2>
+                        <div class="mt-2 relative max-w-xs">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="courseSearch" placeholder="SEARCH COURSES..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20">
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <button onclick="prepareAddCourse()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> ADD NEW COURSE
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4">School Year</th>
+                                <th class="px-6 py-4">Course Name</th>
+                                <th class="px-6 py-4">Duration</th>
+                                <th class="px-6 py-4">Description</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex flex-wrap justify-between items-center bg-gray-50/50 gap-4">
+                    <div class="flex-1">
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Program</h2>
+                        <div class="mt-2 relative max-w-xs">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="subjectSearch" placeholder="SEARCH SUBJECTS OR FACULTY..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-[10px] font-bold outline-none focus:ring-2 focus:ring-primary/20">
+                        </div>
+                    </div>
+                    <button onclick="prepareAddSubject()" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book-medical"></i> ADD SUBJECT
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4">Code & Subject</th>
+                                <th class="px-6 py-4">Course / Yr / Sem</th>
+                                <th class="px-6 py-4">Schedule</th>
+                                <th class="px-6 py-4">Faculty</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="courseModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="courseModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Course Form</span>
+                <button onclick="closeModal('courseModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="courseForm" class="p-6 space-y-4">
+                <input type="hidden" id="editCourseId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">School Year</label>
+                        <input type="text" id="courseSY" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="2025-2026" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Course Name</label>
+                        <input type="text" id="courseName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="BSIT" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Duration (Years)</label>
+                        <input type="number" id="courseDuration" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="4" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Full Description</label>
+                        <textarea id="courseDesc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="BACHELOR OF SCIENCE IN..." required></textarea>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('courseModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition uppercase">Cancel</button>
+                    <button type="submit" id="courseSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-success hover:bg-emerald-600 shadow-md transition flex items-center gap-2 uppercase">
+                        <i class="fa-solid fa-save"></i> Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="subjectModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="subjectModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Form</span>
+                <button onclick="closeModal('subjectModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto p-6">
+                <form id="programForm" class="space-y-6">
+                    <input type="hidden" id="editSubjectId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="pb-2 md:col-span-2 border-b border-gray-100 flex justify-between items-center">
+                            <h4 class="text-xs font-bold text-primary uppercase">General Info</h4>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase">Status:</label>
+                                <select id="progStatus" class="bg-gray-100 border-none rounded px-2 py-1 text-[10px] font-bold text-gray-700 outline-none">
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
+                                </select>
+                            </div>
+                        </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-widest">Year</label>
-                            <select id="filterYear" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Subject Code</label>
+                            <input type="text" id="progCode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Subject Name</label>
+                            <input type="text" id="progName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Under Course Program</label>
+                            <select id="progCourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Year Level</label>
+                            <select id="progYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
                                 <option value="1">1ST YEAR</option>
                                 <option value="2">2ND YEAR</option>
                                 <option value="3">3RD YEAR</option>
@@ -101,310 +220,343 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-widest">Semester</label>
-                            <select id="filterSem" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Semester</label>
+                            <select id="progSem" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
                                 <option value="1ST SEMESTER">1ST SEMESTER</option>
                                 <option value="2ND SEMESTER">2ND SEMESTER</option>
                                 <option value="SUMMER">SUMMER</option>
                             </select>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1 tracking-widest">Quick Search</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-300 text-xs"></i>
-                            <input type="text" id="searchField" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" placeholder="ID OR SURNAME...">
+                        <div class="pb-2 md:col-span-2 border-b border-gray-100 mt-2"><h4 class="text-xs font-bold text-primary uppercase">Schedule & Faculty</h4></div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Weekly Schedule</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="M" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">MON</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="T" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">TUE</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="W" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">WED</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="TH" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">THU</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">FRI</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="SAT" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">SAT</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Start Time</label>
+                            <input type="time" id="progStart" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">End Time</label>
+                            <input type="time" id="progEnd" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Assigned Faculty In-charge</label>
+                            <select id="progTeacher" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
                         </div>
                     </div>
-                    <button id="fetchBtn" class="bg-primary hover:bg-blue-700 text-white h-[38px] rounded-lg text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 uppercase tracking-wide">
-                        <i class="fa-solid fa-sync-alt"></i> Fetch Students
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
-                            <tr>
-                                <th class="px-6 py-4" width="60">No.</th>
-                                <th class="px-6 py-4">Student ID</th>
-                                <th class="px-6 py-4">Full Name</th>
-                                <th class="px-6 py-4">Academic Level</th>
-                                <th class="px-6 py-4">Assigned Programs</th>
-                                <th class="px-6 py-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentTableBody" class="divide-y divide-gray-100 text-sm">
-                            <tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">Select criteria and click fetch to load data.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-info-circle text-xl"></i>
-            </div>
-            <h3 class="text-sm font-bold text-gray-800 uppercase mb-2 tracking-wide">System Message</h3>
-            <p id="notifMessage" class="text-xs text-gray-500 mb-6 leading-relaxed px-2"></p>
-            <button onclick="closeModal('notifModal')" class="w-full bg-secondary text-white py-2.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition uppercase tracking-widest">Okay</button>
-        </div>
-    </div>
-
-    <div id="classModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg"><i class="fa-solid fa-book-open"></i></div>
-                    <span class="font-bold text-gray-800 text-sm uppercase tracking-wide">Enrollment Load Manager</span>
-                </div>
-                <button onclick="closeModal('classModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto">
-                <div class="mb-5 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                    <p class="text-[9px] font-black text-primary uppercase mb-1 tracking-tighter">Enrollment Target for:</p>
-                    <p id="targetStudentName" class="text-sm font-black text-gray-800 uppercase"></p>
-                    <div id="targetStudentSubInfo" class="text-[10px] text-gray-500 font-bold mt-1 uppercase"></div>
-                </div>
-                <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="grid grid-cols-[45px_100px_1fr] gap-4 px-5 py-3 bg-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        <span>Check</span><span>Code</span><span>Subject & Schedule</span>
-                    </div>
-                    <div id="programList" class="divide-y divide-gray-100 bg-white"></div>
-                </div>
-            </div>
-            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                <button onclick="closeModal('classModal')" class="px-6 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition uppercase">Cancel</button>
-                <button id="saveClassesBtn" class="px-8 py-2 rounded-lg text-xs font-bold text-white bg-success hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition flex items-center gap-2 uppercase tracking-wide">
-                    <i class="fa-solid fa-check-circle"></i> Update Load
-                </button>
-            </div>
-        </div>
-    </div>
-
-   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-        authDomain: "svls-289ee.firebaseapp.com",
-        projectId: "svls-289ee",
-        storageBucket: "svls-289ee.firebasestorage.app",
-        messagingSenderId: "500705386198",
-        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    let currentStudentUid = null;
-    let fetchedStudents = [];
-
-    window.showNotif = (msg) => {
-        document.getElementById('notifMessage').innerText = msg;
-        document.getElementById('notifModal').style.display = 'flex';
-    };
-
-    window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
-
-   onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        
-        // ADDED ROLE CHECK HERE
-        if (snap.exists() && snap.data().role === 'admin') {
-            const data = snap.data();
-            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-            startListeners();
-            loadCourses();
-        } else {
-            // If they exist but aren't an admin, kick them out
-            console.warn("Unauthorized access attempt.");
-            window.location.href = "login.html"; 
-        }
-    } else { 
-        // No user logged in
-        window.location.href = "login.html"; 
-    }
-});
-
-    async function loadCourses() {
-        const snap = await getDocs(collection(db, "courses"));
-        const sel = document.getElementById('filterCourse');
-        sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
-        snap.forEach(d => {
-            const name = d.data().name.toUpperCase();
-            sel.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-
-    function renderTable(students) {
-        const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = '';
-        if (students.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-400 font-bold uppercase tracking-widest text-xs">No records found matching criteria</td></tr>';
-            return;
-        }
-
-        students.forEach((s, idx) => {
-            const subjects = s.assignedPrograms && s.assignedPrograms.length > 0 
-                ? s.assignedPrograms.map(p => `<span class="inline-block bg-blue-50 text-blue-600 border border-blue-100 text-[9px] px-2 py-0.5 rounded-full font-bold mr-1 mb-1 uppercase tracking-tighter">${p}</span>`).join('') 
-                : '<span class="text-gray-300 text-[9px] font-bold uppercase italic tracking-tighter">No Load Assigned</span>';
-            
-            tbody.innerHTML += `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-xs font-bold text-gray-300">${idx + 1}</td>
-                    <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
-                    <td class="px-6 py-4 font-bold text-gray-800 uppercase">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-[10px] font-bold">
-                        <span class="text-gray-500">${s.course}</span><br>
-                        <span class="text-primary">Y${s.year} • ${s.semester || 'NO SEMESTER'}</span>
-                    </td>
-                    <td class="px-6 py-4"><div class="flex flex-wrap max-w-[200px]">${subjects}</div></td>
-                    <td class="px-6 py-4 text-right">
-                        <button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-500 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest">
-                            <i class="fa-solid fa-edit mr-1"></i> Update Load
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" onclick="closeModal('subjectModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition uppercase">Cancel</button>
+                        <button type="submit" id="subjectSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-primary hover:bg-blue-700 shadow-md transition flex items-center gap-2 uppercase">
+                            <i class="fa-solid fa-save"></i> Save Program
                         </button>
-                    </td>
-                </tr>`;
-        });
-    }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    document.getElementById('searchField').oninput = (e) => {
-        const q = e.target.value.toUpperCase();
-        const filtered = fetchedStudents.filter(s => 
-            s.lastname.toUpperCase().includes(q) || 
-            s.firstname.toUpperCase().includes(q) || 
-            (s.studentId && s.studentId.toUpperCase().includes(q))
-        );
-        renderTable(filtered);
-    };
+    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[60]">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
+            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-bell text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
+            <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
+            <div id="confirmActions" class="hidden flex justify-center gap-3">
+                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
+                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+            </div>
+            <div id="alertActions" class="flex justify-center">
+                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
+            </div>
+        </div>
+    </div>
 
-    window.openClassModal = async (uid, name) => {
-        currentStudentUid = uid;
-        const course = document.getElementById('filterCourse').value;
-        const year = document.getElementById('filterYear').value;
-        const sem = document.getElementById('filterSem').value;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        document.getElementById('targetStudentName').innerText = name;
-        document.getElementById('targetStudentSubInfo').innerText = `${course} - YEAR ${year} - ${sem}`;
-        
-        const listDiv = document.getElementById('programList');
-        listDiv.innerHTML = '<div class="p-10 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Applying Context Filters...</p></div>';
-        document.getElementById('classModal').style.display = 'flex';
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        try {
-            const q = query(collection(db, "programs"), 
-                where("course", "==", course),
-                where("year", "==", year),
-                where("semester", "==", sem)
-            );
+        let masterCourses = [];
+        let masterSubjects = [];
 
-            const [progSnap, userSnap] = await Promise.all([
-                getDocs(q),
-                getDoc(doc(db, "users", uid))
-            ]);
+        const formatTime = (t) => {
+            if(!t) return "";
+            const [h, m] = t.split(':');
+            const hh = parseInt(h);
+            const suffix = hh >= 12 ? "PM" : "AM";
+            let hour = ((hh + 11) % 12 + 1);
+            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+        };
 
-            const enrolled = userSnap.data().assignedPrograms || [];
-            listDiv.innerHTML = '';
-
-            if(progSnap.empty) {
-                listDiv.innerHTML = '<div class="p-10 text-center"><i class="fa-solid fa-ban text-gray-200 text-3xl mb-2"></i><p class="text-[10px] text-gray-400 font-bold uppercase">No subjects found for this program.</p></div>';
-                return;
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            const confirmDiv = document.getElementById('confirmActions');
+            const alertDiv = document.getElementById('alertActions');
+            if (isConfirm) {
+                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
+                alertDiv.classList.add('hidden');
+                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            } else {
+                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
+                alertDiv.classList.remove('hidden');
             }
+            document.getElementById('notifModal').classList.remove('hidden');
+            document.getElementById('notifModal').classList.add('flex');
+        };
 
-            progSnap.forEach(p => {
-                const d = p.data();
-                const code = (d.code || "").toUpperCase();
-                const pName = (d.name || "").toUpperCase();
-                const checked = enrolled.includes(code) ? 'checked' : '';
-                
-                // Check if status is INACTIVE
-                const isInactive = (d.status === "INACTIVE");
-                const bgClass = isInactive ? 'bg-red-50' : 'hover:bg-primary/5';
-                const borderClass = isInactive ? 'border-red-200' : 'border-gray-50';
-                const textClass = isInactive ? 'text-red-600' : 'text-gray-800';
-                const subTextClass = isInactive ? 'text-red-400' : 'text-gray-400';
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        };
 
-                listDiv.innerHTML += `
-                    <label class="grid grid-cols-[45px_100px_1fr] gap-4 items-center px-5 py-4 border-b ${borderClass} ${bgClass} transition-colors cursor-pointer group">
-                        <input type="checkbox" value="${code}" ${checked} class="prog-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="text-[10px] font-black ${textClass} border-r border-gray-100 pr-2 group-hover:text-primary transition-colors">${code}</span>
-                        <div class="flex flex-col">
-                            <span class="text-[11px] font-bold ${textClass}">${pName} ${isInactive ? '<span class="text-[8px] italic ml-2">[INACTIVE]</span>' : ''}</span>
-                            <span class="text-[9px] ${subTextClass} font-bold uppercase tracking-tighter">${d.schedule || 'Schedule TBA'}</span>
-                        </div>
-                    </label>`;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                                        
+                    onSnapshot(collection(db, "courses"), (snap) => {
+                        masterCourses = [];
+                        snap.forEach(d => masterCourses.push({ id: d.id, ...d.data() }));
+                        renderCourses();
+                        updateCourseDropdown();
+                    });
+
+                    onSnapshot(collection(db, "programs"), (snap) => {
+                        masterSubjects = [];
+                        snap.forEach(d => masterSubjects.push({ id: d.id, ...d.data() }));
+                        renderSubjects();
+                    });
+
+                    onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
+                        const sel = document.getElementById('progTeacher');
+                        sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
+                        snap.forEach(d => {
+                            const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
+                            sel.innerHTML += `<option value="${name}">${name}</option>`;
+                        });
+                    });
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
+        function renderCourses() {
+            const search = document.getElementById('courseSearch').value.toUpperCase();
+            const body = document.getElementById('courseTableBody');
+            body.innerHTML = '';
+            
+            const filtered = masterCourses.filter(c => c.name.toUpperCase().includes(search) || c.schoolYear.includes(search));
+            
+            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES MATCHING SEARCH.</td></tr>';
+
+            filtered.forEach(r => {
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
+                        <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
+                        <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                        <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button onclick="editCourse('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="handleDelete('courses', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
             });
-        } catch (err) { 
-            listDiv.innerHTML = '<div class="p-6 text-red-500 text-[10px] font-bold text-center">FAILED TO LOAD SUBJECTS</div>'; 
         }
-    };
 
-    document.getElementById('fetchBtn').onclick = async () => {
-        const course = document.getElementById('filterCourse').value;
-        const year = document.getElementById('filterYear').value;
-        const sem = document.getElementById('filterSem').value;
-        const btn = document.getElementById('fetchBtn');
-        const tbody = document.getElementById('studentTableBody');
-        
-        if(!course) { showNotif("Select a Course Program first."); return; }
-        
-        btn.innerHTML = '<span class="loader"></span> Fetching...';
-        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Accessing Student Directory...</p></td></tr>';
+        function renderSubjects() {
+            const search = document.getElementById('subjectSearch').value.toUpperCase();
+            const body = document.getElementById('programTableBody');
+            body.innerHTML = '';
 
-        try {
-            const q = query(collection(db, "users"), 
-                where("role", "==", "student"),
-                where("status", "==", "approved"),
-                where("course", "==", course),
-                where("year", "==", year),
-                where("semester", "==", sem)
+            const filtered = masterSubjects.filter(s => 
+                s.name.toUpperCase().includes(search) || 
+                s.code.toUpperCase().includes(search) || 
+                s.teacher.toUpperCase().includes(search)
             );
 
-            const snap = await getDocs(q);
-            fetchedStudents = [];
-            snap.forEach(u => {
-                fetchedStudents.push({ uid: u.id, ...u.data() });
+            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects matching search.</td></tr>';
+
+            filtered.forEach(r => {
+                const statusColor = r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors uppercase">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">${r.code}</div>
+                            <div class="text-[10px] text-gray-500">${r.name}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-medium">
+                            <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                            <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs">
+                            <div class="font-bold text-primary">${r.schedule}</div>
+                            <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusColor}">${r.status || 'ACTIVE'}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button onclick="editSubject('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="handleDelete('programs', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    </tr>`;
             });
-            renderTable(fetchedStudents);
-            document.getElementById('searchField').value = '';
-        } catch (e) { 
-            console.error(e);
-            showNotif("Database connection error."); 
-        } finally { 
-            btn.innerHTML = '<i class="fa-solid fa-sync-alt"></i> Fetch Students'; 
         }
-    };
 
-    document.getElementById('saveClassesBtn').onclick = async () => {
-        const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
-        const btn = document.getElementById('saveClassesBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span> Saving...';
-
-        try {
-            await updateDoc(doc(db, "users", currentStudentUid), { 
-                assignedPrograms: selected 
+        function updateCourseDropdown() {
+            const sel = document.getElementById('progCourse');
+            const current = sel.value;
+            sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+            masterCourses.forEach(c => {
+                sel.innerHTML += `<option value="${c.name}">${c.name.toUpperCase()}</option>`;
             });
-            closeModal('classModal');
-            showNotif("Enrollment updated successfully!");
-            document.getElementById('fetchBtn').click();
-        } catch (err) { showNotif("Save failed. Try again."); }
-        finally { 
-            btn.disabled = false; 
-            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Update Load'; 
+            sel.value = current;
         }
-    };
 
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-</script>
+        window.prepareAddCourse = () => {
+            document.getElementById('courseForm').reset();
+            document.getElementById('editCourseId').value = "";
+            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
+            document.getElementById('courseModal').classList.remove('hidden');
+            document.getElementById('courseModal').classList.add('flex');
+        };
+
+        window.editCourse = async (id) => {
+            const d = (await getDoc(doc(db, "courses", id))).data();
+            document.getElementById('editCourseId').value = id;
+            document.getElementById('courseSY').value = d.schoolYear;
+            document.getElementById('courseName').value = d.name;
+            document.getElementById('courseDuration').value = d.duration;
+            document.getElementById('courseDesc').value = d.desc;
+            document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
+            document.getElementById('courseModal').classList.remove('hidden');
+            document.getElementById('courseModal').classList.add('flex');
+        };
+
+        document.getElementById('courseForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCourseId').value;
+            const btn = document.getElementById('courseSaveBtn');
+            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
+            const data = {
+                schoolYear: document.getElementById('courseSY').value.toUpperCase(),
+                name: document.getElementById('courseName').value.toUpperCase(),
+                duration: String(document.getElementById('courseDuration').value).toUpperCase(),
+                desc: document.getElementById('courseDesc').value.toUpperCase()
+            };
+            try {
+                if(id) await updateDoc(doc(db, "courses", id), data);
+                else await addDoc(collection(db, "courses"), data);
+                closeModal('courseModal');
+            } catch (err) { showNotif("ERROR SAVING COURSE."); }
+            btn.classList.remove('loading-btn');
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
+        };
+
+        window.prepareAddSubject = () => {
+            document.getElementById('programForm').reset();
+            document.getElementById('editSubjectId').value = "";
+            document.getElementById('progStatus').value = "ACTIVE";
+            document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
+            document.getElementById('subjectModal').classList.remove('hidden');
+            document.getElementById('subjectModal').classList.add('flex');
+        };
+
+        window.editSubject = async (id) => {
+            const d = (await getDoc(doc(db, "programs", id))).data();
+            document.getElementById('editSubjectId').value = id;
+            document.getElementById('progCode').value = d.code;
+            document.getElementById('progName').value = d.name;
+            document.getElementById('progCourse').value = d.course || "";
+            document.getElementById('progYear').value = d.year;
+            document.getElementById('progSem').value = d.semester;
+            document.getElementById('progStart').value = d.startTime;
+            document.getElementById('progEnd').value = d.endTime;
+            document.getElementById('progTeacher').value = d.teacher;
+            document.getElementById('progStatus').value = d.status || "ACTIVE";
+            const savedDays = d.schedule ? d.schedule.split('-') : [];
+            document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
+            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
+            document.getElementById('subjectModal').classList.remove('hidden');
+            document.getElementById('subjectModal').classList.add('flex');
+        };
+
+        document.getElementById('programForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editSubjectId').value;
+            const btn = document.getElementById('subjectSaveBtn');
+            btn.classList.add('loading-btn');
+            btn.innerHTML = '<span class="loader"></span> SAVING...';
+            const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
+            const data = {
+                code: document.getElementById('progCode').value.toUpperCase(),
+                name: document.getElementById('progName').value.toUpperCase(),
+                course: document.getElementById('progCourse').value.toUpperCase(),
+                year: document.getElementById('progYear').value.toUpperCase(),
+                semester: document.getElementById('progSem').value.toUpperCase(),
+                schedule: selectedDays.toUpperCase(),
+                startTime: document.getElementById('progStart').value,
+                endTime: document.getElementById('progEnd').value,
+                teacher: document.getElementById('progTeacher').value.toUpperCase(),
+                status: document.getElementById('progStatus').value.toUpperCase()
+            };
+            try {
+                if(id) await updateDoc(doc(db, "programs", id), data);
+                else await addDoc(collection(db, "programs"), data);
+                closeModal('subjectModal');
+            } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
+            btn.classList.remove('loading-btn');
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Program';
+        };
+
+        window.handleDelete = (coll, id) => { 
+            showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
+                await deleteDoc(doc(db, coll, id));
+            });
+        };
+
+        document.getElementById('courseSearch').oninput = renderCourses;
+        document.getElementById('subjectSearch').oninput = renderSubjects;
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
 </body>
 </html>
