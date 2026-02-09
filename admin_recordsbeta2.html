@@ -27,7 +27,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Print Global Setup */
+        /* Print Logic */
         #printHeader, #individualPrint { display: none; }
 
         @media print {
@@ -42,7 +42,7 @@
 
             /* Individual Record Mode */
             body.print-individual #individualPrint { display: block !important; }
-            body.print-individual .master-table-container, body.print-individual #printHeader { display: none !important; }
+            body.print-individual .master-table-container, body.print-individual #printHeader, body.print-individual #viewModal { display: none !important; }
             
             table { border-collapse: collapse !important; width: 100% !important; border: 1.5px solid #000 !important; }
             th { 
@@ -67,6 +67,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
     <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
@@ -196,14 +197,14 @@
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden master-table-container">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold">
+                    <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold no-print">
                         <tr>
                             <th class="px-6 py-4">No.</th>
                             <th class="px-6 py-4">Student ID</th>
                             <th class="px-6 py-4">Full Name</th>
                             <th class="px-6 py-4">S.Y. / Course / Yr / Sem</th>
                             <th class="px-6 py-4">Enrolled</th>
-                            <th class="px-6 py-4 text-right no-print">Actions</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="masterTableBody" class="divide-y divide-gray-100 text-xs text-gray-700"></tbody>
@@ -211,6 +212,56 @@
             </div>
         </div>
     </main>
+
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4 no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-all overflow-hidden">
+            <div class="px-8 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <span class="font-bold text-gray-800 text-xs uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-primary"></i> Review Academic Profile
+                </span>
+                <button onclick="closeModal('viewModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="overflow-y-auto p-10 bg-white">
+                <div class="flex items-center gap-4 mb-6">
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
+                    <div>
+                        <h2 class="text-xl font-black uppercase text-gray-900">Central Mindanao Computer School</h2>
+                        <p class="text-[10px] font-bold uppercase text-gray-500">Academic Review Panel</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-xs font-bold uppercase text-gray-700 border-t border-b py-6 mb-6">
+                    <div>NAME: <span id="mName" class="font-normal ml-2"></span></div>
+                    <div>COURSE: <span id="mCourse" class="font-normal ml-2"></span></div>
+                    <div>ID: <span id="mId" class="font-normal ml-2"></span></div>
+                    <div>LEVEL: <span id="mLevel" class="font-normal ml-2"></span></div>
+                    <div>GENDER: <span id="mGender" class="font-normal ml-2"></span></div>
+                    <div>EMAIL: <span id="mEmail" class="font-normal ml-2"></span></div>
+                </div>
+
+                <p class="text-[10px] font-black uppercase mb-3">Academic Load</p>
+                <table class="w-full text-left border text-[10px]">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-2 border">Code</th>
+                            <th class="p-2 border">Subject</th>
+                            <th class="p-2 border">Instructor</th>
+                            <th class="p-2 border">Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mSubjectTable"></tbody>
+                </table>
+            </div>
+
+            <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeModal('viewModal')" class="px-6 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-200 transition uppercase">Cancel</button>
+                <button id="modalPrintBtn" class="px-6 py-2 rounded-lg text-xs font-bold text-white bg-primary hover:bg-blue-700 shadow-lg shadow-blue-200 transition uppercase">
+                    <i class="fa-solid fa-print mr-2"></i> Print Record
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -239,6 +290,7 @@
         };
 
         const formatSem = s => String(s).toUpperCase().includes("1ST") ? "1ST SEMESTER" : "2ND SEMESTER";
+        
         const formatTime = t => {
             if(!t) return "";
             const [h, m] = t.split(':');
@@ -309,23 +361,53 @@
                     </td>
                     <td class="px-6 py-4 font-bold uppercase">${(s.assignedPrograms || []).length} Subjects</td>
                     <td class="px-6 py-4 text-right no-print">
-                        <button onclick="prepareIndividualPrint('${s.uid}')" class="bg-gray-100 hover:bg-black hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
-                            PRINT RECORD
+                        <button onclick="viewProfile('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
+                            VIEW PROFILE
                         </button>
                     </td>
                 </tr>`).join('');
         }
 
-        window.preparePrint = mode => {
-            document.body.classList.remove('print-list', 'print-individual');
-            document.body.classList.add(`print-${mode}`);
-            window.print();
-        };
-
-        window.prepareIndividualPrint = async uid => {
+        window.viewProfile = async uid => {
             const s = masterData.find(x => x.uid === uid);
             if(!s) return;
-            
+
+            // Update Modal Data
+            document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`;
+            document.getElementById('mCourse').innerText = s.course || 'N/A';
+            document.getElementById('mId').innerText = s.studentId || 'N/A';
+            document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+            document.getElementById('mGender').innerText = s.gender || 'N/A';
+            document.getElementById('mEmail').innerText = s.email || 'N/A';
+
+            // Fetch Program Map
+            const progSnap = await getDocs(collection(db, "programs"));
+            const progMap = {};
+            progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
+
+            // Populate Modal Table
+            const loadRows = (s.assignedPrograms || []).map(code => {
+                const info = progMap[code] || { name: 'NOT FOUND', teacher: '---' };
+                return `<tr>
+                    <td class="p-2 border font-bold">${code}</td>
+                    <td class="p-2 border">${info.name}</td>
+                    <td class="p-2 border">${info.teacher}</td>
+                    <td class="p-2 border">${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td>
+                </tr>`;
+            }).join('');
+            document.getElementById('mSubjectTable').innerHTML = loadRows || '<tr><td colspan="4" class="p-4 text-center italic">No programs assigned.</td></tr>';
+
+            // Set Print Button Action
+            document.getElementById('modalPrintBtn').onclick = () => {
+                populatePrintLayout(s, progMap);
+                preparePrint('individual');
+            };
+
+            document.getElementById('viewModal').classList.remove('hidden');
+            document.getElementById('viewModal').classList.add('flex');
+        };
+
+        function populatePrintLayout(s, progMap) {
             document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`;
             document.getElementById('pId').innerText = s.studentId || 'N/A';
             document.getElementById('pGender').innerText = s.gender || 'N/A';
@@ -333,10 +415,6 @@
             document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
             document.getElementById('pSY').innerText = courseSYMap[s.course.toUpperCase()] || 'N/A';
             document.getElementById('pEmail').innerText = s.email || 'N/A';
-            
-            const progSnap = await getDocs(collection(db, "programs"));
-            const progMap = {};
-            progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
 
             document.getElementById('pSubjectTable').innerHTML = (s.assignedPrograms || []).map(code => {
                 const info = progMap[code] || { name: 'NOT FOUND', teacher: '---' };
@@ -347,8 +425,17 @@
                     <td>${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td>
                 </tr>`;
             }).join('');
+        }
 
-            preparePrint('individual');
+        window.preparePrint = mode => {
+            document.body.classList.remove('print-list', 'print-individual');
+            document.body.classList.add(`print-${mode}`);
+            window.print();
+        };
+
+        window.closeModal = id => {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
         };
 
         window.exportCSV = () => {
