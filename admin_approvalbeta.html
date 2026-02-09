@@ -272,233 +272,247 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, collection, onSnapshot, query, where, 
+    deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    getAuth, onAuthStateChanged, signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+const firebaseConfig = { 
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }, 1000);
+// --- UTILITIES ---
 
-        document.getElementById('id_num').addEventListener('input', (e) => {
-            let val = e.target.value.replace(/\D/g, ''); 
-            if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
-            else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
-            e.target.value = val;
-        });
+// Real-time Clock
+setInterval(() => {
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}, 1000);
 
-        window.togglePassword = (id) => {
-            const el = document.getElementById(id);
-            const btn = el.nextElementSibling;
-            if (el.type === 'password') {
-                el.type = 'text';
-                btn.innerText = 'HIDE';
-            } else {
-                el.type = 'password';
-                btn.innerText = 'SHOW';
-            }
-        };
+// ID Number Auto-formatter (00-0-000)
+document.getElementById('id_num').addEventListener('input', (e) => {
+    let val = e.target.value.replace(/\D/g, ''); 
+    if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
+    else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
+    e.target.value = val;
+});
 
-        window.showNotif = (msg, isConfirm = false, onYes = null) => {
-            document.getElementById('notifMessage').innerText = msg;
-            const confirmDiv = document.getElementById('confirmActions');
-            const alertDiv = document.getElementById('alertActions');
-            if (isConfirm) {
-                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
-                alertDiv.classList.add('hidden');
-                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-            } else {
-                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
-                alertDiv.classList.remove('hidden');
-            }
-            document.getElementById('notifModal').classList.remove('hidden');
-            document.getElementById('notifModal').classList.add('flex');
-        };
+window.calculateAge = (dateString) => {
+    if(!dateString) return "";
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+};
 
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-            if(id === 'userModal') {
-                document.getElementById('userForm').reset();
-                document.getElementById('upass').type = 'password';
-            }
-        };
+// --- AUTH & ACCESS CONTROL ---
 
-        onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         const snap = await getDoc(doc(db, "users", user.uid));
-        
-        // ADDED ROLE CHECK HERE
+        // Strict Admin-only check
         if (snap.exists() && snap.data().role === 'admin') {
             const data = snap.data();
             document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
             startListeners();
             loadCourses();
         } else {
-            // If they exist but aren't an admin, kick them out
-            console.warn("Unauthorized access attempt.");
+            console.warn("Unauthorized access.");
             window.location.href = "login.html"; 
         }
     } else { 
-        // No user logged in
         window.location.href = "login.html"; 
     }
 });
 
-        function calculateAge(dateString) {
-            if(!dateString) return "";
-            const today = new Date();
-            const birthDate = new Date(dateString);
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const m = today.getMonth() - birthDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-            return age;
+// --- CORE FUNCTIONS ---
+
+function startListeners() {
+    // Listen for PENDING users only
+    onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+        const sTable = document.getElementById('studentTable');
+        const fTable = document.getElementById('facultyTable');
+        let sContent = ''; let fContent = '';
+
+        if (snap.empty) {
+            sContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold uppercase text-[10px]">No pending students</td></tr>';
+            fContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold uppercase text-[10px]">No pending faculty</td></tr>';
         }
 
-        function startListeners() {
-            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
-                const sTable = document.getElementById('studentTable');
-                const fTable = document.getElementById('facultyTable');
-                let sContent = ''; let fContent = '';
+        snap.forEach(u => {
+            const d = u.data();
+            const age = d.birthdate ? calculateAge(d.birthdate) + ' YRS' : '';
+            const actions = `
+                <div class="flex justify-end gap-2">
+                    <button onclick="handleAction('${u.id}', true)" class="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-check text-xs"></i></button>
+                    <button onclick="handleAction('${u.id}', false)" class="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>`;
 
-                if (snap.empty) {
-                    sContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">No pending student requests</td></tr>';
-                    fContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">No pending faculty requests</td></tr>';
-                }
+            if (d.role === 'student') {
+                sContent += `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-bold text-slate-700 text-xs uppercase">${d.lastname}, ${d.firstname}<br><span class="text-[9px] text-slate-400 font-mono">${d.studentId || 'NO-ID'}</span></td>
+                    <td class="px-6 py-4 text-[10px] text-slate-500 font-bold uppercase">${d.gender || '-'} | ${age}</td>
+                    <td class="px-6 py-4 text-[10px] text-blue-500 font-semibold">${d.email}</td>
+                    <td class="px-6 py-4 text-[10px] text-slate-600 font-bold uppercase">${d.course} (Y${d.year})</td>
+                    <td class="px-6 py-4">${actions}</td>
+                </tr>`;
+            } else {
+                fContent += `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-bold text-slate-700 text-xs uppercase">${d.lastname}, ${d.firstname}<br><span class="text-[9px] text-slate-400 font-mono">PRC: ${d.license || 'N/A'}</span></td>
+                    <td class="px-6 py-4 text-[10px] text-slate-500 font-bold uppercase">${d.gender || '-'} | ${age}</td>
+                    <td class="px-6 py-4 text-[10px] text-blue-500 font-semibold">${d.email}</td>
+                    <td class="px-6 py-4 text-[10px] text-slate-600 font-bold uppercase">${d.designation || 'FACULTY'}</td>
+                    <td class="px-6 py-4">${actions}</td>
+                </tr>`;
+            }
+        });
+        if(sTable) sTable.innerHTML = sContent;
+        if(fTable) fTable.innerHTML = fContent;
+    });
+}
 
-                snap.forEach(u => {
-                    const d = u.data();
-                    const age = d.birthdate ? calculateAge(d.birthdate) + ' yrs' : '';
-                    const addressShort = d.address ? d.address.substring(0, 20) + (d.address.length>20?'...':'') : 'No Address';
-                    const actions = `
-                        <div class="flex justify-end gap-2">
-                            <button onclick="handleAction('${u.id}', true)" class="text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 p-2 rounded-md transition"><i class="fa-solid fa-check"></i></button>
-                            <button onclick="handleAction('${u.id}', false)" class="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 p-2 rounded-md transition"><i class="fa-solid fa-xmark"></i></button>
-                        </div>`;
+async function loadCourses() {
+    const snap = await getDocs(collection(db, "courses"));
+    const sel = document.getElementById('ucourse');
+    if(!sel) return;
+    sel.innerHTML = '<option value="" disabled selected>-- SELECT COURSE --</option>';
+    snap.forEach(d => {
+        const cName = d.data().name.toUpperCase();
+        sel.innerHTML += `<option value="${cName}">${cName}</option>`;
+    });
+}
 
-                    if (d.role === 'student') {
-                        sContent += `
-                        <tr class="group hover:bg-blue-50/50 transition">
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-gray-800 uppercase">${d.lastname}, ${d.firstname}</div>
-                                <div class="text-xs text-gray-500 font-mono">${d.studentId || 'NO ID'}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-xs uppercase font-semibold text-gray-600">${d.gender || '-'} | ${age}</div>
-                                <div class="text-xs text-gray-400">${addressShort}</div>
-                            </td>
-                            <td class="px-6 py-4 text-blue-600 lowercase text-xs">${d.email}</td>
-                            <td class="px-6 py-4">
-                                <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase block w-fit mb-1">${d.studentType || 'NEW'}</span>
-                                <div class="text-xs text-gray-600 font-semibold">${d.course} - Y${d.year} (${d.semester || 'N/A'})</div>
-                            </td>
-                            <td class="px-6 py-4 text-right">${actions}</td>
-                        </tr>`;
-                    } else {
-                        fContent += `
-                        <tr class="group hover:bg-amber-50/50 transition">
-                            <td class="px-6 py-4">
-                                <div class="font-bold text-gray-800 uppercase">${d.lastname}, ${d.firstname}</div>
-                                <div class="text-xs text-gray-500 font-mono">${d.license || 'NO LICENSE'}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-xs uppercase font-semibold text-gray-600">${d.gender || '-'} | ${age}</div>
-                                <div class="text-xs text-gray-400">${addressShort}</div>
-                            </td>
-                            <td class="px-6 py-4 text-blue-600 lowercase text-xs">${d.email}</td>
-                            <td class="px-6 py-4 uppercase text-xs font-bold text-gray-600">${d.designation || 'FACULTY'}</td>
-                            <td class="px-6 py-4 text-right">${actions}</td>
-                        </tr>`;
-                    }
-                });
-                if(sContent) sTable.innerHTML = sContent;
-                if(fContent) fTable.innerHTML = fContent;
-            });
+window.handleAction = (uid, approved) => {
+    const msg = approved ? "Admit this user into the system?" : "Reject and delete this request?";
+    showNotif(msg, true, async () => {
+        try {
+            if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
+            else await deleteDoc(doc(db, "users", uid));
+            showNotif(approved ? "User Approved Successfully." : "Request Deleted.");
+        } catch (e) { showNotif("Error: " + e.message); }
+    });
+};
+
+// --- MANUAL ADMISSION LOGIC ---
+
+window.openAddModal = (role) => {
+    document.getElementById('userRole').value = role;
+    document.getElementById('modalTitle').innerText = role === 'student' ? 'Manual Student Admission' : 'Manual Faculty Hiring';
+    document.getElementById('studentFields').style.display = role === 'student' ? 'block' : 'none';
+    document.getElementById('facultyFields').style.display = role === 'teacher' ? 'block' : 'none';
+    
+    const modal = document.getElementById('userModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
+
+document.getElementById('userForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('saveUserBtn');
+    const email = document.getElementById('uemail').value.trim().toLowerCase();
+    
+    // Validate email
+    if(!email.endsWith("@gmail.com")) return showNotif("Please use a valid @gmail.com account.");
+
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="loader"></span> PROCESSING...';
+
+    try {
+        // Check if email already exists in Firestore
+        const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+        if(!check.empty) throw new Error("This email is already registered in the system.");
+
+        const userData = {
+            firstname: document.getElementById('fn').value.toUpperCase(),
+            lastname: document.getElementById('ln').value.toUpperCase(),
+            gender: document.getElementById('gender').value.toUpperCase(),
+            birthdate: document.getElementById('bday').value,
+            address: document.getElementById('address').value.toUpperCase(),
+            email: email,
+            password: "ChangeMe2026!", // Default password for manual adds
+            role: document.getElementById('userRole').value,
+            status: "approved",
+            isManual: true, // IMPORTANT: Triggers activation on first login
+            createdAt: new Date()
+        };
+
+        if(userData.role === 'student') {
+            userData.studentType = document.getElementById('ustatus').value.toUpperCase();
+            userData.studentId = document.getElementById('id_num').value.toUpperCase();
+            userData.course = document.getElementById('ucourse').value.toUpperCase();
+            userData.year = document.getElementById('uyear').value.toUpperCase();
+            userData.semester = document.getElementById('usemester').value.toUpperCase();
+            if(!/^\d{2}-\d{1}-\d{3}$/.test(userData.studentId)) throw new Error("ID Format must be 00-0-000.");
+        } else {
+            userData.license = document.getElementById('license').value.toUpperCase();
+            userData.designation = "FACULTY";
         }
 
-        async function loadCourses() {
-            const snap = await getDocs(collection(db, "courses"));
-            const sel = document.getElementById('ucourse');
-            sel.innerHTML = '<option value="">-- SELECT COURSE --</option>';
-            snap.forEach(d => sel.innerHTML += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`);
-        }
+        // Add to Firestore (Wait for Activation via Login Page)
+        await addDoc(collection(db, "users"), userData);
+        
+        closeModal('userModal');
+        showNotif("User saved. They can now log in using the default password: ChangeMe2026!");
+        document.getElementById('userForm').reset();
 
-        window.handleAction = (uid, approved) => {
-            showNotif(approved ? "ADMIT this user?" : "REJECT this request?", true, async () => {
-                if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
-                else await deleteDoc(doc(db, "users", uid));
-                showNotif(approved ? "User approved." : "Request rejected.");
-            });
-        };
+    } catch (err) { 
+        showNotif(err.message); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerHTML = originalText; 
+    }
+};
 
-        window.openAddModal = (role) => {
-            document.getElementById('userRole').value = role;
-            document.getElementById('modalTitle').innerText = role === 'student' ? 'Manual Student Admission' : 'Manual Faculty Hiring';
-            document.getElementById('studentFields').className = role === 'student' ? 'block' : 'hidden';
-            document.getElementById('facultyFields').className = role === 'teacher' ? 'block' : 'hidden';
-            document.getElementById('userModal').classList.remove('hidden');
-            document.getElementById('userModal').classList.add('flex');
-        };
+// --- SYSTEM MODALS ---
 
-        document.getElementById('userForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('uemail').value.trim().toLowerCase();
-            const btn = document.getElementById('saveUserBtn');
-            const originalBtnContent = btn.innerHTML;
+window.showNotif = (msg, isConfirm = false, onYes = null) => {
+    document.getElementById('notifMessage').innerText = msg;
+    const confirmDiv = document.getElementById('confirmActions');
+    const alertDiv = document.getElementById('alertActions');
 
-            if(!email.endsWith("@gmail.com")) return showNotif("Use a valid @gmail.com account.");
+    if (isConfirm) {
+        confirmDiv.classList.remove('hidden');
+        confirmDiv.classList.add('flex');
+        alertDiv.classList.add('hidden');
+        document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+    } else {
+        confirmDiv.classList.add('hidden');
+        alertDiv.classList.remove('hidden');
+    }
+    const modal = document.getElementById('notifModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span> Saving...';
-            try {
-                const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
-                if(!check.empty) throw new Error("Email already exists.");
+window.closeModal = (id) => {
+    const modal = document.getElementById(id);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+};
 
-                const userData = {
-                    firstname: document.getElementById('fn').value.toUpperCase(),
-                    lastname: document.getElementById('ln').value.toUpperCase(),
-                    gender: document.getElementById('gender').value.toUpperCase(),
-                    birthdate: document.getElementById('bday').value,
-                    address: document.getElementById('address').value.toUpperCase(),
-                    email: email,
-                    role: document.getElementById('userRole').value,
-                    status: "approved",
-                    createdAt: new Date()
-                };
-
-                if(userData.role === 'student') {
-                    userData.studentType = document.getElementById('ustatus').value.toUpperCase();
-                    userData.studentId = document.getElementById('id_num').value.toUpperCase();
-                    userData.course = document.getElementById('ucourse').value.toUpperCase();
-                    userData.year = document.getElementById('uyear').value.toUpperCase();
-                    userData.semester = document.getElementById('usemester').value.toUpperCase(); // CAPTURE SEMESTER
-                    if(!/^\d{2}-\d{1}-\d{3}$/.test(userData.studentId)) throw new Error("Format: 00-0-000.");
-                } else {
-                    userData.license = document.getElementById('license').value.toUpperCase();
-                }
-
-                await addDoc(collection(db, "users"), userData);
-                closeModal('userModal');
-                showNotif("User registered.");
-            } catch (err) { showNotif(err.message); } 
-            finally { btn.disabled = false; btn.innerHTML = originalBtnContent; }
-        };
-
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+window.logout = () => {
+    showNotif("Are you sure you want to exit?", true, () => {
+        signOut(auth).then(() => window.location.href = "login.html");
+    });
+};
     </script>
 </body>
 </html>
