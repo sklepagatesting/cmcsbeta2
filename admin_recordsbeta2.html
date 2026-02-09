@@ -29,33 +29,40 @@
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Print Logic */
+        /* Print Specifics */
         #printHeader { display: none; }
 
         @media print {
+            @page { margin: 0.5cm; }
             .no-print { display: none !important; }
-            body { background: white !important; overflow: visible !important; padding: 0 !important; margin: 0 !important; }
+            body { background: white !important; overflow: visible !important; padding: 0 !important; }
             main { overflow: visible !important; height: auto !important; position: static !important; }
             
-            /* Show Print Header on Paper */
-            #printHeader { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+            #printHeader { display: block !important; margin-bottom: 20px; text-align: center; }
             
-            /* Remove UI styling for tables on print */
             .bg-white, .shadow-sm, .rounded-xl { 
                 box-shadow: none !important; 
                 border-radius: 0 !important; 
                 border: none !important; 
             }
             
-            table { border-collapse: collapse !important; width: 100% !important; }
-            th, td { 
+            table { border-collapse: collapse !important; width: 100% !important; border: 1px solid #000 !important; }
+            th { 
+                background-color: #f3f4f6 !important; /* Tinted Header */
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+                border: 1px solid #000 !important;
+                color: black !important;
+                padding: 8px !important;
+                font-size: 10px !important;
+                text-transform: uppercase;
+            }
+            td { 
                 border: 1px solid #000 !important; 
                 color: black !important; 
                 padding: 6px 8px !important; 
                 font-size: 10px !important; 
-                background: transparent !important; 
             }
-            th { text-transform: uppercase; background-color: #f0f0f0 !important; }
             
             .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
         }
@@ -114,19 +121,17 @@
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            <div id="printHeader" class="text-center">
-                <div class="flex items-center justify-center gap-4 mb-2">
-                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
-                    <div class="text-left">
-                        <h2 class="text-xl font-black uppercase text-black">Central Mindanao Computer School</h2>
-                        <p class="text-[10px] font-bold tracking-widest uppercase">Student Master Record List</p>
+            <div id="printHeader">
+                <div class="flex flex-col items-center">
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16 mb-2">
+                    <h2 class="text-2xl font-black uppercase text-black">Central Mindanao Computer School</h2>
+                    <p class="text-[11px] font-bold uppercase tracking-tight">Master Student Academic Enrollment List</p>
+                    <div class="mt-2 text-[9px] font-bold uppercase space-y-0.5">
+                        <p>COURSE: <span id="lblCourse">ALL</span> | YEAR: <span id="lblYear">ALL</span> | SEM: <span id="lblSem">ALL</span></p>
+                        <p class="italic text-gray-600">Generated on: <span id="lblTime"></span></p>
                     </div>
                 </div>
-                <div class="grid grid-cols-3 border-y border-black py-2 mt-4 text-[10px] font-bold uppercase">
-                    <div>COURSE: <span id="lblCourse">ALL</span></div>
-                    <div>YEAR: <span id="lblYear">ALL</span></div>
-                    <div>TERM: <span id="lblSem">ALL</span></div>
-                </div>
+                <div class="border-b-2 border-black mt-4 mb-2"></div>
             </div>
 
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 no-print">
@@ -139,10 +144,10 @@
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Year Level</label>
                         <select id="filterYear" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary outline-none uppercase">
                             <option value="ALL">ALL YEARS</option>
-                            <option value="1ST YEAR">1ST YEAR</option>
-                            <option value="2ND YEAR">2ND YEAR</option>
-                            <option value="3RD YEAR">3RD YEAR</option>
-                            <option value="4TH YEAR">4TH YEAR</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
                         </select>
                     </div>
                     <div>
@@ -171,8 +176,8 @@
                                 <th class="px-6 py-4">No.</th>
                                 <th class="px-6 py-4">Student ID</th>
                                 <th class="px-6 py-4">Full Name</th>
-                                <th class="px-6 py-4">Course / Year / Sem</th>
-                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">S.Y. / Course / Yr / Sem</th>
+                                <th class="px-6 py-4">Enrolled</th>
                                 <th class="px-6 py-4 text-right no-print">Actions</th>
                             </tr>
                         </thead>
@@ -224,7 +229,7 @@
 
                 <h3 class="text-xs font-black uppercase tracking-widest text-black mb-4 px-2">Assigned Academic Load</h3>
                 <table class="w-full text-left border border-black">
-                    <thead class="bg-gray-100 text-black text-[10px] uppercase font-bold">
+                    <thead>
                         <tr>
                             <th class="p-3 border border-black">Code</th>
                             <th class="p-3 border border-black">Subject Name</th>
@@ -234,15 +239,6 @@
                     </thead>
                     <tbody id="vSubjectTable" class="text-[11px] uppercase font-semibold text-black"></tbody>
                 </table>
-
-                <div class="mt-16 flex justify-between px-10">
-                    <div class="text-center w-56 border-t border-black pt-2">
-                        <p class="text-[9px] font-bold uppercase">Registrar In-Charge</p>
-                    </div>
-                    <div class="text-center w-56 border-t border-black pt-2">
-                        <p class="text-[9px] font-bold uppercase">School Director</p>
-                    </div>
-                </div>
             </div>
 
             <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 no-print">
@@ -277,10 +273,10 @@
 
         const formatYear = (y) => {
             const val = String(y).toUpperCase();
-            if(val === "1" || val.includes("1ST")) return "1ST YEAR";
-            if(val === "2" || val.includes("2ND")) return "2ND YEAR";
-            if(val === "3" || val.includes("3RD")) return "3RD YEAR";
-            if(val === "4" || val.includes("4TH")) return "4TH YEAR";
+            if(val === "1" || val.includes("1ST")) return "1";
+            if(val === "2" || val.includes("2ND")) return "2";
+            if(val === "3" || val.includes("3RD")) return "3";
+            if(val === "4" || val.includes("4TH")) return "4";
             return val;
         };
 
@@ -346,10 +342,11 @@
             const sem = document.getElementById('filterSem').value;
             const search = document.getElementById('searchField').value.toUpperCase();
 
-            // Update Print Labels
+            // Update Print Meta
             document.getElementById('lblCourse').innerText = course;
             document.getElementById('lblYear').innerText = year;
-            document.getElementById('lblSem').innerText = sem;
+            document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1' : '2');
+            document.getElementById('lblTime').innerText = new Date().toLocaleString();
 
             const filtered = masterData.filter(s => {
                 const matchCourse = course === 'ALL' || (s.course && s.course.toUpperCase() === course);
@@ -364,17 +361,18 @@
             
             filtered.forEach((s, i) => {
                 const sy = courseSYMap[s.course ? s.course.toUpperCase() : ""] || "N/A";
+                const subCount = (s.assignedPrograms || []).length;
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50/40 transition">
                         <td class="px-6 py-4 font-mono text-gray-400">${i + 1}</td>
                         <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'NO ID'}</td>
                         <td class="px-6 py-4 uppercase font-bold text-gray-800">${s.lastname}, ${s.firstname}</td>
                         <td class="px-6 py-4 uppercase">
-                            <div class="font-bold text-gray-700">${s.course}</div>
-                            <div class="text-[9px] text-gray-400 font-bold tracking-tight">${sy} | ${s.year} | ${s.semester}</div>
+                            <div class="text-[10px] text-gray-600 font-bold">${sy} / ${s.course} / Y${s.year} / ${s.semester}</div>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase">ENROLLED</span>
+                        <td class="px-6 py-4 font-bold">
+                            ${subCount} SUBJECTS
                         </td>
                         <td class="px-6 py-4 text-right no-print">
                             <button onclick="viewStudent('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-600 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
@@ -385,60 +383,45 @@
             });
         }
 
-window.exportCSV = () => {
-    // Get the current filter values for the filename
-    const courseFilter = document.getElementById('filterCourse').value;
-    const yearFilter = document.getElementById('filterYear').value;
-    const semFilter = document.getElementById('filterSem').value;
-    const search = document.getElementById('searchField').value.toUpperCase();
+        window.exportCSV = () => {
+            const courseF = document.getElementById('filterCourse').value;
+            const yearF = document.getElementById('filterYear').value;
+            
+            const filtered = masterData.filter(s => {
+                const course = document.getElementById('filterCourse').value;
+                const year = document.getElementById('filterYear').value;
+                const sem = document.getElementById('filterSem').value;
+                const search = document.getElementById('searchField').value.toUpperCase();
+                return (course === 'ALL' || s.course?.toUpperCase() === course) &&
+                       (year === 'ALL' || s.year === year) &&
+                       (sem === 'ALL' || s.semester === sem) &&
+                       (!search || s.lastname?.toUpperCase().includes(search) || s.studentId?.includes(search));
+            });
 
-    // Filter the data exactly how it appears on the table
-    const filtered = masterData.filter(s => {
-        const matchCourse = courseFilter === 'ALL' || (s.course && s.course.toUpperCase() === courseFilter);
-        const matchYear = yearFilter === 'ALL' || s.year === yearFilter;
-        const matchSem = semFilter === 'ALL' || s.semester === semFilter;
-        const matchSearch = !search || (s.lastname && s.lastname.toUpperCase().includes(search)) || (s.studentId && s.studentId.includes(search));
-        return matchCourse && matchYear && matchSem && matchSearch;
-    });
+            if(!filtered.length) return alert("No data to export");
 
-    if (filtered.length === 0) {
-        alert("No records found to export.");
-        return;
-    }
+            const csvRows = [["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]];
+            filtered.forEach((s, i) => {
+                csvRows.push([
+                    i+1, 
+                    s.studentId, 
+                    `${s.lastname}, ${s.firstname}`, 
+                    s.course, 
+                    s.year, 
+                    s.semester, 
+                    courseSYMap[s.course?.toUpperCase()] || 'N/A',
+                    (s.assignedPrograms || []).length
+                ]);
+            });
 
-    // Define CSV Headers
-    const headers = ["No.", "Student ID", "Last Name", "First Name", "Course", "Year Level", "Semester", "School Year", "Status"];
-    
-    // Map data to rows
-    const rows = filtered.map((s, i) => [
-        i + 1,
-        `"${s.studentId || ''}"`, // Wrap in quotes to prevent CSV formatting issues with IDs
-        `"${s.lastname || ''}"`,
-        `"${s.firstname || ''}"`,
-        `"${s.course || ''}"`,
-        `"${s.year || ''}"`,
-        `"${s.semester || ''}"`,
-        `"${courseSYMap[s.course?.toUpperCase()] || 'N/A'}"`,
-        "ENROLLED"
-    ]);
-
-    // Combine headers and rows
-    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-
-    // Create a Blob and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    
-    const fileName = `CMCS_MasterRecord_${courseFilter}_${yearFilter}.csv`.replace(/\s+/g, '_');
-    
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
+            const csvContent = csvRows.map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `MasterRecord_${courseF}_${yearF}.csv`);
+            a.click();
+        };
 
         window.viewStudent = async (uid) => {
             const s = masterData.find(x => x.uid === uid);
@@ -448,11 +431,11 @@ window.exportCSV = () => {
             document.getElementById('vId').innerText = `ID: ${s.studentId || 'N/A'}`;
             document.getElementById('vGender').innerText = `Gender: ${s.gender || 'N/A'}`;
             document.getElementById('vCourse').innerText = s.course || 'N/A';
-            document.getElementById('vLevel').innerText = `${s.year} | ${s.semester}`;
+            document.getElementById('vLevel').innerText = `Year ${s.year} | ${s.semester}`;
             document.getElementById('vSY').innerText = `SY: ${courseSYMap[s.course.toUpperCase()] || 'N/A'}`;
             
             const vTable = document.getElementById('vSubjectTable');
-            vTable.innerHTML = '<tr><td colspan="4" class="p-6 text-center italic text-gray-400">Loading academic data...</td></tr>';
+            vTable.innerHTML = '';
             
             const progSnap = await getDocs(collection(db, "programs"));
             const progMap = {};
@@ -461,15 +444,14 @@ window.exportCSV = () => {
                 progMap[d.code] = { name: d.name, teacher: d.teacher, sched: `${d.schedule} ${formatTime(d.startTime)}-${formatTime(d.endTime)}` };
             });
 
-            vTable.innerHTML = '';
             (s.assignedPrograms || []).forEach(code => {
                 const info = progMap[code] || { name: 'NOT FOUND', teacher: '---', sched: '---' };
                 vTable.innerHTML += `
                     <tr>
-                        <td class="p-3 border border-gray-200 font-bold text-primary">${code}</td>
-                        <td class="p-3 border border-gray-200">${info.name}</td>
-                        <td class="p-3 border border-gray-200">${info.teacher}</td>
-                        <td class="p-3 border border-gray-200 text-[10px] font-bold text-gray-500">${info.sched}</td>
+                        <td class="p-3 border border-black">${code}</td>
+                        <td class="p-3 border border-black">${info.name}</td>
+                        <td class="p-3 border border-black">${info.teacher}</td>
+                        <td class="p-3 border border-black">${info.sched}</td>
                     </tr>`;
             });
 
