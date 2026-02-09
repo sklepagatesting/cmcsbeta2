@@ -294,270 +294,231 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+const firebaseConfig = { 
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
 
-        let masterCourses = [];
-        let masterSubjects = [];
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-        const formatTime = (t) => {
-            if(!t) return "";
-            const [h, m] = t.split(':');
-            const hh = parseInt(h);
-            const suffix = hh >= 12 ? "PM" : "AM";
-            let hour = ((hh + 11) % 12 + 1);
-            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
-        };
+let masterCourses = [];
+let masterSubjects = [];
 
-        window.showNotif = (msg, isConfirm = false, onYes = null) => {
-            document.getElementById('notifMessage').innerText = msg;
-            const confirmDiv = document.getElementById('confirmActions');
-            const alertDiv = document.getElementById('alertActions');
-            if (isConfirm) {
-                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
-                alertDiv.classList.add('hidden');
-                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-            } else {
-                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
-                alertDiv.classList.remove('hidden');
-            }
-            document.getElementById('notifModal').classList.remove('hidden');
-            document.getElementById('notifModal').classList.add('flex');
-        };
+// --- FORMATTING UTILITIES ---
+const formatTime = (t) => {
+    if(!t) return "";
+    const [h, m] = t.split(':');
+    const hh = parseInt(h);
+    const suffix = hh >= 12 ? "PM" : "AM";
+    let hour = ((hh + 11) % 12 + 1);
+    return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+};
 
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        };
+// --- AUTH & DATA INITIALIZATION ---
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                                
+            // FIXED: Using "course" instead of "courses"
+            onSnapshot(collection(db, "course"), (snap) => {
+                masterCourses = [];
+                snap.forEach(d => masterCourses.push({ id: d.id, ...d.data() }));
+                renderCourses();
+                updateCourseDropdown();
+            });
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                                        
-                    onSnapshot(collection(db, "courses"), (snap) => {
-                        masterCourses = [];
-                        snap.forEach(d => masterCourses.push({ id: d.id, ...d.data() }));
-                        renderCourses();
-                        updateCourseDropdown();
-                    });
+            onSnapshot(collection(db, "programs"), (snap) => {
+                masterSubjects = [];
+                snap.forEach(d => masterSubjects.push({ id: d.id, ...d.data() }));
+                renderSubjects();
+            });
 
-                    onSnapshot(collection(db, "programs"), (snap) => {
-                        masterSubjects = [];
-                        snap.forEach(d => masterSubjects.push({ id: d.id, ...d.data() }));
-                        renderSubjects();
-                    });
-
-                    onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
-                        const sel = document.getElementById('progTeacher');
-                        sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
-                        snap.forEach(d => {
-                            const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
-                            sel.innerHTML += `<option value="${name}">${name}</option>`;
-                        });
-                    });
-                }
-            } else { window.location.href = "login.html"; }
-        });
-
-        function renderCourses() {
-            const search = document.getElementById('courseSearch').value.toUpperCase();
-            const body = document.getElementById('courseTableBody');
-            body.innerHTML = '';
-            
-            const filtered = masterCourses.filter(c => c.name.toUpperCase().includes(search) || c.schoolYear.includes(search));
-            
-            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES MATCHING SEARCH.</td></tr>';
-
-            filtered.forEach(r => {
-                body.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
-                        <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
-                        <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
-                        <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
-                        <td class="px-6 py-4 text-right space-x-2">
-                            <button onclick="editCourse('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="handleDelete('courses', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>`;
+            // Populate Faculty Dropdown for Subjects
+            onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
+                const sel = document.getElementById('progTeacher');
+                if(!sel) return;
+                sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
+                snap.forEach(d => {
+                    const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
+                    sel.innerHTML += `<option value="${name}">${name}</option>`;
+                });
             });
         }
+    } else { window.location.href = "login.html"; }
+});
 
-        function renderSubjects() {
-            const search = document.getElementById('subjectSearch').value.toUpperCase();
-            const body = document.getElementById('programTableBody');
-            body.innerHTML = '';
+// --- RENDER FUNCTIONS ---
+function renderCourses() {
+    const search = document.getElementById('courseSearch').value.toUpperCase();
+    const body = document.getElementById('courseTableBody');
+    if(!body) return;
+    body.innerHTML = '';
+    
+    const filtered = masterCourses.filter(c => c.name.toUpperCase().includes(search) || c.schoolYear.includes(search));
+    
+    if(filtered.length === 0) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES MATCHING SEARCH.</td></tr>';
 
-            const filtered = masterSubjects.filter(s => 
-                s.name.toUpperCase().includes(search) || 
-                s.code.toUpperCase().includes(search) || 
-                s.teacher.toUpperCase().includes(search)
-            );
+    filtered.forEach(r => {
+        body.innerHTML += `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
+                <td class="px-6 py-4 font-bold text-blue-600 uppercase">${r.name}</td>
+                <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
+                <td class="px-6 py-4 text-right space-x-2">
+                    <button onclick="editCourse('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button onclick="handleDelete('course', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+            </tr>`;
+    });
+}
 
-            if(filtered.length === 0) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects matching search.</td></tr>';
+function renderSubjects() {
+    const search = document.getElementById('subjectSearch').value.toUpperCase();
+    const body = document.getElementById('programTableBody');
+    if(!body) return;
+    body.innerHTML = '';
 
-            filtered.forEach(r => {
-                const statusColor = r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
-                body.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition-colors uppercase">
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-gray-900">${r.code}</div>
-                            <div class="text-[10px] text-gray-500">${r.name}</div>
-                        </td>
-                        <td class="px-6 py-4 text-xs font-medium">
-                            <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
-                            <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
-                        </td>
-                        <td class="px-6 py-4 text-xs">
-                            <div class="font-bold text-primary">${r.schedule}</div>
-                            <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
-                        </td>
-                        <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusColor}">${r.status || 'ACTIVE'}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right space-x-2">
-                            <button onclick="editSubject('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="handleDelete('programs', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        }
+    const filtered = masterSubjects.filter(s => 
+        s.name.toUpperCase().includes(search) || 
+        s.code.toUpperCase().includes(search) || 
+        s.teacher.toUpperCase().includes(search)
+    );
 
-        function updateCourseDropdown() {
-            const sel = document.getElementById('progCourse');
-            const current = sel.value;
-            sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
-            masterCourses.forEach(c => {
-                sel.innerHTML += `<option value="${c.name}">${c.name.toUpperCase()}</option>`;
-            });
-            sel.value = current;
-        }
+    if(filtered.length === 0) body.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects matching search.</td></tr>';
 
-        window.prepareAddCourse = () => {
-            document.getElementById('courseForm').reset();
-            document.getElementById('editCourseId').value = "";
-            document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
-            document.getElementById('courseModal').classList.remove('hidden');
-            document.getElementById('courseModal').classList.add('flex');
-        };
+    filtered.forEach(r => {
+        const statusColor = r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
+        body.innerHTML += `
+            <tr class="hover:bg-gray-50 transition-colors uppercase">
+                <td class="px-6 py-4">
+                    <div class="font-bold text-gray-900">${r.code}</div>
+                    <div class="text-[10px] text-gray-500">${r.name}</div>
+                </td>
+                <td class="px-6 py-4 text-xs font-medium">
+                    <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                    <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
+                </td>
+                <td class="px-6 py-4 text-xs">
+                    <div class="font-bold text-blue-600">${r.schedule}</div>
+                    <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
+                </td>
+                <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusColor}">${r.status || 'ACTIVE'}</span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                    <button onclick="editSubject('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button onclick="handleDelete('programs', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                </td>
+            </tr>`;
+    });
+}
 
-        window.editCourse = async (id) => {
-            const d = (await getDoc(doc(db, "courses", id))).data();
-            document.getElementById('editCourseId').value = id;
-            document.getElementById('courseSY').value = d.schoolYear;
-            document.getElementById('courseName').value = d.name;
-            document.getElementById('courseDuration').value = d.duration;
-            document.getElementById('courseDesc').value = d.desc;
-            document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
-            document.getElementById('courseModal').classList.remove('hidden');
-            document.getElementById('courseModal').classList.add('flex');
-        };
+// --- COURSE DROPDOWN SYNC ---
+function updateCourseDropdown() {
+    const sel = document.getElementById('progCourse');
+    if(!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+    masterCourses.forEach(c => {
+        sel.innerHTML += `<option value="${c.name}">${c.name.toUpperCase()}</option>`;
+    });
+    sel.value = current;
+}
 
-        document.getElementById('courseForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editCourseId').value;
-            const btn = document.getElementById('courseSaveBtn');
-            btn.classList.add('loading-btn');
-            btn.innerHTML = '<span class="loader"></span> SAVING...';
-            const data = {
-                schoolYear: document.getElementById('courseSY').value.toUpperCase(),
-                name: document.getElementById('courseName').value.toUpperCase(),
-                duration: String(document.getElementById('courseDuration').value).toUpperCase(),
-                desc: document.getElementById('courseDesc').value.toUpperCase()
-            };
-            try {
-                if(id) await updateDoc(doc(db, "courses", id), data);
-                else await addDoc(collection(db, "courses"), data);
-                closeModal('courseModal');
-            } catch (err) { showNotif("ERROR SAVING COURSE."); }
-            btn.classList.remove('loading-btn');
-            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
-        };
+// --- FORM SUBMISSIONS (COURSE) ---
+document.getElementById('courseForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editCourseId').value;
+    const btn = document.getElementById('courseSaveBtn');
+    btn.innerHTML = '<span class="loader"></span> SAVING...';
 
-        window.prepareAddSubject = () => {
-            document.getElementById('programForm').reset();
-            document.getElementById('editSubjectId').value = "";
-            document.getElementById('progStatus').value = "ACTIVE";
-            document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
-            document.getElementById('subjectModal').classList.remove('hidden');
-            document.getElementById('subjectModal').classList.add('flex');
-        };
+    const data = {
+        schoolYear: document.getElementById('courseSY').value.toUpperCase(),
+        name: document.getElementById('courseName').value.toUpperCase(),
+        duration: String(document.getElementById('courseDuration').value).toUpperCase(),
+        desc: document.getElementById('courseDesc').value.toUpperCase()
+    };
+    
+    try {
+        // FIXED: Pointing to "course"
+        if(id) await updateDoc(doc(db, "course", id), data);
+        else await addDoc(collection(db, "course"), data);
+        closeModal('courseModal');
+    } catch (err) { showNotif("ERROR SAVING COURSE."); }
+    btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
+};
 
-        window.editSubject = async (id) => {
-            const d = (await getDoc(doc(db, "programs", id))).data();
-            document.getElementById('editSubjectId').value = id;
-            document.getElementById('progCode').value = d.code;
-            document.getElementById('progName').value = d.name;
-            document.getElementById('progCourse').value = d.course || "";
-            document.getElementById('progYear').value = d.year;
-            document.getElementById('progSem').value = d.semester;
-            document.getElementById('progStart').value = d.startTime;
-            document.getElementById('progEnd').value = d.endTime;
-            document.getElementById('progTeacher').value = d.teacher;
-            document.getElementById('progStatus').value = d.status || "ACTIVE";
-            const savedDays = d.schedule ? d.schedule.split('-') : [];
-            document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
-            document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
-            document.getElementById('subjectModal').classList.remove('hidden');
-            document.getElementById('subjectModal').classList.add('flex');
-        };
+// --- FORM SUBMISSIONS (SUBJECT) ---
+document.getElementById('programForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('editSubjectId').value;
+    const btn = document.getElementById('subjectSaveBtn');
+    btn.innerHTML = '<span class="loader"></span> SAVING...';
 
-        document.getElementById('programForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editSubjectId').value;
-            const btn = document.getElementById('subjectSaveBtn');
-            btn.classList.add('loading-btn');
-            btn.innerHTML = '<span class="loader"></span> SAVING...';
-            const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
-            const data = {
-                code: document.getElementById('progCode').value.toUpperCase(),
-                name: document.getElementById('progName').value.toUpperCase(),
-                course: document.getElementById('progCourse').value.toUpperCase(),
-                year: document.getElementById('progYear').value.toUpperCase(),
-                semester: document.getElementById('progSem').value.toUpperCase(),
-                schedule: selectedDays.toUpperCase(),
-                startTime: document.getElementById('progStart').value,
-                endTime: document.getElementById('progEnd').value,
-                teacher: document.getElementById('progTeacher').value.toUpperCase(),
-                status: document.getElementById('progStatus').value.toUpperCase()
-            };
-            try {
-                if(id) await updateDoc(doc(db, "programs", id), data);
-                else await addDoc(collection(db, "programs"), data);
-                closeModal('subjectModal');
-            } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
-            btn.classList.remove('loading-btn');
-            btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Program';
-        };
+    const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
+    const data = {
+        code: document.getElementById('progCode').value.toUpperCase(),
+        name: document.getElementById('progName').value.toUpperCase(),
+        course: document.getElementById('progCourse').value.toUpperCase(),
+        year: document.getElementById('progYear').value.toUpperCase(),
+        semester: document.getElementById('progSem').value.toUpperCase(),
+        schedule: selectedDays.toUpperCase(),
+        startTime: document.getElementById('progStart').value,
+        endTime: document.getElementById('progEnd').value,
+        teacher: document.getElementById('progTeacher').value.toUpperCase(),
+        status: document.getElementById('progStatus').value.toUpperCase()
+    };
+    
+    try {
+        if(id) await updateDoc(doc(db, "programs", id), data);
+        else await addDoc(collection(db, "programs"), data);
+        closeModal('subjectModal');
+    } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
+    btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Program';
+};
 
-        window.handleDelete = (coll, id) => { 
-            showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
-                await deleteDoc(doc(db, coll, id));
-            });
-        };
+// --- MODAL TRIGGERS ---
+window.editCourse = async (id) => {
+    const d = (await getDoc(doc(db, "course", id))).data();
+    document.getElementById('editCourseId').value = id;
+    document.getElementById('courseSY').value = d.schoolYear;
+    document.getElementById('courseName').value = d.name;
+    document.getElementById('courseDuration').value = d.duration;
+    document.getElementById('courseDesc').value = d.desc;
+    document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
+    document.getElementById('courseModal').classList.remove('hidden');
+    document.getElementById('courseModal').classList.add('flex');
+};
 
-        document.getElementById('courseSearch').oninput = renderCourses;
-        document.getElementById('subjectSearch').oninput = renderSubjects;
+window.handleDelete = (coll, id) => { 
+    showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
+        try {
+            await deleteDoc(doc(db, coll, id));
+        } catch(e) { showNotif("DELETE FAILED."); }
+    });
+};
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+// --- VIEW CONTROLS ---
+document.getElementById('courseSearch').oninput = renderCourses;
+document.getElementById('subjectSearch').oninput = renderSubjects;
+
+window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
 </html>
