@@ -379,7 +379,7 @@
             document.getElementById('mId').innerText = s.studentId || 'N/A';
             document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
             document.getElementById('mGender').innerText = s.gender || 'N/A';
-            document.getElementById('mEmail').innerText = s.email || 'N/A';
+            document.getElementById('mEmail').innerText = (s.email || 'N/A').toLowerCase();
 
             // Fetch Program Map
             const progSnap = await getDocs(collection(db, "programs"));
