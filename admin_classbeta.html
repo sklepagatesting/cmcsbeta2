@@ -214,16 +214,25 @@
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                document.getElementById('adminName').innerText = `${d.lastname}, ${d.firstname}`.toUpperCase();
-                document.getElementById('adminInitial').innerText = d.firstname[0] + d.lastname[0];
-                loadCourses();
-            }
-        } else { window.location.href = "login.html"; }
-    });
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            
+            // CHANGE THIS: startListeners() to syncData()
+            syncData(); 
+            
+            // Now this will actually run
+            loadCourses(); 
+        } else {
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        window.location.href = "login.html"; 
+    }
+});
 
     async function loadCourses() {
         const snap = await getDocs(collection(db, "courses"));
