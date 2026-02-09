@@ -14,14 +14,23 @@
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-6">
 
+    <div id="notifModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl text-center">
+            <div id="notifIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+            <h3 id="notifTitle" class="font-black uppercase tracking-widest text-sm mb-1">System Message</h3>
+            <p id="notifMessage" class="text-[11px] text-gray-500 font-bold uppercase leading-relaxed mb-6"></p>
+            <button onclick="closeNotif()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Acknowledge</button>
+        </div>
+    </div>
+
     <div id="loginGate" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fa-solid fa-shield-halved text-2xl"></i>
                 </div>
-                <h3 class="font-bold uppercase tracking-widest text-lg">Identity Verification</h3>
-                <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Unlock account settings</p>
+                <h3 class="font-bold uppercase tracking-widest text-lg">Security Access</h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Re-verify to enable editing</p>
             </div>
             
             <div class="space-y-3">
@@ -104,6 +113,34 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         let currentUser = null;
+        let redirectOnClose = false;
+
+        // Custom Modal Logic
+        window.showNotif = (msg, type = 'success', redirect = false) => {
+            const modal = document.getElementById('notifModal');
+            const iconBox = document.getElementById('notifIcon');
+            const title = document.getElementById('notifTitle');
+            const message = document.getElementById('notifMessage');
+            redirectOnClose = redirect;
+
+            if(type === 'success') {
+                iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600";
+                iconBox.innerHTML = '<i class="fa-solid fa-check text-xl"></i>';
+                title.innerText = "Success";
+            } else {
+                iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-600";
+                iconBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-xl"></i>';
+                title.innerText = "Error";
+            }
+
+            message.innerText = msg;
+            modal.style.display = 'flex';
+        };
+
+        window.closeNotif = () => {
+            document.getElementById('notifModal').style.display = 'none';
+            if(redirectOnClose) window.location.href = "admin_setupbeta.html";
+        };
 
         window.togglePassword = (id, iconId) => {
             const el = document.getElementById(id);
@@ -131,9 +168,9 @@
             const pass = document.getElementById('gatePw').value;
             const btn = document.getElementById('verifyBtn');
 
-            if(!email || !pass) { alert("Enter current credentials"); return; }
+            if(!email || !pass) { showNotif("Enter your current credentials.", "error"); return; }
             btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span> VERIFYING...';
+            btn.innerHTML = '<span class="loader"></span>';
 
             try {
                 const credential = EmailAuthProvider.credential(email, pass);
@@ -145,19 +182,14 @@
                     document.getElementById('fn').value = d.firstname;
                     document.getElementById('ln').value = d.lastname;
                     document.getElementById('editEmail').value = d.email;
-                    
-                    // IMPORTANT: Capture password from Firestore to populate the field
-                    const capturedPass = d.password || pass;
-                    document.getElementById('editPw').value = capturedPass;
-                    checkStrength(capturedPass); // Initialize bar
-
+                    document.getElementById('editPw').value = d.password || pass;
+                    checkStrength(d.password || pass);
                     document.getElementById('profileCircle').innerText = (d.firstname[0] + d.lastname[0]).toUpperCase();
-                    
                     document.getElementById('loginGate').style.display = 'none';
                     document.getElementById('editArea').classList.remove('hidden');
                 }
             } catch (err) {
-                alert("Invalid Credentials: " + err.message);
+                showNotif("Access Denied: " + err.message, "error");
                 btn.disabled = false;
                 btn.innerText = "Verify & Unlock";
             }
@@ -180,17 +212,13 @@
                 if(newPw) await updatePassword(currentUser, newPw);
 
                 await updateDoc(doc(db, "users", currentUser.uid), {
-                    firstname: newFn,
-                    lastname: newLn,
-                    email: newEmail,
-                    password: newPw
+                    firstname: newFn, lastname: newLn, email: newEmail, password: newPw
                 });
 
-                alert("Account Updated Successfully!");
-                window.location.href = "admin_setupbeta.html";
+                showNotif("Account settings updated successfully!", "success", true);
 
             } catch (err) {
-                alert("Update Failed: " + err.message);
+                showNotif("Update Failed: " + err.message, "error");
                 btn.disabled = false;
                 btn.innerText = "Save All Changes";
             }
