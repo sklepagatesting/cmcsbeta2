@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Setup | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        accent: '#f59e0b',
+                        danger: '#ef4444',
+                        success: '#10b981'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-btn { opacity: 0.7; pointer-events: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
+            <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
+            </a>
+            <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+                <i class="fa-solid fa-school w-5"></i> <span class="font-medium text-sm">Academic Setup</span>
+            </a>
+            <a href="admin_classbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">Class Assignment</span>
+            </a>
+            <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-folder-open w-5"></i> <span class="font-medium text-sm">Master Record</span>
+            </a>
+            <a href="admin_accountsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                <i class="fa-solid fa-users-gear w-5"></i> <span class="font-medium text-sm">Accounts</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white" id="adminInitial">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-white truncate" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-tighter">Administrator</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
+                <i class="fa-solid fa-right-from-bracket"></i> LOGOUT
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <h1 class="text-xl font-bold text-gray-800">Academic Setup</h1>
+            <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <i class="fa-solid fa-calendar-days mr-1"></i> Management Console
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Available Courses</h2>
+                        <p class="text-xs text-gray-500 mt-1 uppercase">Manage institutional programs and durations</p>
+                    </div>
+                    <button onclick="prepareAddCourse()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> ADD NEW COURSE
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="px-6 py-3">School Year</th>
+                                <th class="px-6 py-3">Course Name</th>
+                                <th class="px-6 py-3">Duration</th>
+                                <th class="px-6 py-3">Description</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courseTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">Fetching course data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Program</h2>
+                        <p class="text-xs text-gray-500 mt-1 uppercase">Curriculum scheduling and faculty assignment</p>
+                    </div>
+                    <button onclick="prepareAddSubject()" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-book-medical"></i> ADD SUBJECT
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="px-6 py-3">Code & Subject</th>
+                                <th class="px-6 py-3">Course / Yr / Sem</th>
+                                <th class="px-6 py-3">Schedule</th>
+                                <th class="px-6 py-3">Faculty</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="programTableBody" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 italic">Fetching subject data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="courseModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="courseModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Course Form</span>
+                <button onclick="closeModal('courseModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="courseForm" class="p-6 space-y-4">
+                <input type="hidden" id="editCourseId">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">School Year</label>
+                        <input type="text" id="courseSY" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="2025-2026" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Course Name</label>
+                        <input type="text" id="courseName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="BSIT" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Duration (Years)</label>
+                        <input type="number" id="courseDuration" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="4" required>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Full Description</label>
+                        <textarea id="courseDesc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="BACHELOR OF SCIENCE IN..." required></textarea>
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('courseModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition uppercase">Cancel</button>
+                    <button type="submit" id="courseSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-success hover:bg-emerald-600 shadow-md transition flex items-center gap-2 uppercase">
+                        <i class="fa-solid fa-save"></i> Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="subjectModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <span id="subjectModalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Subject Form</span>
+                <button onclick="closeModal('subjectModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto p-6">
+                <form id="programForm" class="space-y-6">
+                    <input type="hidden" id="editSubjectId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="pb-2 md:col-span-2 border-b border-gray-100"><h4 class="text-xs font-bold text-primary uppercase">General Info</h4></div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Subject Code</label>
+                            <input type="text" id="progCode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Subject Name</label>
+                            <input type="text" id="progName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Under Course Program</label>
+                            <select id="progCourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Year Level</label>
+                            <select id="progYear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                                <option value="1">1ST YEAR</option>
+                                <option value="2">2ND YEAR</option>
+                                <option value="3">3RD YEAR</option>
+                                <option value="4">4TH YEAR</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Semester</label>
+                            <select id="progSem" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                                <option value="1ST SEMESTER">1ST SEMESTER</option>
+                                <option value="2ND SEMESTER">2ND SEMESTER</option>
+                                <option value="SUMMER">SUMMER</option>
+                            </select>
+                        </div>
+                        <div class="pb-2 md:col-span-2 border-b border-gray-100 mt-2"><h4 class="text-xs font-bold text-primary uppercase">Schedule & Faculty</h4></div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Weekly Schedule</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="M" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">MON</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="T" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">TUE</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="W" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">WED</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="TH" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">THU</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">FRI</span>
+                                </label>
+                                <label class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-50 transition">
+                                    <input type="checkbox" name="days" value="F" class="w-4 h-4 text-primary rounded"> <span class="text-xs font-bold uppercase">SAT</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Start Time</label>
+                            <input type="time" id="progStart" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">End Time</label>
+                            <input type="time" id="progEnd" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Assigned Faculty In-charge</label>
+                            <select id="progTeacher" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required></select>
+                        </div>
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" onclick="closeModal('subjectModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition uppercase">Cancel</button>
+                        <button type="submit" id="subjectSaveBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-primary hover:bg-blue-700 shadow-md transition flex items-center gap-2 uppercase">
+                            <i class="fa-solid fa-save"></i> Save Program
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const formatTime = (t) => {
+        if(!t) return "";
+        const [h, m] = t.split(':');
+        const hh = parseInt(h);
+        const suffix = hh >= 12 ? "PM" : "AM";
+        let hour = ((hh + 11) % 12 + 1);
+        return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+    };
+
+    // SYSTEM NOTIFICATION MODAL LOGIC
+    window.showNotif = (msg, isConfirm = false, onYes = null) => {
+        document.getElementById('notifMessage').innerText = msg;
+        const confirmDiv = document.getElementById('confirmActions');
+        const alertDiv = document.getElementById('alertActions');
+        
+        if (isConfirm) {
+            confirmDiv.classList.remove('hidden');
+            confirmDiv.classList.add('flex');
+            alertDiv.classList.add('hidden');
+            document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+        } else {
+            confirmDiv.classList.add('hidden');
+            confirmDiv.classList.remove('flex');
+            alertDiv.classList.remove('hidden');
+        }
+        
+        const modal = document.getElementById('notifModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    };
+
+    window.closeModal = (id) => {
+        const modal = document.getElementById(id);
+        if(modal) {
+            modal.style.display = 'none'; // For Form Modals
+            modal.classList.add('hidden'); // For Notif Modal
+            modal.classList.remove('flex');
+        }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                
+                // COURSE SYNC (STATUS COLUMN REMOVED)
+                onSnapshot(collection(db, "courses"), (snap) => {
+                    const body = document.getElementById('courseTableBody');
+                    const progCourseSel = document.getElementById('progCourse');
+                    body.innerHTML = '';
+                    progCourseSel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+                    
+                    if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES FOUND.</td></tr>';
+                    
+                    snap.forEach(d => {
+                        const r = d.data();
+                        body.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
+                                <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
+                                <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
+                                <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <button onclick="editCourse('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-transform active:scale-90"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="handleDelete('courses', '${d.id}')" class="text-red-400 hover:text-red-600 p-2 transition-transform active:scale-90"><i class="fa-solid fa-trash-can"></i></button>
+                                </td>
+                            </tr>`;
+                        progCourseSel.innerHTML += `<option value="${r.name}">${r.name.toUpperCase()}</option>`;
+                    });
+                });
+
+                // SUBJECT SYNC (STATUS COLUMN REMOVED)
+                onSnapshot(collection(db, "programs"), (snap) => {
+                    const body = document.getElementById('programTableBody');
+                    body.innerHTML = '';
+                    
+                    if(snap.empty) body.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects scheduled.</td></tr>';
+
+                    snap.forEach(d => {
+                        const r = d.data();
+                        body.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition-colors uppercase">
+                                <td class="px-6 py-4">
+                                    <div class="font-bold text-gray-900">${r.code}</div>
+                                    <div class="text-[10px] text-gray-500">${r.name}</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-medium">
+                                    <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
+                                    <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
+                                </td>
+                                <td class="px-6 py-4 text-xs">
+                                    <div class="font-bold text-primary">${r.schedule}</div>
+                                    <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
+                                </td>
+                                <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <button onclick="editSubject('${d.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-transform active:scale-90"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="handleDelete('programs', '${d.id}')" class="text-red-400 hover:text-red-600 p-2 transition-transform active:scale-90"><i class="fa-solid fa-trash-can"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+                });
+
+                // TEACHER DROPDOWN SYNC
+                onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
+                    const sel = document.getElementById('progTeacher');
+                    sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
+                    snap.forEach(d => {
+                        const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
+                        sel.innerHTML += `<option value="${name}">${name}</option>`;
+                    });
+                });
+            }
+        } else { window.location.href = "login.html"; }
+    });
+
+    // ACTIONS: COURSE
+    window.prepareAddCourse = () => {
+        document.getElementById('courseForm').reset();
+        document.getElementById('editCourseId').value = "";
+        document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
+        document.getElementById('courseModal').style.display = 'flex';
+    };
+
+    window.editCourse = async (id) => {
+        const d = (await getDoc(doc(db, "courses", id))).data();
+        document.getElementById('editCourseId').value = id;
+        document.getElementById('courseSY').value = d.schoolYear;
+        document.getElementById('courseName').value = d.name;
+        document.getElementById('courseDuration').value = d.duration;
+        document.getElementById('courseDesc').value = d.desc;
+        document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
+        document.getElementById('courseModal').style.display = 'flex';
+    };
+
+    document.getElementById('courseForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editCourseId').value;
+        const btn = document.getElementById('courseSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loader"></span> SAVING...';
+        
+        const data = {
+            schoolYear: document.getElementById('courseSY').value.toUpperCase(),
+            name: document.getElementById('courseName').value.toUpperCase(),
+            duration: String(document.getElementById('courseDuration').value).toUpperCase(),
+            desc: document.getElementById('courseDesc').value.toUpperCase()
+        };
+        
+        try {
+            if(id) await updateDoc(doc(db, "courses", id), data);
+            else await addDoc(collection(db, "courses"), data);
+            closeModal('courseModal');
+            showNotif("Course record saved successfully.");
+        } catch (err) { showNotif("Error saving course record."); }
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE RECORD';
+    };
+
+    // ACTIONS: SUBJECT/PROGRAM
+    window.prepareAddSubject = () => {
+        document.getElementById('programForm').reset();
+        document.getElementById('editSubjectId').value = "";
+        document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
+        document.getElementById('subjectModal').style.display = 'flex';
+    };
+
+    window.editSubject = async (id) => {
+        const d = (await getDoc(doc(db, "programs", id))).data();
+        document.getElementById('editSubjectId').value = id;
+        document.getElementById('progCode').value = d.code;
+        document.getElementById('progName').value = d.name;
+        document.getElementById('progCourse').value = d.course || "";
+        document.getElementById('progYear').value = d.year;
+        document.getElementById('progSem').value = d.semester;
+        document.getElementById('progStart').value = d.startTime;
+        document.getElementById('progEnd').value = d.endTime;
+        document.getElementById('progTeacher').value = d.teacher;
+        const savedDays = d.schedule ? d.schedule.split('-') : [];
+        document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
+        document.getElementById('subjectModalTitle').innerText = "EDIT SUBJECT SCHEDULE";
+        document.getElementById('subjectModal').style.display = 'flex';
+    };
+
+    document.getElementById('programForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editSubjectId').value;
+        const btn = document.getElementById('subjectSaveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loader"></span> SAVING...';
+
+        const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
+        const data = {
+            code: document.getElementById('progCode').value.toUpperCase(),
+            name: document.getElementById('progName').value.toUpperCase(),
+            course: document.getElementById('progCourse').value.toUpperCase(),
+            year: document.getElementById('progYear').value.toUpperCase(),
+            semester: document.getElementById('progSem').value.toUpperCase(),
+            schedule: selectedDays.toUpperCase(),
+            startTime: document.getElementById('progStart').value,
+            endTime: document.getElementById('progEnd').value,
+            teacher: document.getElementById('progTeacher').value.toUpperCase()
+        };
+        
+        try {
+            if(id) await updateDoc(doc(db, "programs", id), data);
+            else await addDoc(collection(db, "programs"), data);
+            closeModal('subjectModal');
+            showNotif("Subject schedule updated.");
+        } catch (err) { showNotif("Error saving subject schedule."); }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-save"></i> SAVE PROGRAM';
+    };
+
+    // SYSTEM DELETE MESSAGE WITH MODAL
+    window.handleDelete = (coll, id) => { 
+        showNotif("ARE YOU SURE YOU WANT TO PERMANENTLY DELETE THIS RECORD?", true, async () => {
+            try {
+                await deleteDoc(doc(db, coll, id));
+                showNotif("Record deleted successfully.");
+            } catch (err) {
+                showNotif("Error deleting record.");
+            }
+        });
+    };
+
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+</script>
+</body>
+</html>
