@@ -339,15 +339,25 @@
         };
 
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    startListeners();
-                    loadCourses();
-                }
-            } else { window.location.href = "login.html"; }
-        });
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        
+        // ADDED ROLE CHECK HERE
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            startListeners();
+            loadCourses();
+        } else {
+            // If they exist but aren't an admin, kick them out
+            console.warn("Unauthorized access attempt.");
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        // No user logged in
+        window.location.href = "login.html"; 
+    }
+});
 
         function calculateAge(dateString) {
             if(!dateString) return "";
