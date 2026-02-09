@@ -290,6 +290,7 @@
             document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
             startListeners();
             loadCourses();
+            syncData();
         } else {
             // If they exist but aren't an admin, kick them out
             console.warn("Unauthorized access attempt.");
