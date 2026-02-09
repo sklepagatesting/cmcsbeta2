@@ -17,25 +17,39 @@
             <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">
                 --
             </div>
-            <h2 class="text-white font-bold uppercase tracking-wider">Account Settings</h2>
-            <p class="text-blue-400 text-xs font-bold uppercase">Administrator Profile</p>
+            <h2 class="text-white font-bold uppercase tracking-wider text-sm">Account Settings</h2>
+            <p class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">Administrator Profile</p>
         </div>
 
-        <form id="updateProfileForm" class="p-8 space-y-5">
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">First Name</label>
-                <input type="text" id="fn" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
+        <form id="updateProfileForm" class="p-8 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">First Name</label>
+                    <input type="text" id="fn" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Last Name</label>
+                    <input type="text" id="ln" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
+                </div>
             </div>
-            <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Last Name</label>
-                <input type="text" id="ln" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition uppercase text-sm font-semibold" required>
-            </div>
+
             <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Email Address</label>
                 <input type="email" id="email" readonly class="w-full border-2 border-gray-100 p-3 rounded-xl bg-gray-50 text-gray-400 text-sm font-semibold cursor-not-allowed">
             </div>
+
+            <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Account Password</label>
+                <div class="relative">
+                    <input type="password" id="pw" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+                    <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                        <i id="toggleIcon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <p class="text-[9px] text-gray-400 mt-1 italic font-medium">Changing this will update your login credentials.</p>
+            </div>
             
-            <div class="pt-4">
+            <div class="pt-6">
                 <button type="submit" id="saveBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-widest text-xs">
                     <i class="fa-solid fa-floppy-disk"></i> Save Changes
                 </button>
@@ -46,7 +60,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
@@ -61,18 +75,32 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentUid = null;
+        let currentUser = null;
+
+        // Toggle Password Visibility
+        window.togglePassword = () => {
+            const pwField = document.getElementById('pw');
+            const icon = document.getElementById('toggleIcon');
+            if (pwField.type === "password") {
+                pwField.type = "text";
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pwField.type = "password";
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        };
 
         // Load Admin Data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentUid = user.uid;
+                currentUser = user;
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
                     document.getElementById('fn').value = data.firstname;
                     document.getElementById('ln').value = data.lastname;
                     document.getElementById('email').value = data.email;
+                    document.getElementById('pw').value = data.password || ""; // Fetches plain text password if stored
                     document.getElementById('profileCircle').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
                 }
             } else {
@@ -84,18 +112,29 @@
         document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('saveBtn');
+            const newPassword = document.getElementById('pw').value;
+
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Updating...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
 
             try {
-                await updateDoc(doc(db, "users", currentUid), {
+                // 1. Update Firebase Auth Password
+                if (newPassword) {
+                    await updatePassword(currentUser, newPassword);
+                }
+
+                // 2. Update Firestore Document
+                await updateDoc(doc(db, "users", currentUser.uid), {
                     firstname: document.getElementById('fn').value.toUpperCase(),
-                    lastname: document.getElementById('ln').value.toUpperCase()
+                    lastname: document.getElementById('ln').value.toUpperCase(),
+                    password: newPassword // Sync plain text password
                 });
-                alert("Profile Updated Successfully!");
+
+                alert("Profile and Password Updated Successfully!");
                 window.location.href = "admin_setupbeta.html";
             } catch (error) {
-                alert("Error updating profile: " + error.message);
+                console.error(error);
+                alert("Update failed. You may need to logout and log back in to change your password for security reasons.");
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
             }
