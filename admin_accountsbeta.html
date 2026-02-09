@@ -204,10 +204,8 @@
             document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
             
             // FIX 1: Change to the correct function name
-            syncUsers(); 
-            
-            // FIX 2: Ensure this function exists in this file
-            loadCourses(); 
+            syncUsers();
+            renderTable(); 
         } else {
             console.warn("Unauthorized access attempt.");
             window.location.href = "login.html"; 
