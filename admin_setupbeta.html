@@ -349,38 +349,26 @@
             document.getElementById(id).classList.remove('flex');
         };
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                                        
-                    onSnapshot(collection(db, "courses"), (snap) => {
-                        masterCourses = [];
-                        snap.forEach(d => masterCourses.push({ id: d.id, ...d.data() }));
-                        renderCourses();
-                        updateCourseDropdown();
-                    });
-
-                    onSnapshot(collection(db, "programs"), (snap) => {
-                        masterSubjects = [];
-                        snap.forEach(d => masterSubjects.push({ id: d.id, ...d.data() }));
-                        renderSubjects();
-                    });
-
-                    onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
-                        const sel = document.getElementById('progTeacher');
-                        sel.innerHTML = '<option value="" disabled selected>SELECT FACULTY</option>';
-                        snap.forEach(d => {
-                            const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
-                            sel.innerHTML += `<option value="${name}">${name}</option>`;
-                        });
-                    });
-                }
-            } else { window.location.href = "login.html"; }
-        });
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        
+        // ADDED ROLE CHECK HERE
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            startListeners();
+            loadCourses();
+        } else {
+            // If they exist but aren't an admin, kick them out
+            console.warn("Unauthorized access attempt.");
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        // No user logged in
+        window.location.href = "login.html"; 
+    }
+});
 
         function renderCourses() {
             const search = document.getElementById('courseSearch').value.toUpperCase();
