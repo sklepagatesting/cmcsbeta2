@@ -280,17 +280,26 @@
             return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${hh >= 12 ? "PM" : "AM"}`;
         };
 
-        onAuthStateChanged(auth, async user => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
-                    await loadCourses();
-                    syncData();
-                }
-            } else { window.location.href = "login.html"; }
-        });
+     onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        
+        // ADDED ROLE CHECK HERE
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            startListeners();
+            loadCourses();
+        } else {
+            // If they exist but aren't an admin, kick them out
+            console.warn("Unauthorized access attempt.");
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        // No user logged in
+        window.location.href = "login.html"; 
+    }
+});
 
         async function loadCourses() {
             const snap = await getDocs(collection(db, "courses"));
