@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment | SVLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .input-focus { transition: all 0.2s ease-in-out; }
+        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="msgModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform transition-all">
+            <div id="modalIcon" class="text-5xl mb-4"></div>
+            <h3 id="modalTitle" class="text-xl font-bold mb-2 tracking-tight">Notice</h3>
+            <p id="modalMsg" class="text-slate-500 text-sm font-medium leading-relaxed mb-8"></p>
+            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all">Continue</button>
+        </div>
+    </div>
+
+    <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white">
+        
+        <div class="hidden lg:flex lg:col-span-4 bg-[#0070c0] p-12 flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-[100px] opacity-10 -mr-32 -mt-32"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
+                    <i class="fa-solid fa-user-graduate text-white text-xl"></i>
+                </div>
+                <h2 class="text-white text-3xl font-extrabold leading-tight tracking-tight">Begin your <br>Academic <br>Journey.</h2>
+                <p class="text-white/70 mt-6 text-sm leading-relaxed">Fill out the official enrollment form. Please ensure your Student ID matches your school records for faster approval.</p>
+            </div>
+            <div class="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                CMCS Virtual Learning System
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 p-8 md:p-12">
+            <div class="mb-10 flex justify-between items-start">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Student Enrollment</h3>
+                    <p class="text-slate-400 text-sm mt-1">Submit your details for the academic year 2026.</p>
+                </div>
+                <div class="text-right">
+                    <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">New Student</span>
+                </div>
+            </div>
+
+            <form id="studentForm" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <input type="text" id="ln" placeholder="LAST NAME" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    <input type="text" id="fn" placeholder="FIRST NAME" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <select id="gender" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                        <option value="" disabled selected>GENDER</option>
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                    </select>
+                    <input type="date" id="bday" class="md:col-span-2 w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required title="Birthdate">
+                </div>
+
+                <input type="text" id="address" placeholder="COMPLETE HOME ADDRESS" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID (00-0-000)</label>
+                        <input type="text" id="studentId" placeholder="00-0-000" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-bold text-sm" required>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Course / Program</label>
+                        <select id="course" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>SELECT COURSE</option>
+                            <option value="BSIT">BS Information Technology</option>
+                            <option value="BSBA">BS Business Administration</option>
+                            <option value="BSED">BS Education</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-5">
+                    <select id="year" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                        <option value="" disabled selected>YEAR LEVEL</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                    <select id="semester" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                        <option value="" disabled selected>SEMESTER</option>
+                        <option value="1ST SEMESTER">1st Semester</option>
+                        <option value="2ND SEMESTER">2nd Semester</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                    <input type="email" id="email" placeholder="GMAIL ADDRESS" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    <input type="password" id="pw" placeholder="CREATE PASSWORD" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-[#0070c0] text-white py-5 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-200 transition-all transform active:scale-[0.98] mt-4">
+                    Submit Enrollment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Auto-format Student ID
+        document.getElementById('studentId').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, ''); 
+            if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
+            else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
+            e.target.value = val;
+        });
+
+        // Load Courses from Firestore (Optional sync)
+        async function loadCourses() {
+            try {
+                const snap = await getDocs(collection(db, "courses"));
+                if(!snap.empty) {
+                    const sel = document.getElementById('course');
+                    let options = '<option value="" disabled selected>SELECT COURSE</option>';
+                    snap.forEach(d => {
+                        const name = d.data().name.toUpperCase();
+                        options += `<option value="${name}">${name}</option>`;
+                    });
+                    sel.innerHTML = options;
+                }
+            } catch(e) { console.error("Course load failed", e); }
+        }
+        loadCourses();
+
+        let redirectOnClose = false;
+        window.showModal = (title, msg, type = 'success', redirect = false) => {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
+            const icon = document.getElementById('modalIcon');
+            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+            document.getElementById('msgModal').classList.replace('hidden', 'flex');
+            redirectOnClose = redirect;
+        }
+
+        window.closeModal = () => {
+            document.getElementById('msgModal').classList.replace('flex', 'hidden');
+            if(redirectOnClose) window.location.href = "login.html";
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('pw').value;
+
+            if(!email.endsWith("@gmail.com")) return showModal("Error", "Please use a valid Gmail account.", "error");
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span>';
+
+            try {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                await setDoc(doc(db, "users", cred.user.uid), {
+                    firstname: document.getElementById('fn').value.toUpperCase(),
+                    lastname: document.getElementById('ln').value.toUpperCase(),
+                    gender: document.getElementById('gender').value.toUpperCase(),
+                    birthdate: document.getElementById('bday').value,
+                    address: document.getElementById('address').value.toUpperCase(),
+                    studentId: document.getElementById('studentId').value,
+                    course: document.getElementById('course').value.toUpperCase(),
+                    year: document.getElementById('year').value,
+                    semester: document.getElementById('semester').value.toUpperCase(),
+                    email: email,
+                    password: password,
+                    role: "student",
+                    status: "pending",
+                    studentType: "NEW", // Default for enrollment page
+                    createdAt: new Date()
+                });
+                showModal("Success", "Enrollment submitted! Please wait for admin approval.", "success", true);
+            } catch (err) {
+                showModal("Enrollment Failed", err.message, "error");
+                btn.disabled = false;
+                btn.innerHTML = "Submit Enrollment";
+            }
+        });
+    </script>
+</body>
+</html>
