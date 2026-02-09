@@ -440,16 +440,45 @@
         };
 
         window.exportCSV = () => {
-            const courseF = document.getElementById('filterCourse').value;
-            const filtered = masterData.filter(s => (courseF === 'ALL' || s.course?.toUpperCase() === courseF));
-            const rows = [["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]];
-            filtered.forEach((s, i) => rows.push([i+1, s.studentId, `${s.lastname}, ${s.firstname}`, s.course, s.year, s.semester, courseSYMap[s.course?.toUpperCase()], (s.assignedPrograms || []).length]));
-            const blob = new Blob([rows.map(e => e.join(",")).join("\n")], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `MasterRecord_${courseF}.csv`;
-            a.click();
-        };
+    const courseF = document.getElementById('filterCourse').value;
+    const filtered = masterData.filter(s => 
+        (courseF === 'ALL' || s.course?.toUpperCase() === courseF)
+    );
+
+    const rows = [];
+
+    // 🔹 Custom header rows (before actual table header)
+    rows.push(["MASTER RECORD REPORT"]);
+    rows.push([`Course: ${courseF}`, `Generated: ${new Date().toLocaleString()}`]);
+    rows.push([]); // empty spacer row
+
+    // 🔹 Table column header
+    rows.push(["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]);
+
+    // 🔹 Actual entries
+    filtered.forEach((s, i) => {
+        rows.push([
+            i + 1,
+            s.studentId,
+            `${s.lastname}, ${s.firstname}`,
+            s.course,
+            s.year,
+            s.semester,
+            courseSYMap[s.course?.toUpperCase()],
+            (s.assignedPrograms || []).length
+        ]);
+    });
+
+    const blob = new Blob(
+        [rows.map(e => e.join(",")).join("\n")],
+        { type: 'text/csv' }
+    );
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `MasterRecord_${courseF}.csv`;
+    a.click();
+};
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
         document.querySelectorAll('select, input').forEach(el => el.addEventListener('change', applyFilters));
