@@ -4,374 +4,377 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Record | CMCS VLS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#2563eb',
-                        secondary: '#1e293b',
-                        accent: '#f59e0b',
-                        danger: '#ef4444',
-                        success: '#10b981'
+                        cmcs: {
+                            sidebar: '#0f172a',
+                            active: '#3b82f6',
+                            danger: '#ef4444'
+                        }
                     }
                 }
             }
         }
     </script>
-
     <style>
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        /* DASHBOARD UI STYLES (SCREEN ONLY) */
+        body { background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border: 1px solid #e2e8f0; }
+        .sidebar-link { transition: all 0.2s; border-radius: 8px; margin: 4px 12px; padding: 10px 16px; display: flex; align-items: center; color: #94a3b8; font-weight: 500; font-size: 13px; }
+        .sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
+        .active-tab { background: #3b82f6 !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        /* TABLE STYLING (SCREEN) */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th { background: #f1f5f9; color: #475569; padding: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+        .modern-table td { padding: 12px; background: white; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #1e293b; }
 
+        /* LEGACY PRINT ENGINE (PAPER ONLY) */
+        #printMasterHeader { display: none; }
         @media print {
-            body * { visibility: hidden; }
-            .print-only, .print-only * { visibility: visible; }
-            .print-only {
-                position: absolute;
-                inset: 0;
-                padding: 25px;
-                background: white;
-            }
             .no-print { display: none !important; }
+            body { background: white !important; padding: 0; margin: 0; }
+            
+            /* Revert Table to Old School Document Style */
+            table { width: 100% !important; border-collapse: collapse !important; margin-top: 10px; font-family: 'Times New Roman', serif; }
+            th { background-color: #d9d9d9 !important; border: 1px solid black !important; color: black !important; padding: 5px !important; font-size: 10pt !important; -webkit-print-color-adjust: exact; }
+            td { border: 1px solid black !important; padding: 5px !important; background: white !important; font-size: 9pt !important; text-transform: uppercase !important; color: black !important; }
+            
+            #printMasterHeader { display: block !important; text-align: center; }
+            #printMasterHeader img { margin: 0 auto 10px auto; }
+            
+            /* Modal Print Handling */
+            body.modal-open .modal-overlay { position: static; display: block !important; background: white; }
+            body.modal-open .modal-container { box-shadow: none; border: none; width: 100%; }
         }
+
+        .modal-overlay { background-color: rgba(15, 23, 42, 0.8); position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+        .modal-container { background: white; border-radius: 12px; width: 850px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
     </style>
 </head>
+<body class="min-h-screen flex flex-col font-sans">
 
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-
-<!-- ======================= PRINT LIST ======================= -->
-<div id="printList" class="print-only hidden">
-    <div class="text-center mb-6">
-        <h1 class="text-2xl font-black uppercase">Central Mindanao Computer School</h1>
-        <p class="tracking-[0.35em] text-xs font-bold mt-1">MASTER STUDENT ACADEMIC ENROLLMENT LIST</p>
-    </div>
-
-    <div class="flex justify-between text-xs font-bold mb-4 uppercase">
-        <div id="printFilterHeader"></div>
-        <div>Generated: <span id="printDate"></span></div>
-    </div>
-
-    <table class="w-full border border-black text-[11px]">
-        <thead class="bg-gray-200 font-black uppercase">
-            <tr>
-                <th class="border border-black p-1">No.</th>
-                <th class="border border-black p-1">Student ID</th>
-                <th class="border border-black p-1">Full Name</th>
-                <th class="border border-black p-1">S.Y / Course / Yr / Sem</th>
-                <th class="border border-black p-1">Status</th>
-            </tr>
-        </thead>
-        <tbody id="printListBody"></tbody>
-    </table>
-</div>
-
-<!-- ======================= PRINT PROFILE ======================= -->
-<div id="printProfile" class="print-only hidden">
-    <div class="text-center mb-6">
-        <h1 class="text-2xl font-black uppercase">Central Mindanao Computer School</h1>
-        <p class="tracking-[0.35em] text-xs font-bold mt-1">OFFICIAL STUDENT ACADEMIC RECORD</p>
-    </div>
-
-    <div class="grid grid-cols-2 gap-y-2 text-xs font-bold uppercase mb-6">
-        <div>Name: <span id="pName"></span></div>
-        <div>ID Number: <span id="pId"></span></div>
-        <div>Gender: <span id="pGender"></span></div>
-        <div>School Year: <span id="pSY"></span></div>
-        <div>Course: <span id="pCourse"></span></div>
-        <div>Year / Sem: <span id="pYearSem"></span></div>
-    </div>
-
-    <h3 class="font-black uppercase text-xs mb-2">Class Schedule & Program Details</h3>
-
-    <table class="w-full border border-black text-[11px]">
-        <thead class="bg-gray-200 font-black uppercase">
-            <tr>
-                <th class="border border-black p-1">Code</th>
-                <th class="border border-black p-1">Subject</th>
-                <th class="border border-black p-1">Instructor</th>
-                <th class="border border-black p-1">Schedule</th>
-            </tr>
-        </thead>
-        <tbody id="pSubjects"></tbody>
-    </table>
-
-    <div class="flex justify-between mt-16">
-        <div class="border-t border-black text-xs font-bold pt-2 w-48 text-center">Registrar</div>
-        <div class="border-t border-black text-xs font-bold pt-2 w-48 text-center">School Director</div>
-    </div>
-</div>
-
-<!-- ======================= YOUR ORIGINAL UI ======================= -->
-
-<aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300 no-print">
-    ...
-</aside>
-
-<main class="flex-1 flex flex-col h-full overflow-hidden relative">
-    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
-        <h1 class="text-xl font-bold text-gray-800">Student Master Records</h1>
+    <nav class="bg-white border-b border-gray-200 h-16 flex justify-between items-center px-8 z-30 no-print">
         <div class="flex items-center gap-3">
-            <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-2">
-                <i class="fa-solid fa-file-csv"></i> EXPORT CSV
-            </button>
-            <button onclick="printList()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> PRINT LIST
-            </button>
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">C</div>
+            <span class="font-bold text-gray-800 tracking-tight">CMCS <span class="text-blue-600">VLS</span></span>
         </div>
-    </header>
-</main>
+        <div class="flex items-center gap-6">
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-800 uppercase" id="adminName">Loading...</p>
+                <p class="text-[10px] text-gray-500 uppercase">System Administrator</p>
+            </div>
+            <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-md text-xs font-bold hover:bg-red-600 hover:text-white transition-all">Logout</button>
+        </div>
+    </nav>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-64 bg-cmcs-sidebar flex flex-col pt-4 no-print">
+            <a href="admin_approval.html" class="sidebar-link"><span>Approvals</span></a>
+            <a href="admin_setup.html" class="sidebar-link"><span>Academic Setup</span></a>
+            <a href="admin_class.html" class="sidebar-link"><span>Class Assignment</span></a>
+            <a href="admin_records.html" class="sidebar-link active-tab"><span>Master Record</span></a>
+            <a href="admin_accounts.html" class="sidebar-link"><span>Accounts</span></a>
+        </aside>
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let masterData = [];
-        let courseSYMap = {};
-
-        // Helper: Academic Formatter
-        const formatYear = (y) => {
-            const val = String(y).toUpperCase();
-            if(val === "1" || val.includes("1ST")) return "1ST YEAR";
-            if(val === "2" || val.includes("2ND")) return "2ND YEAR";
-            if(val === "3" || val.includes("3RD")) return "3RD YEAR";
-            if(val === "4" || val.includes("4TH")) return "4TH YEAR";
-            return val;
-        };
-
-        const formatSem = (s) => {
-            const val = String(s).toUpperCase();
-            if(val === "1" || val.includes("1ST")) return "1ST SEMESTER";
-            if(val === "2" || val.includes("2ND")) return "2ND SEMESTER";
-            return val;
-        };
-
-        const formatTime = (t) => {
-            if(!t) return "";
-            const [h, m] = t.split(':');
-            const hh = parseInt(h);
-            const suffix = hh >= 12 ? "PM" : "AM";
-            let hour = ((hh + 11) % 12 + 1);
-            return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const d = snap.data();
-                    document.getElementById('adminName').innerText = `${d.lastname}, ${d.firstname}`;
-                    document.getElementById('adminInitial').innerText = d.firstname.charAt(0);
-                    await loadCoursesAndSY();
-                    syncData();
-                }
-            } else { window.location.href = "login.html"; }
-        });
-
-        async function loadCoursesAndSY() {
-            const snap = await getDocs(collection(db, "courses"));
-            const sel = document.getElementById('filterCourse');
-            sel.innerHTML = '<option value="ALL">ALL COURSES</option>';
-            snap.forEach(d => {
-                const name = d.data().name.toUpperCase();
-                courseSYMap[name] = d.data().schoolYear || "N/A";
-                sel.innerHTML += `<option value="${name}">${name}</option>`;
-            });
-        }
-
-        function syncData() {
-            onSnapshot(query(collection(db, "users"), where("role", "==", "student"), where("status", "==", "approved")), (snap) => {
-                masterData = [];
-                snap.forEach(d => {
-                    const data = d.data();
-                    masterData.push({ 
-                        uid: d.id, 
-                        ...data,
-                        year: formatYear(data.year),
-                        semester: formatSem(data.semester)
-                    });
-                });
-                applyFilters();
-            });
-        }
-
-        function applyFilters() {
-            const course = document.getElementById('filterCourse').value;
-            const year = document.getElementById('filterYear').value;
-            const sem = document.getElementById('filterSem').value;
-            const search = document.getElementById('searchField').value.toUpperCase();
-
-            const filtered = masterData.filter(s => {
-                const matchCourse = course === 'ALL' || (s.course && s.course.toUpperCase() === course);
-                const matchYear = year === 'ALL' || s.year === year;
-                const matchSem = sem === 'ALL' || s.semester === sem;
-                const matchSearch = !search || (s.lastname && s.lastname.toUpperCase().includes(search)) || (s.studentId && s.studentId.includes(search));
-                return matchCourse && matchYear && matchSem && matchSearch;
-            });
-
-            const tbody = document.getElementById('masterTableBody');
-            tbody.innerHTML = filtered.length ? '' : '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 italic">No matching records found.</td></tr>';
+        <main class="flex-1 overflow-y-auto p-8">
             
-            filtered.forEach((s, i) => {
-                const sy = courseSYMap[s.course ? s.course.toUpperCase() : ""] || "N/A";
-                tbody.innerHTML += `
-                    <tr class="hover:bg-blue-50/40 transition">
-                        <td class="px-6 py-4 font-mono text-gray-400">${i + 1}</td>
-                        <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'NO ID'}</td>
-                        <td class="px-6 py-4 uppercase font-bold text-gray-800">${s.lastname}, ${s.firstname}</td>
-                        <td class="px-6 py-4 uppercase">
-                            <div class="font-bold text-gray-700">${s.course}</div>
-                            <div class="text-[9px] text-gray-400 font-bold tracking-tight">${sy} | ${s.year} | ${s.semester}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase">ENROLLED</span>
-                        </td>
-                        <td class="px-6 py-4 text-right no-print">
-                            <button onclick="viewStudent('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-600 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
-                                VIEW PROFILE
-                            </button>
-                        </td>
-                    </tr>`;
-            });
-        }
+            <div id="printMasterHeader">
+                <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-20 h-20 mb-2">
+                <h1 class="font-bold text-2xl">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                <p class="text-[10px] uppercase tracking-[0.2em] font-bold">Master Student Academic Enrollment List</p>
+                <p id="printFilterInfo" class="text-[9px] mt-2 font-bold uppercase text-gray-700"></p>
+                <p class="text-[8px] mt-1 italic" id="printDate"></p>
+                <hr class="border-black w-full my-4">
+            </div>
 
-        window.viewStudent = async (uid) => {
-            const s = masterData.find(x => x.uid === uid);
-            if(!s) return;
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-8 no-print">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Master Record List</h2>
+                        <p class="text-sm text-gray-500">View and manage all student academic history</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="exportCSV()" class="bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:bg-gray-50 transition-all uppercase">Export CSV</button>
+                        <button onclick="window.print()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all uppercase">Print All Records</button>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 mb-8 no-print flex flex-wrap items-center gap-6">
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Course</label>
+                        <select id="filterCourse" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none"><option value="ALL">All Courses</option></select>
+                    </div>
+                    <div class="w-32">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Year</label>
+                        <select id="filterYear" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 outline-none">
+                            <option value="ALL">All</option>
+                            <option value="1">1st</option><option value="2">2nd</option>
+                            <option value="3">3rd</option><option value="4">4th</option>
+                        </select>
+                    </div>
+                    <div class="w-32">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Semester</label>
+                        <select id="filterSem" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 outline-none">
+                            <option value="ALL">All</option>
+                            <option value="1">1st</option><option value="2">2nd</option>
+                        </select>
+                    </div>
+                    <div class="flex-[1.5] min-w-[250px]">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Search Student</label>
+                        <input type="text" id="searchField" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm font-medium outline-none" placeholder="Enter name or ID number...">
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl overflow-hidden shadow-sm">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th width="60" class="text-center">No.</th>
+                                <th width="140">Student ID</th>
+                                <th>Full Name</th>
+                                <th>Academic Info</th>
+                                <th width="120">Enrollment</th>
+                                <th width="120" class="no-print text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="masterTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="viewModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="bg-gray-900 text-white p-4 font-bold text-xs flex justify-between uppercase no-print">
+                <span>Academic Profile Preview</span>
+                <button onclick="closeModal('viewModal')" class="hover:text-red-400">Esc</button>
+            </div>
             
-            document.getElementById('vName').innerText = `${s.lastname}, ${s.firstname}`;
-            document.getElementById('vId').innerText = `ID: ${s.studentId || 'N/A'}`;
-            document.getElementById('vGender').innerText = `Gender: ${s.gender || 'N/A'}`;
-            document.getElementById('vCourse').innerText = s.course || 'N/A';
-            document.getElementById('vLevel').innerText = `${s.year} | ${s.semester}`;
-            document.getElementById('vSY').innerText = `SY: ${courseSYMap[s.course.toUpperCase()] || 'N/A'}`;
-            
-            const vTable = document.getElementById('vSubjectTable');
-            vTable.innerHTML = '<tr><td colspan="4" class="p-6 text-center italic text-gray-400">Loading academic data...</td></tr>';
-            
-            const progSnap = await getDocs(collection(db, "programs"));
-            const progMap = {};
-            progSnap.forEach(p => {
-                const d = p.data();
-                progMap[d.code] = { name: d.name, teacher: d.teacher, sched: `${d.schedule} ${formatTime(d.startTime)}-${formatTime(d.endTime)}` };
-            });
+            <div id="printArea" class="p-12">
+                <div class="flex items-center justify-center gap-6 mb-8">
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-20 h-20">
+                    <div class="text-center">
+                        <h1 class="font-bold text-2xl text-black">CENTRAL MINDANAO COMPUTER SCHOOL</h1>
+                        <p class="text-[11px] uppercase font-bold tracking-[0.3em] text-gray-600">Official Student Academic Record</p>
+                    </div>
+                </div>
 
-            vTable.innerHTML = '';
-            (s.assignedPrograms || []).forEach(code => {
-                const info = progMap[code] || { name: 'NOT FOUND', teacher: '---', sched: '---' };
-                vTable.innerHTML += `
-                    <tr>
-                        <td class="p-3 border border-gray-200 font-bold text-primary">${code}</td>
-                        <td class="p-3 border border-gray-200">${info.name}</td>
-                        <td class="p-3 border border-gray-200">${info.teacher}</td>
-                        <td class="p-3 border border-gray-200 text-[10px] font-bold text-gray-500">${info.sched}</td>
-                    </tr>`;
-            });
+                <div class="grid grid-cols-2 gap-8 border-y-2 border-black py-6 mb-6">
+                    <div class="text-[12px] space-y-2 font-serif">
+                        <p><strong>NAME:</strong> <span id="vName" class="border-b border-gray-400 pb-0.5 inline-block min-w-[200px]"></span></p>
+                        <p><strong>ID NUMBER:</strong> <span id="vId" class="font-bold"></span></p>
+                        <p><strong>GENDER:</strong> <span id="vGender"></span></p>
+                        <p><strong>SCHOOL YEAR:</strong> <span id="vSY"></span></p>
+                    </div>
+                    <div class="text-[12px] space-y-2 font-serif text-right">
+                        <p><strong>COURSE:</strong> <span id="vCourse" class="font-bold"></span></p>
+                        <p><strong>YEAR / SEM:</strong> <span id="vLevel"></span></p>
+                        <p><strong>EMAIL:</strong> <span id="vEmail" class="lowercase italic"></span></p>
+                    </div>
+                </div>
 
-            document.getElementById('viewModal').classList.remove('hidden');
-            document.getElementById('viewModal').classList.add('flex');
-        };
+                <h4 class="font-bold text-[10px] uppercase mb-3 text-black">Academic Program & Schedule</h4>
+                <table class="w-full !border-black">
+                    <thead>
+                        <tr>
+                            <th class="!text-[10px]" width="80">CODE</th>
+                            <th class="!text-[10px]">SUBJECT DESCRIPTION</th>
+                            <th class="!text-[10px]">INSTRUCTOR</th>
+                            <th class="!text-[10px]">SCHEDULE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vSubjectTable"></tbody>
+                </table>
 
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        };
+                <div class="mt-24 flex justify-between text-[11px] font-bold uppercase">
+                    <div class="border-t-2 border-black pt-2 w-56 text-center">Registrar Signature</div>
+                    <div class="border-t-2 border-black pt-2 w-56 text-center">School Director</div>
+                </div>
+            </div>
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-        document.querySelectorAll('select, input').forEach(el => el.onchange = applyFilters);
-        document.getElementById('searchField').oninput = applyFilters;
+            <div class="p-6 bg-gray-50 border-t flex justify-end gap-3 no-print">
+                <button onclick="window.print()" class="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-bold text-xs uppercase shadow-lg shadow-blue-100">Print Official Document</button>
+                <button onclick="closeModal('viewModal')" class="bg-white border border-gray-200 text-gray-500 px-8 py-2.5 rounded-lg font-bold text-xs uppercase">Close Preview</button>
+            </div>
+        </div>
+    </div>
 
-window.exportCSV = () => {
-    let csv = "Student ID,Last Name,First Name,Course,Year,Semester,School Year\n";
-    masterData.forEach(s => {
-        csv += `"${s.studentId||''}","${s.lastname||''}","${s.firstname||''}","${s.course||''}","${s.year||''}","${s.semester||''}","${courseSYMap[s.course?.toUpperCase()]||''}"\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "CMCS_MASTER_RECORD.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-}
+    <script type="module">
+       /* Keep original logic but update DOM IDs if needed */
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+       import { getFirestore, collection, query, where, getDocs, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+       import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.printList = () => {
-    printListBody.innerHTML = "";
-    printFilterHeader.innerText =
-        `COURSE: ${filterCourse.value} | YEAR: ${filterYear.value} | SEM: ${filterSem.value}`;
-    printDate.innerText = new Date().toLocaleString();
+       const firebaseConfig = { 
+           apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+           authDomain: "svls-289ee.firebaseapp.com",
+           projectId: "svls-289ee",
+           storageBucket: "svls-289ee.firebasestorage.app",
+           messagingSenderId: "500705386198",
+           appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+       };
 
-    masterData.forEach((s, i) => {
-        printListBody.innerHTML += `
-        <tr>
-            <td class="border border-black p-1 text-center">${i+1}</td>
-            <td class="border border-black p-1">${s.studentId||''}</td>
-            <td class="border border-black p-1 font-bold">${s.lastname}, ${s.firstname}</td>
-            <td class="border border-black p-1">
-                ${courseSYMap[s.course?.toUpperCase()]||''} / ${s.course} / ${s.year} / ${s.semester}
-            </td>
-            <td class="border border-black p-1 text-center">ENROLLED</td>
-        </tr>`;
-    });
+       const app = initializeApp(firebaseConfig);
+       const db = getFirestore(app);
+       const auth = getAuth(app);
 
-    showPrint("printList");
-}
+       let masterData = [];
+       let courseSYMap = {};
 
-window.printProfile = async (uid) => {
-    const s = masterData.find(x => x.uid === uid);
-    if (!s) return;
+       const formatTime = (t) => {
+           if(!t) return "";
+           const [h, m] = t.split(':');
+           const hh = parseInt(h);
+           const suffix = hh >= 12 ? "PM" : "AM";
+           let hour = ((hh + 11) % 12 + 1);
+           return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
+       };
 
-    pName.innerText = `${s.lastname}, ${s.firstname}`;
-    pId.innerText = s.studentId || '';
-    pGender.innerText = s.gender || '';
-    pSY.innerText = courseSYMap[s.course?.toUpperCase()] || '';
-    pCourse.innerText = s.course || '';
-    pYearSem.innerText = `${s.year} / ${s.semester}`;
+       onAuthStateChanged(auth, async (user) => {
+           if (user) {
+               const snap = await getDoc(doc(db, "users", user.uid));
+               if (snap.exists()) {
+                   document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                   document.getElementById('printDate').innerText = "GENERATED: " + new Date().toLocaleString().toUpperCase();
+                   await loadCoursesAndSY();
+                   syncData();
+               }
+           } else { window.location.href = "login.html"; }
+       });
 
-    const progSnap = await getDocs(collection(db, "programs"));
-    const map = {};
-    progSnap.forEach(p => map[p.data().code] = p.data());
+       async function loadCoursesAndSY() {
+           const snap = await getDocs(collection(db, "courses"));
+           const sel = document.getElementById('filterCourse');
+           sel.innerHTML = '<option value="ALL">All Courses</option>';
+           snap.forEach(d => {
+               const name = d.data().name.toUpperCase();
+               courseSYMap[name] = d.data().schoolYear || "N/A";
+               sel.innerHTML += `<option value="${name}">${name}</option>`;
+           });
+       }
 
-    pSubjects.innerHTML = '';
-    (s.assignedPrograms || []).forEach(code => {
-        const d = map[code] || {};
-        pSubjects.innerHTML += `
-        <tr>
-            <td class="border border-black p-1">${code}</td>
-            <td class="border border-black p-1">${d.name||''}</td>
-            <td class="border border-black p-1">${d.teacher||''}</td>
-            <td class="border border-black p-1">${d.schedule||''}</td>
-        </tr>`;
-    });
+       function syncData() {
+           onSnapshot(query(collection(db, "users"), where("role", "==", "student")), (snap) => {
+               masterData = [];
+               snap.forEach(d => masterData.push({ uid: d.id, ...d.data() }));
+               applyFilters();
+           });
+       }
 
-    showPrint("printProfile");
-}
+       function applyFilters() {
+           const course = document.getElementById('filterCourse').value;
+           const year = document.getElementById('filterYear').value;
+           const sem = document.getElementById('filterSem').value;
+           const search = document.getElementById('searchField').value.toUpperCase();
 
-function showPrint(id) {
-    document.getElementById("printList").classList.add("hidden");
-    document.getElementById("printProfile").classList.add("hidden");
-    document.getElementById(id).classList.remove("hidden");
-    window.print();
-}
-</script>
+           document.getElementById('printFilterInfo').innerText = `CRITERIA: ${course} | YEAR: ${year} | SEM: ${sem}`;
 
+           const filtered = masterData.filter(s => {
+               const matchCourse = course === 'ALL' || (s.course && s.course.toUpperCase() === course);
+               const matchYear = year === 'ALL' || s.year == year;
+               const matchSem = sem === 'ALL' || s.semester == sem;
+               const matchSearch = !search || (s.lastname && s.lastname.toUpperCase().includes(search)) || (s.studentId && s.studentId.includes(search));
+               return matchCourse && matchYear && matchSem && matchSearch;
+           });
+
+           const tbody = document.getElementById('masterTableBody');
+           tbody.innerHTML = '';
+           filtered.forEach((s, i) => {
+               const sy = courseSYMap[s.course ? s.course.toUpperCase() : ""] || "N/A";
+               tbody.innerHTML += `
+                   <tr class="hover:bg-blue-50/30 transition-colors">
+                       <td class="text-center font-medium text-gray-400">${i + 1}</td>
+                       <td class="font-bold text-blue-600">${s.studentId || '---'}</td>
+                       <td>
+                           <div class="font-bold text-gray-800">${s.lastname}, ${s.firstname}</div>
+                           <div class="text-[10px] text-gray-400 font-medium">${s.email}</div>
+                       </td>
+                       <td>
+                           <span class="text-[11px] font-bold text-gray-500">${sy}</span>
+                           <span class="mx-1 text-gray-300">/</span>
+                           <span class="text-[11px] font-bold text-blue-500">${s.course}</span>
+                           <div class="text-[10px] text-gray-400">Yr ${s.year} • Sem ${s.semester}</div>
+                       </td>
+                       <td>
+                           <span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded text-[10px] font-bold border border-emerald-100">${s.assignedPrograms ? s.assignedPrograms.length : 0} Subjects</span>
+                       </td>
+                       <td class="no-print text-center">
+                           <button onclick="viewStudent('${s.uid}')" class="bg-gray-800 text-white px-3 py-1.5 rounded-md font-bold text-[10px] hover:bg-blue-600 transition-all">VIEW RECORD</button>
+                       </td>
+                   </tr>`;
+           });
+       }
+
+       window.viewStudent = async (uid) => {
+           const s = masterData.find(x => x.uid === uid);
+           if(!s) return;
+           document.body.classList.add('modal-open');
+           document.getElementById('vName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+           document.getElementById('vId').innerText = s.studentId || 'N/A';
+           document.getElementById('vGender').innerText = (s.gender || 'N/A').toUpperCase();
+           document.getElementById('vCourse').innerText = (s.course || 'N/A').toUpperCase();
+           document.getElementById('vLevel').innerText = `YEAR ${s.year} / SEM ${s.semester}`;
+           document.getElementById('vEmail').innerText = s.email;
+           document.getElementById('vSY').innerText = courseSYMap[s.course ? s.course.toUpperCase() : ""] || "N/A";
+           
+           const vTable = document.getElementById('vSubjectTable');
+           vTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center italic text-[9px]">Fetching schedule...</td></tr>';
+           
+           try {
+               const progSnap = await getDocs(collection(db, "programs"));
+               const progMap = {};
+               progSnap.forEach(p => {
+                   const data = p.data();
+                   progMap[data.code] = { name: data.name || '---', teacher: data.teacher || 'TBA', sched: `${data.schedule || ''} ${formatTime(data.startTime)}-${formatTime(data.endTime)}` };
+               });
+               vTable.innerHTML = '';
+               if(s.assignedPrograms?.length > 0) {
+                   s.assignedPrograms.forEach(code => {
+                       const info = progMap[code] || { name: 'NOT FOUND', teacher: '---', sched: '---' };
+                       vTable.innerHTML += `
+                           <tr>
+                               <td class="font-bold">${code}</td>
+                               <td>${info.name.toUpperCase()}</td>
+                               <td>${info.teacher.toUpperCase()}</td>
+                               <td class="font-bold">${info.sched.toUpperCase()}</td>
+                           </tr>`;
+                   });
+               } else { vTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center italic">No subjects assigned.</td></tr>'; }
+           } catch (e) { vTable.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-red-600">Error.</td></tr>'; }
+           document.getElementById('viewModal').style.display = 'flex';
+       };
+
+       window.closeModal = (id) => {
+           document.body.classList.remove('modal-open');
+           document.getElementById(id).style.display = 'none';
+       };
+
+       window.exportCSV = () => {
+           let csv = "ID,Lastname,Firstname,School Year,Course,Year,Semester\n";
+           masterData.forEach(s => {
+               const sy = courseSYMap[s.course ? s.course.toUpperCase() : ""] || "N/A";
+               csv += `${s.studentId},${s.lastname},${s.firstname},${sy},${s.course},${s.year},${s.semester}\n`;
+           });
+           const blob = new Blob([csv], { type: 'text/csv' });
+           const url = window.URL.createObjectURL(blob);
+           const a = document.createElement('a');
+           a.href = url;
+           a.download = 'CMCS_Master_Record.csv';
+           a.click();
+       };
+
+       document.querySelectorAll('select, input').forEach(el => el.onchange = applyFilters);
+       document.getElementById('searchField').oninput = applyFilters;
+       window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
 </body>
 </html>
