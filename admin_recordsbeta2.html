@@ -26,32 +26,31 @@
     <style>
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         
-        /* Print Logic */
+        /* Print Configuration */
         #printHeader, #individualPrint { display: none; }
 
         @media print {
             @page { margin: 0.5cm; size: portrait; }
             .no-print { display: none !important; }
             body { background: white !important; overflow: visible !important; padding: 0 !important; }
-            main { overflow: visible !important; height: auto !important; position: static !important; }
             
-            /* List Print Mode */
-            body.print-list #printHeader { display: block !important; }
-            body.print-list .master-table-container { display: block !important; border: 1px solid #000 !important; }
+            /* Print All Table Header */
+            body.print-list #printHeader { display: block !important; margin-bottom: 20px; }
+            body.print-list .master-table-container { display: block !important; border: 1.5px solid #000 !important; }
 
-            /* Individual Record Mode */
+            /* Individual Student Print */
             body.print-individual #individualPrint { display: block !important; }
             body.print-individual .master-table-container, body.print-individual #printHeader, body.print-individual #viewModal { display: none !important; }
             
-            /* Boxed Table Styles */
+            /* Table Box Styling */
             table { border-collapse: collapse !important; width: 100% !important; border: 1.5px solid #000 !important; }
             th { 
-                background-color: #f3f4f6 !important; 
+                background-color: #f3f4f6 !important; /* Tint for header */
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact;
                 border: 1px solid #000 !important;
                 color: black !important;
-                padding: 6px !important;
+                padding: 8px !important;
                 font-size: 10px !important;
                 text-transform: uppercase;
                 font-weight: 800;
@@ -59,16 +58,14 @@
             td { 
                 border: 1px solid #000 !important; 
                 color: black !important; 
-                padding: 4px 8px !important; 
+                padding: 6px 8px !important; 
                 font-size: 10px !important; 
             }
-            .border-custom { border-bottom: 2px solid #000; }
         }
 
-        /* Screen Table - Boxed Look */
-        .master-table-container table, .master-table-container th, .master-table-container td {
-            border: 1px solid #e2e8f0;
-        }
+        /* Screen Table Styling (Boxed) */
+        .master-table-container table { border: 1px solid #e2e8f0; }
+        .master-table-container th, .master-table-container td { border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
@@ -81,21 +78,11 @@
         </div>
         <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-            <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
-            </a>
-            <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+            <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md">
                 <i class="fa-solid fa-folder-open w-5"></i> <span class="font-medium text-sm">Master Record</span>
             </a>
         </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white uppercase" id="adminInitial">A</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-medium text-white truncate uppercase" id="adminName">Loading...</p>
-                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
-                </div>
-            </div>
             <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all">
                 <i class="fa-solid fa-right-from-bracket"></i> LOGOUT
             </button>
@@ -106,109 +93,86 @@
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
             <h1 class="text-xl font-bold text-gray-800">Student Master Records</h1>
             <div class="flex items-center gap-3">
-                <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-2">
+                <button onclick="exportCSV()" class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-4 py-2 rounded text-xs font-bold hover:bg-emerald-600 hover:text-white flex items-center gap-2">
                     <i class="fa-solid fa-file-csv"></i> EXPORT CSV
                 </button>
-                <button onclick="preparePrint('list')" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all flex items-center gap-2">
+                <button onclick="preparePrint('list')" class="bg-gray-800 text-white px-4 py-2 rounded text-xs font-bold hover:bg-black flex items-center gap-2">
                     <i class="fa-solid fa-print"></i> PRINT LIST
                 </button>
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-6">
+            
             <div id="printHeader" class="text-center">
-                <div class="flex flex-col items-center mb-2">
+                <div class="flex flex-col items-center">
                     <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16 mb-2">
                     <h2 class="text-2xl font-black uppercase text-black">Central Mindanao Computer School</h2>
                     <p class="text-[11px] font-bold uppercase tracking-tight">Master Student Academic Enrollment List</p>
-                    <div class="mt-2 text-[10px] font-bold uppercase">
+                    <div class="mt-2 text-[10px] font-bold uppercase border-y border-black py-1 w-full">
                         COURSE: <span id="lblCourse">ALL</span> | YEAR: <span id="lblYear">ALL</span> | SEM: <span id="lblSem">ALL</span>
                     </div>
-                    <p class="text-[9px] italic text-gray-600 uppercase">Generated on: <span id="lblTime"></span></p>
+                    <p class="text-[9px] italic text-gray-600 uppercase mt-1">Generated: <span id="lblTime"></span></p>
                 </div>
-                <div class="border-custom mb-4"></div>
             </div>
 
             <div id="individualPrint" class="text-black">
                 <div class="flex items-center justify-center gap-4 mb-6">
-                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
-                    <div class="text-left">
-                        <h2 class="text-2xl font-black uppercase">Central Mindanao Computer School</h2>
-                        <p class="text-xs font-bold uppercase tracking-widest">Official Student Academic Record</p>
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-20 h-20">
+                    <div class="text-left border-l-2 border-black pl-4">
+                        <h2 class="text-2xl font-black uppercase leading-tight">Central Mindanao Computer School</h2>
+                        <p class="text-xs font-bold uppercase tracking-widest">Office of the Registrar - Student Record</p>
                     </div>
                 </div>
-                <div class="border-custom mb-6"></div>
-                <div class="grid grid-cols-2 gap-y-2 gap-x-12 text-[11px] font-bold uppercase mb-8">
+                <div class="grid grid-cols-2 gap-y-2 gap-x-12 text-[11px] font-bold uppercase mb-8 border border-black p-4">
                     <div>NAME: <span id="pName" class="font-normal"></span></div>
                     <div>COURSE: <span id="pCourse" class="font-normal"></span></div>
                     <div>ID NUMBER: <span id="pId" class="font-normal"></span></div>
-                    <div>YEAR / SEM: <span id="pLevel" class="font-normal"></span></div>
-                    <div>GENDER: <span id="pGender" class="font-normal"></span></div>
-                    <div>EMAIL: <span id="pEmail" class="font-normal"></span></div>
+                    <div>LEVEL / SEM: <span id="pLevel" class="font-normal"></span></div>
                     <div>SCHOOL YEAR: <span id="pSY" class="font-normal"></span></div>
                 </div>
-                <div class="border-custom mb-2"></div>
-                <p class="text-[10px] font-black uppercase mb-3">Class Schedule & Program Details</p>
                 <table class="w-full">
                     <thead>
                         <tr>
-                            <th class="w-20">Code</th>
-                            <th>Subject Name</th>
+                            <th class="w-24">Subject Code</th>
+                            <th>Descriptive Title</th>
                             <th>Instructor</th>
-                            <th>Time & Day Schedule</th>
+                            <th>Schedule</th>
                         </tr>
                     </thead>
                     <tbody id="pSubjectTable"></tbody>
                 </table>
-                <div class="mt-20 flex justify-between px-12">
-                    <div class="text-center">
-                        <div class="w-48 border-t border-black"></div>
-                        <p class="text-[10px] font-bold uppercase mt-1">Registrar Signature</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="w-48 border-t border-black"></div>
-                        <p class="text-[10px] font-bold uppercase mt-1">School Director</p>
-                    </div>
+                <div class="mt-20 flex justify-between px-12 italic text-[10px]">
+                    <div class="text-center"><p class="border-t border-black px-8 pt-1 uppercase font-bold">Registrar</p></div>
+                    <div class="text-center"><p class="border-t border-black px-8 pt-1 uppercase font-bold">School Director</p></div>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 no-print">
+            <div class="bg-white p-6 shadow-sm border border-gray-200 no-print">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Filter Course</label>
-                        <select id="filterCourse" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-bold outline-none uppercase"></select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Year Level</label>
-                        <select id="filterYear" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-bold outline-none uppercase">
-                            <option value="ALL">ALL YEARS</option>
-                            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Semester</label>
-                        <select id="filterSem" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-bold outline-none uppercase">
-                            <option value="ALL">ALL TERMS</option>
-                            <option value="1ST SEMESTER">1ST SEMESTER</option>
-                            <option value="2ND SEMESTER">2ND SEMESTER</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Search Student</label>
-                        <input type="text" id="searchField" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-xs font-bold outline-none uppercase" placeholder="NAME OR ID...">
-                    </div>
+                    <select id="filterCourse" class="border p-2.5 text-xs font-bold outline-none uppercase"></select>
+                    <select id="filterYear" class="border p-2.5 text-xs font-bold outline-none uppercase">
+                        <option value="ALL">ALL YEARS</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                    </select>
+                    <select id="filterSem" class="border p-2.5 text-xs font-bold outline-none uppercase">
+                        <option value="ALL">ALL TERMS</option>
+                        <option value="1ST SEMESTER">1ST SEMESTER</option>
+                        <option value="2ND SEMESTER">2ND SEMESTER</option>
+                    </select>
+                    <input type="text" id="searchField" class="border p-2.5 text-xs font-bold outline-none uppercase" placeholder="SEARCH...">
                 </div>
             </div>
 
-            <div class="bg-white shadow-sm border border-gray-200 master-table-container">
+            <div class="bg-white master-table-container">
                 <table class="w-full text-left">
                     <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold no-print">
                         <tr>
                             <th class="px-6 py-4">No.</th>
                             <th class="px-6 py-4">Student ID</th>
                             <th class="px-6 py-4">Full Name</th>
-                            <th class="px-6 py-4">S.Y. / Course / Yr / Sem</th>
-                            <th class="px-6 py-4">Enrolled</th>
+                            <th class="px-6 py-4">Course Details</th>
+                            <th class="px-6 py-4">Subjects</th>
                             <th class="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -218,31 +182,29 @@
         </div>
     </main>
 
-    <div id="viewModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4 no-print">
-        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-            <div class="px-8 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <span class="font-bold text-gray-800 text-xs uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-id-card text-primary"></i> Academic Review
-                </span>
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4 no-print">
+        <div class="bg-white shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-8 py-4 border-b flex justify-between items-center bg-gray-50">
+                <span class="font-bold text-gray-800 text-xs uppercase tracking-widest">Review Student Profile</span>
                 <button onclick="closeModal('viewModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div class="overflow-y-auto p-10 bg-white">
-                <div class="grid grid-cols-2 gap-4 text-xs font-bold uppercase text-gray-700 border-t border-b py-6 mb-6">
-                    <div>NAME: <span id="mName" class="font-normal ml-2"></span></div>
-                    <div>COURSE: <span id="mCourse" class="font-normal ml-2"></span></div>
-                    <div>ID: <span id="mId" class="font-normal ml-2"></span></div>
-                    <div>LEVEL: <span id="mLevel" class="font-normal ml-2"></span></div>
+            <div class="overflow-y-auto p-8">
+                <div class="grid grid-cols-2 gap-4 text-xs font-bold uppercase border p-4 mb-4">
+                    <div>NAME: <span id="mName" class="font-normal"></span></div>
+                    <div>COURSE: <span id="mCourse" class="font-normal"></span></div>
+                    <div>ID: <span id="mId" class="font-normal"></span></div>
+                    <div>LEVEL: <span id="mLevel" class="font-normal"></span></div>
                 </div>
                 <table class="w-full text-left border text-[10px]">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-100">
                         <tr><th class="p-2 border">Code</th><th class="p-2 border">Subject</th><th class="p-2 border">Instructor</th><th class="p-2 border">Schedule</th></tr>
                     </thead>
                     <tbody id="mSubjectTable"></tbody>
                 </table>
             </div>
-            <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                <button onclick="closeModal('viewModal')" class="px-6 py-2 rounded-lg text-xs font-bold text-gray-500 uppercase">Cancel</button>
-                <button id="modalPrintBtn" class="px-6 py-2 rounded-lg text-xs font-bold text-white bg-primary uppercase">Print Record</button>
+            <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
+                <button onclick="closeModal('viewModal')" class="px-6 py-2 border text-xs font-bold uppercase">Close</button>
+                <button id="modalPrintBtn" class="px-6 py-2 bg-primary text-white text-xs font-bold uppercase shadow">Print Official Record</button>
             </div>
         </div>
     </div>
@@ -281,8 +243,6 @@
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
                     await loadCourses();
                     syncData();
                 }
@@ -319,7 +279,7 @@
 
             document.getElementById('lblCourse').innerText = course;
             document.getElementById('lblYear').innerText = year;
-            document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1' : '2');
+            document.getElementById('lblSem').innerText = sem;
             document.getElementById('lblTime').innerText = new Date().toLocaleString();
 
             const filtered = masterData.filter(s => 
@@ -331,16 +291,16 @@
 
             const tbody = document.getElementById('masterTableBody');
             tbody.innerHTML = filtered.map((s, i) => `
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50 border-b">
                     <td class="px-6 py-4 font-mono">${i + 1}</td>
                     <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
                     <td class="px-6 py-4 uppercase font-bold">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-[10px] font-bold uppercase">
+                    <td class="px-6 py-4 text-[10px] uppercase font-bold text-gray-600">
                         ${courseSYMap[s.course?.toUpperCase()] || 'N/A'} / ${s.course} / Y${s.year} / ${s.semester}
                     </td>
                     <td class="px-6 py-4 font-bold uppercase">${(s.assignedPrograms || []).length} Subjects</td>
                     <td class="px-6 py-4 text-right no-print">
-                        <button onclick="viewProfile('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase">
+                        <button onclick="viewProfile('${s.uid}')" class="bg-primary text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase shadow-sm">
                             VIEW PROFILE
                         </button>
                     </td>
@@ -350,12 +310,11 @@
         window.viewProfile = async uid => {
             const s = masterData.find(x => x.uid === uid);
             if(!s) return;
+
             document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`;
             document.getElementById('mCourse').innerText = s.course || 'N/A';
             document.getElementById('mId').innerText = s.studentId || 'N/A';
             document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
-            document.getElementById('mGender').innerText = s.gender || 'N/A';
-            document.getElementById('mEmail').innerText = s.email || 'N/A';
 
             const progSnap = await getDocs(collection(db, "programs"));
             const progMap = {};
@@ -367,26 +326,18 @@
             }).join('');
 
             document.getElementById('modalPrintBtn').onclick = () => {
-                populatePrintLayout(s, progMap);
+                document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`;
+                document.getElementById('pId').innerText = s.studentId || 'N/A';
+                document.getElementById('pCourse').innerText = s.course || 'N/A';
+                document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+                document.getElementById('pSY').innerText = courseSYMap[s.course?.toUpperCase()] || 'N/A';
+                document.getElementById('pSubjectTable').innerHTML = document.getElementById('mSubjectTable').innerHTML;
                 preparePrint('individual');
             };
+            
             document.getElementById('viewModal').classList.remove('hidden');
             document.getElementById('viewModal').classList.add('flex');
         };
-
-        function populatePrintLayout(s, progMap) {
-            document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`;
-            document.getElementById('pId').innerText = s.studentId || 'N/A';
-            document.getElementById('pGender').innerText = s.gender || 'N/A';
-            document.getElementById('pCourse').innerText = s.course || 'N/A';
-            document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
-            document.getElementById('pSY').innerText = courseSYMap[s.course.toUpperCase()] || 'N/A';
-            document.getElementById('pEmail').innerText = s.email || 'N/A';
-            document.getElementById('pSubjectTable').innerHTML = (s.assignedPrograms || []).map(code => {
-                const info = progMap[code] || { name: 'NOT FOUND', teacher: '---' };
-                return `<tr><td class="font-bold">${code}</td><td>${info.name}</td><td>${info.teacher}</td><td>${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td></tr>`;
-            }).join('');
-        }
 
         window.preparePrint = mode => {
             document.body.classList.remove('print-list', 'print-individual');
