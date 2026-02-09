@@ -385,6 +385,62 @@
             });
         }
 
+        // Add this function to your <script> section
+window.exportCSV = () => {
+    // Get the current filter values for the filename
+    const courseFilter = document.getElementById('filterCourse').value;
+    const yearFilter = document.getElementById('filterYear').value;
+    const semFilter = document.getElementById('filterSem').value;
+    const search = document.getElementById('searchField').value.toUpperCase();
+
+    // Filter the data exactly how it appears on the table
+    const filtered = masterData.filter(s => {
+        const matchCourse = courseFilter === 'ALL' || (s.course && s.course.toUpperCase() === courseFilter);
+        const matchYear = yearFilter === 'ALL' || s.year === yearFilter;
+        const matchSem = semFilter === 'ALL' || s.semester === semFilter;
+        const matchSearch = !search || (s.lastname && s.lastname.toUpperCase().includes(search)) || (s.studentId && s.studentId.includes(search));
+        return matchCourse && matchYear && matchSem && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+        alert("No records found to export.");
+        return;
+    }
+
+    // Define CSV Headers
+    const headers = ["No.", "Student ID", "Last Name", "First Name", "Course", "Year Level", "Semester", "School Year", "Status"];
+    
+    // Map data to rows
+    const rows = filtered.map((s, i) => [
+        i + 1,
+        `"${s.studentId || ''}"`, // Wrap in quotes to prevent CSV formatting issues with IDs
+        `"${s.lastname || ''}"`,
+        `"${s.firstname || ''}"`,
+        `"${s.course || ''}"`,
+        `"${s.year || ''}"`,
+        `"${s.semester || ''}"`,
+        `"${courseSYMap[s.course?.toUpperCase()] || 'N/A'}"`,
+        "ENROLLED"
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+
+    // Create a Blob and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    const fileName = `CMCS_MasterRecord_${courseFilter}_${yearFilter}.csv`.replace(/\s+/g, '_');
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
         window.viewStudent = async (uid) => {
             const s = masterData.find(x => x.uid === uid);
             if(!s) return;
