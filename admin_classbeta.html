@@ -214,17 +214,26 @@
 
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const d = snap.data();
-                document.getElementById('adminName').innerText = `${d.lastname}, ${d.firstname}`.toUpperCase();
-                document.getElementById('adminInitial').innerText = d.firstname[0] + d.lastname[0];
-                loadCourses();
-            }
-        } else { window.location.href = "login.html"; }
-    });
+   onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        
+        // ADDED ROLE CHECK HERE
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            startListeners();
+            loadCourses();
+        } else {
+            // If they exist but aren't an admin, kick them out
+            console.warn("Unauthorized access attempt.");
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        // No user logged in
+        window.location.href = "login.html"; 
+    }
+});
 
     async function loadCourses() {
         const snap = await getDocs(collection(db, "courses"));
