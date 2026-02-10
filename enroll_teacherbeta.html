@@ -144,78 +144,94 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+// 1. Initialize Main App (Used only for Firestore access)
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        let redirectOnClose = false;
+// 2. Initialize SECONDARY App (Used only for Registration)
+// This name "Secondary" creates a separate auth session so the Admin is not logged out.
+const secondaryApp = initializeApp(firebaseConfig, "SecondaryRegistration");
+const secondaryAuth = getAuth(secondaryApp);
 
-        window.showModal = (title, msg, type = 'success', redirect = false) => {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMsg').innerText = msg;
-            const icon = document.getElementById('modalIcon');
-            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
-            document.getElementById('msgModal').classList.replace('hidden', 'flex');
-            redirectOnClose = redirect;
-        }
+let redirectOnClose = false;
 
-        window.closeModal = () => {
-            document.getElementById('msgModal').classList.replace('flex', 'hidden');
-            if(redirectOnClose) window.location.href = "login.html";
-        }
+window.showModal = (title, msg, type = 'success', redirect = false) => {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalMsg').innerText = msg;
+    const icon = document.getElementById('modalIcon');
+    icon.innerHTML = type === 'success' ? 
+        '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : 
+        '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+    document.getElementById('msgModal').classList.replace('hidden', 'flex');
+    redirectOnClose = redirect;
+};
 
-        document.getElementById('teacherForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('pw').value;
+window.closeModal = () => {
+    document.getElementById('msgModal').classList.replace('flex', 'hidden');
+    // If Admin registered someone, we just close the tab or stay on page.
+    // If you want it to close the tab automatically:
+    if(redirectOnClose) window.close(); 
+};
 
-            if(!email.endsWith("@gmail.com")) {
-                showModal("Access Error", "You must use an official @gmail.com account.", "error");
-                return;
-            }
+document.getElementById('teacherForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('pw').value;
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span>';
+    if(!email.endsWith("@gmail.com")) {
+        showModal("Access Error", "You must use an official @gmail.com account.", "error");
+        return;
+    }
 
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                await setDoc(doc(db, "users", userCredential.user.uid), {
-                    lastname: document.getElementById('ln').value.toUpperCase(),
-                    firstname: document.getElementById('fn').value.toUpperCase(),
-                    gender: document.getElementById('gender').value.toUpperCase(),
-                    birthdate: document.getElementById('bday').value,
-                    address: document.getElementById('address').value.toUpperCase(),
-                    designation: document.getElementById('designation').value.toUpperCase(),
-                    license: document.getElementById('license').value,
-                    email: email,
-                    password: password,
-                    role: "teacher",
-                    status: "pending",
-                    createdAt: new Date()
-                });
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> PROCESSING...';
 
-                showModal("Registration Sent", "Your application is now under review by the administration.", "success", true);
-            } catch (error) {
-                showModal("Error", error.message, "error");
-                btn.disabled = false;
-                btn.innerHTML = "Send Application";
-            }
+    try {
+        // 3. Create User using secondaryAuth
+        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+        const newUser = userCredential.user;
+
+        // 4. Save to Firestore using Main DB
+        await setDoc(doc(db, "users", newUser.uid), {
+            uid: newUser.uid,
+            lastname: document.getElementById('ln').value.toUpperCase(),
+            firstname: document.getElementById('fn').value.toUpperCase(),
+            gender: document.getElementById('gender').value.toUpperCase(),
+            birthdate: document.getElementById('bday').value,
+            address: document.getElementById('address').value.toUpperCase(),
+            designation: document.getElementById('designation').value.toUpperCase(),
+            license: document.getElementById('license').value,
+            email: email,
+            role: "teacher",
+            status: "pending", // Keep pending for Admin approval later
+            createdAt: new Date()
         });
+
+        // 5. CRITICAL: Sign out from the secondary session immediately
+        // This ensures the student/teacher session is cleared and the Admin stays logged in
+        await signOut(secondaryAuth);
+
+        showModal("Success", "Account created and authenticated. Admin session remains active.", "success", true);
+    } catch (error) {
+        showModal("Error", error.message, "error");
+        btn.disabled = false;
+        btn.innerHTML = "Send Application";
+    }
+});
     </script>
 </body>
 </html>
