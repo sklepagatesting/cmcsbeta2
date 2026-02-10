@@ -143,323 +143,315 @@
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null;
+    let currentTeacherName = "";
+    let activeSubj = "";
+    let currentView = 'attendance';
+    let roster = [];
+    let subjContext = null;
 
-        // --- UI Utils ---
-        window.showAlert = (title, message, type = 'success') => {
-            const overlay = document.getElementById('modalOverlay');
-            const icon = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const bodyEl = document.getElementById('modalBody');
-            const btnContainer = document.getElementById('modalButtons');
-
-            btnContainer.innerHTML = `<button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase transition-all">Dismiss</button>`;
-            
-            titleEl.innerText = title;
-            bodyEl.innerText = message;
-            
-            if(type === 'success') {
-                icon.innerHTML = '<i class="fa-solid fa-circle-check text-success"></i>';
-                icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-emerald-50';
-            } else if(type === 'danger') {
-                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger"></i>';
-                icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-red-50';
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                document.getElementById('teacherName').innerText = currentTeacherName;
+                document.getElementById('teacherInitial').innerText = data.firstname[0].toUpperCase() + data.lastname[0].toUpperCase();
+                loadSubjects();
             }
+        } else { window.location.href = "login.html"; }
+    });
 
-            overlay.classList.remove('hidden');
-        };
-
-        window.showConfirm = (title, message, onConfirm) => {
-            window.showAlert(title, message, 'danger');
-            const btnContainer = document.getElementById('modalButtons');
-            btnContainer.innerHTML = `
-                <button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase">Cancel</button>
-                <button id="confirmBtn" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs uppercase">Delete</button>
-            `;
-            document.getElementById('confirmBtn').onclick = () => {
-                onConfirm();
-                closeModal();
-            };
-        };
-
-        window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
-
-        // --- Core Auth ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminName').innerText = currentTeacherName;
-                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                    loadSubjects();
-                }
-            } else { window.location.href = "login.html"; }
+    async function loadSubjects() {
+        const nav = document.getElementById('subjectNav');
+        const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
+        const snap = await getDocs(q);
+        nav.innerHTML = '';
+        snap.forEach(d => {
+            const s = d.data();
+            const btn = document.createElement('button');
+            btn.className = "subj-btn w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors text-left";
+            btn.onclick = () => selectSubject(s, btn);
+            btn.innerHTML = `<i class="fa-solid fa-chalkboard-user w-5 text-primary"></i> <span class="font-medium text-sm">${s.code}</span>`;
+            nav.appendChild(btn);
         });
+    }
 
-        async function loadSubjects() {
-            const nav = document.getElementById('subjectNav');
-            const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
-            const snap = await getDocs(q);
-            nav.innerHTML = '<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">My Handle Subjects</p>';
-            snap.forEach(d => {
-                const s = d.data();
-                const a = document.createElement('a');
-                a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer";
-                a.onclick = () => selectSubject(s, a);
-                a.innerHTML = `<i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">${s.code}</span>`;
-                nav.appendChild(a);
-            });
-        }
+    async function selectSubject(subjData, btn) {
+        subjContext = subjData;
+        activeSubj = subjData.code;
+        document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
+        btn.classList.add('active-nav');
 
-        async function selectSubject(subjData, el) {
-            subjContext = subjData; activeSubj = subjData.code;
-            document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
-            el.classList.add('bg-primary', 'text-white');
-            document.getElementById('activeSubjectTitle').innerText = subjData.name;
-            document.getElementById('placeholder').classList.add('hidden');
-            document.getElementById('workspace').classList.remove('hidden');
-            document.getElementById('viewToggles').classList.remove('hidden');
-            document.getElementById('saveBtn').classList.remove('hidden');
+        document.getElementById('activeSubjectTitle').innerText = subjData.name;
+        document.getElementById('subjectBadge').innerText = subjData.code;
+        document.getElementById('subjectBadge').classList.remove('hidden');
+        document.getElementById('placeholder').classList.add('hidden');
+        document.getElementById('workspace').classList.remove('hidden');
+        document.getElementById('viewToggles').classList.remove('hidden');
+        document.getElementById('saveBtn').classList.remove('hidden');
 
-            const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
-            const snap = await getDocs(q);
-            roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderTable();
-        }
+        const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
+        const snap = await getDocs(q);
+        roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderTable();
+    }
 
-        window.switchView = (v) => {
-            currentView = v;
-            ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
-                const btn = document.getElementById(id);
-                btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-                if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
-            });
-            document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
-            renderTable();
-        };
+    window.switchView = (v) => {
+        currentView = v;
+        ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
+            const btn = document.getElementById(id);
+            btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
+            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
+            else btn.classList.remove('text-gray-500');
+        });
+        document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
+        document.getElementById('saveBtn').style.display = (v === 'materials') ? 'none' : 'flex';
+        renderTable();
+    };
 
-        function renderTable() {
-            const body = document.getElementById('tableBody');
-            const head = document.getElementById('tableHead');
-            const hInfo = document.getElementById('tableHeader');
-            body.innerHTML = '';
+    function renderTable() {
+        const head = document.getElementById('tableHead');
+        const body = document.getElementById('tableBody');
+        const hInfo = document.getElementById('tableHeader');
+        body.innerHTML = '';
 
-            const controls = `<div class="flex gap-2">
-                <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">CSV</button>
-                <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 hover:bg-red-100 transition-all">PDF</button>
+        const commonInfo = `
+            <div class="flex gap-2">
+                <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV</button>
+                <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF</button>
             </div>`;
 
-            if (currentView === 'attendance') {
-                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded px-2 py-1 font-bold outline-none border border-transparent focus:border-primary"> ${controls}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-                roster.forEach(s => {
+        if (currentView === 'attendance') {
+            const today = new Date().toISOString().split('T')[0];
+            hInfo.innerHTML = `<div class="flex items-center gap-3"><input type="date" id="attDate" value="${today}" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold"></div> ${commonInfo}`;
+            head.innerHTML = `<tr><th class="px-6 py-4">Student Name & Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
+            roster.sort((a,b) => a.lastname.localeCompare(b.lastname)).forEach(s => {
+                body.innerHTML += `<tr>
+                    <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase">${s.lastname}, ${s.firstname}</div><div class="text-[10px] text-gray-400 font-medium uppercase">${s.studentId || 'NO ID'} • ${s.course}</div></td>
+                    <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
+                    <td class="px-6 py-4 text-center"><div class="flex justify-center gap-4 text-xs font-bold">
+                        <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label>
+                        <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label>
+                        <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label>
+                    </div></td></tr>`;
+            });
+        } else if (currentView === 'grades') {
+            hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${commonInfo}`;
+            head.innerHTML = `<tr><th class="px-6 py-4">Student Name & Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
+            roster.forEach(s => {
+                const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
+                const avg = ((parseFloat(g.prelim)||0) + (parseFloat(g.midterm)||0) + (parseFloat(g.final)||0)) / 3;
+                const pt = calculatePoint(avg);
+                body.innerHTML += `<tr class="hover:bg-gray-50/50">
+                    <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase text-xs">${s.lastname}, ${s.firstname}</div><div class="text-[9px] text-gray-400 uppercase">${s.studentId}</div></td>
+                    <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.prelim}"></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.midterm}"></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.final}"></td>
+                    <td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td>
+                </tr>`;
+            });
+        } else if (currentView === 'materials') {
+            hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Learning Materials</h2>`;
+            head.innerHTML = `<tr><th class="px-6 py-4">Resource</th><th class="px-6 py-4">Instructions</th><th class="px-6 py-4 text-right">Action</th></tr>`;
+            onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
+                body.innerHTML = '';
+                snap.forEach(docSnap => {
+                    const m = docSnap.data();
                     body.innerHTML += `<tr>
-                        <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}<div class="text-[10px] text-gray-400 font-normal">${s.studentId}</div></td>
-                        <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="print-val" id="att_val_${s.id}">P</span>
-                            <div class="radio-group flex justify-center gap-4 text-xs font-bold">
-                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" checked class="accent-primary"> P</label>
-                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" class="accent-primary"> L</label>
-                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" class="accent-primary"> A</label>
-                            </div>
-                        </td></tr>`;
-                });
-            } else if (currentView === 'grades') {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">PT</th></tr>`;
-                roster.forEach(s => {
-                    const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
-                    body.innerHTML += `<tr>
-                        <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
-                        <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="pre_val_${s.id}">${g.prelim}</span><input type="number" id="pre_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.prelim}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="mid_val_${s.id}">${g.midterm}</span><input type="number" id="mid_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.midterm}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="fin_val_${s.id}">${g.final}</span><input type="number" id="fin_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.final}"></td>
-                        <td class="px-6 py-4 text-right font-black text-xs text-primary" id="pt_${s.id}">${s.grades?.[activeSubj]?.point || '5.0'}</td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-primary uppercase text-xs">${m.name}</div>
+                            <a href="${m.link}" target="_blank" class="text-[10px] text-blue-500 hover:underline">Link: ${m.link.substring(0,30)}...</a>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-500">${m.desc || 'No instructions'}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="editMat('${docSnap.id}')" class="text-blue-500 mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteMat('${docSnap.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button>
+                        </td>
                     </tr>`;
                 });
-            } else {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Actions</th></tr>`;
-                onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
-                    body.innerHTML = '';
-                    snap.forEach(docSnap => {
-                        const m = docSnap.data();
-                        const id = docSnap.id;
-                        body.innerHTML += `<tr class="text-xs">
-                            <td class="px-6 py-4">
-                                <p class="font-bold">${m.name}</p>
-                                <p class="text-[10px] text-gray-400 italic">${m.schedule?.replace('T', ' ') || 'No Sched'}</p>
-                            </td>
-                            <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline font-medium">Open Resource <i class="fa-solid fa-external-link text-[10px]"></i></a></td>
-                            <td class="px-6 py-4 text-right flex justify-end gap-3">
-                                <button onclick="editMat('${id}')" class="text-primary hover:scale-110 transition-transform"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteMat('${id}')" class="text-danger hover:scale-110 transition-transform"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>`;
-                    });
-                });
-            }
+            });
         }
+    }
 
-        // --- CSV Export Logic ---
-        window.exportCSV = () => {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            if (currentView === 'attendance') {
-                csvContent += "Student Name,Gender,Status\n";
+    // --- Core Logic Helpers ---
+    window.calculatePoint = (avg) => {
+        if (avg >= 97.5) return "1.0"; if (avg >= 94.5) return "1.25"; if (avg >= 91.5) return "1.5";
+        if (avg >= 88.5) return "1.75"; if (avg >= 85.5) return "2.0"; if (avg >= 82.5) return "2.25";
+        if (avg >= 79.5) return "2.5"; if (avg >= 76.5) return "2.75"; if (avg >= 74.5) return "3.0";
+        return "5.0";
+    }
+
+    window.calcPt = (id) => {
+        const p = parseFloat(document.getElementById(`pre_${id}`).value) || 0;
+        const m = parseFloat(document.getElementById(`mid_${id}`).value) || 0;
+        const f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
+        const pt = calculatePoint((p+m+f)/3);
+        const el = document.getElementById(`pt_${id}`);
+        el.innerText = pt;
+        el.className = `px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}`;
+    }
+
+    // --- Sync Functions ---
+    window.saveCurrentWork = async () => {
+        const btn = document.getElementById('saveBtn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="loader"></span> SYNCING...';
+        btn.disabled = true;
+
+        try {
+            if(currentView === 'attendance') {
+                const date = document.getElementById('attDate').value;
+                const log = {};
                 roster.forEach(s => {
-                    const status = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
-                    csvContent += `"${s.lastname}, ${s.firstname}","${s.gender || '-'}","${status}"\n`;
+                    log[s.id] = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
                 });
-            } else if (currentView === 'grades') {
-                csvContent += "Student Name,Prelim,Midterm,Final,Point\n";
-                roster.forEach(s => {
+                await setDoc(doc(db, "attendance", `${activeSubj}_${date}`), {
+                    subject: activeSubj, date, records: log, teacher: currentTeacherName, updatedAt: serverTimestamp()
+                });
+            } else if(currentView === 'grades') {
+                for(let s of roster) {
                     const pre = document.getElementById(`pre_${s.id}`).value;
                     const mid = document.getElementById(`mid_${s.id}`).value;
                     const fin = document.getElementById(`fin_${s.id}`).value;
-                    const pt = document.getElementById(`pt_${s.id}`).innerText;
-                    csvContent += `"${s.lastname}, ${s.firstname}","${pre}","${mid}","${fin}","${pt}"\n`;
-                });
-            }
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `${activeSubj}_${currentView}_${new Date().toLocaleDateString()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
-        window.exportPDF = () => {
-            roster.forEach(s => {
-                if(currentView === 'attendance') {
-                    document.getElementById(`att_val_${s.id}`).innerText = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
-                } else if(currentView === 'grades') {
-                    document.getElementById(`pre_val_${s.id}`).innerText = document.getElementById(`pre_${s.id}`).value;
-                    document.getElementById(`mid_val_${s.id}`).innerText = document.getElementById(`mid_${s.id}`).value;
-                    document.getElementById(`fin_val_${s.id}`).innerText = document.getElementById(`fin_${s.id}`).value;
-                }
-            });
-            document.getElementById('lblCourse').innerText = subjContext.course;
-            document.getElementById('lblYear').innerText = subjContext.year;
-            document.getElementById('lblSem').innerText = subjContext.semester;
-            document.getElementById('lblTime').innerText = new Date().toLocaleString();
-            document.getElementById('printHeader').classList.replace('hidden', 'flex');
-            window.print();
-            document.getElementById('printHeader').classList.replace('flex', 'hidden');
-        };
-
-        // --- Materials Management ---
-        document.getElementById('materialForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const matId = document.getElementById('editMatId').value;
-            const payload = {
-                subjectCode: activeSubj,
-                name: document.getElementById('matName').value.toUpperCase(),
-                link: document.getElementById('matLink').value,
-                desc: document.getElementById('matDesc').value,
-                schedule: document.getElementById('matSchedule').value,
-                updatedAt: serverTimestamp()
-            };
-
-            try {
-                if (matId) {
-                    await updateDoc(doc(db, "materials", matId), payload);
-                    window.showAlert("Updated", "Learning material updated successfully!");
-                } else {
-                    payload.createdAt = serverTimestamp();
-                    await setDoc(doc(collection(db, "materials")), payload);
-                    window.showAlert("Success", "Material posted to class feed!");
-                }
-                resetMatForm();
-            } catch (err) {
-                window.showAlert("Error", "Failed to save material.", "danger");
-            }
-        };
-
-        window.deleteMat = async (id) => {
-            window.showConfirm("Delete Material?", "This action cannot be undone. Students will lose access to this link.", async () => {
-                await deleteDoc(doc(db, "materials", id));
-                window.showAlert("Deleted", "Resource removed successfully.");
-            });
-        };
-
-        window.editMat = async (id) => {
-            const snap = await getDoc(doc(db, "materials", id));
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('editMatId').value = id;
-                document.getElementById('matName').value = data.name;
-                document.getElementById('matLink').value = data.link;
-                document.getElementById('matDesc').value = data.desc;
-                document.getElementById('matSchedule').value = data.schedule;
-                
-                document.getElementById('matFormTitle').innerText = "Edit Learning Material";
-                document.getElementById('matSubmitBtn').innerText = "Update Material";
-                document.getElementById('cancelEditBtn').classList.remove('hidden');
-                document.getElementById('materialUploadSection').scrollIntoView({ behavior: 'smooth' });
-            }
-        };
-
-        window.resetMatForm = () => {
-            document.getElementById('materialForm').reset();
-            document.getElementById('editMatId').value = "";
-            document.getElementById('matFormTitle').innerText = "Post Learning Material";
-            document.getElementById('matSubmitBtn').innerText = "Upload Material";
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-        };
-
-        window.saveCurrentWork = async () => {
-            const btn = document.getElementById('saveBtn');
-            btn.innerHTML = '<span class="loader"></span> SYNCING...';
-            try {
-                if(currentView === 'attendance') {
-                    const date = document.getElementById('attDate').value;
-                    const log = {};
-                    roster.forEach(s => log[s.id] = document.querySelector(`input[name="att_${s.id}"]:checked`).value);
-                    await setDoc(doc(db, "attendance", `${activeSubj}_${date}`), {
-                        subject: activeSubj, date, records: log, teacher: currentTeacherName, updatedAt: serverTimestamp()
+                    const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
+                    await updateDoc(doc(db, "users", s.id), {
+                        [`grades.${activeSubj}`]: { 
+                            prelim: pre, midterm: mid, final: fin, average: avg.toFixed(2), point: calculatePoint(avg) 
+                        }
                     });
-                } else if(currentView === 'grades') {
-                    for(let s of roster) {
-                        const pre = document.getElementById(`pre_${s.id}`).value;
-                        const mid = document.getElementById(`mid_${s.id}`).value;
-                        const fin = document.getElementById(`fin_${s.id}`).value;
-                        const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
-                        await updateDoc(doc(db, "users", s.id), {
-                            [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, average: avg.toFixed(2), point: calculatePoint(avg) }
-                        });
-                    }
                 }
-                showNotif("CLOUD SYNC SUCCESSFUL.");
-            } catch (err) { showNotif("SYNC ERROR."); }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
+            }
+            showNotif("CLOUD SYNC SUCCESSFUL.");
+        } catch (err) { 
+            console.error(err);
+            showNotif("SYNC ERROR."); 
+        } finally {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+    };
+
+    // --- Materials Management ---
+    document.getElementById('materialForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const matId = document.getElementById('editMatId').value;
+        const payload = {
+            subjectCode: activeSubj,
+            name: document.getElementById('matName').value.toUpperCase(),
+            link: document.getElementById('matLink').value,
+            desc: document.getElementById('matDesc').value,
+            schedule: document.getElementById('matSchedule').value,
+            updatedAt: serverTimestamp()
         };
 
-        window.logout = () => {
-            signOut(auth).then(() => window.location.href = "login.html");
-        };
-    </script>
+        try {
+            if (matId) {
+                await updateDoc(doc(db, "materials", matId), payload);
+                showNotif("MATERIAL UPDATED.");
+            } else {
+                payload.createdAt = serverTimestamp();
+                await setDoc(doc(collection(db, "materials")), payload);
+                showNotif("MATERIAL POSTED.");
+            }
+            resetMatForm();
+        } catch (err) {
+            showNotif("UPLOAD ERROR.");
+        }
+    };
+
+    window.deleteMat = async (id) => {
+        if(confirm("Delete this material?")) {
+            await deleteDoc(doc(db, "materials", id));
+            showNotif("RESOURCE DELETED.");
+        }
+    };
+
+    window.editMat = async (id) => {
+        const snap = await getDoc(doc(db, "materials", id));
+        if (snap.exists()) {
+            const data = snap.data();
+            document.getElementById('editMatId').value = id;
+            document.getElementById('matName').value = data.name;
+            document.getElementById('matLink').value = data.link;
+            document.getElementById('matDesc').value = data.desc;
+            document.getElementById('matSchedule').value = data.schedule;
+            
+            document.getElementById('matFormTitle').innerText = "Edit Learning Material";
+            document.getElementById('matSubmitBtn').innerText = "Update Material";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            document.getElementById('materialUploadSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    window.resetMatForm = () => {
+        document.getElementById('materialForm').reset();
+        document.getElementById('editMatId').value = "";
+        document.getElementById('matFormTitle').innerText = "Post Learning Material";
+        document.getElementById('matSubmitBtn').innerText = "Upload Material";
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    };
+
+    // --- UI/Export Functions ---
+    window.showNotif = (msg) => { 
+        document.getElementById('notifMessage').innerText = msg; 
+        const modal = document.getElementById('notifModal');
+        modal.classList.remove('hidden'); 
+        modal.classList.add('flex'); 
+    };
+
+    window.closeNotif = () => {
+        const modal = document.getElementById('notifModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    };
+
+    window.exportCSV = () => {
+        let csv = "Student ID,Name,Gender," + (currentView === 'attendance' ? "Status" : "Prelim,Midterm,Final,Point") + "\n";
+        roster.forEach(s => {
+            let row = `${s.studentId},${s.lastname} ${s.firstname},${s.gender || 'N/A'},`;
+            if(currentView === 'attendance') row += document.querySelector(`input[name="att_${s.id}"]:checked`).value;
+            else row += `${document.getElementById(`pre_${s.id}`).value},${document.getElementById(`mid_${s.id}`).value},${document.getElementById(`fin_${s.id}`).value},${document.getElementById(`pt_${s.id}`).innerText}`;
+            csv += row + "\n";
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `${activeSubj}_${currentView}.csv`);
+        a.click();
+    };
+
+    window.exportPDF = () => {
+        document.getElementById('lblCourse').innerText = subjContext.course;
+        document.getElementById('lblYear').innerText = subjContext.year;
+        document.getElementById('lblSem').innerText = subjContext.semester;
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
+        document.getElementById('printHeader').classList.replace('hidden', 'flex');
+        window.print();
+        document.getElementById('printHeader').classList.replace('flex', 'hidden');
+    };
+
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+</script>
 </body>
 </html>
