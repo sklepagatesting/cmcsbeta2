@@ -186,214 +186,287 @@
         </div>
     </div>
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getFirestore, collection, onSnapshot, query, where, 
+    deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs, setDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-        authDomain: "svls-289ee.firebaseapp.com",
-        projectId: "svls-289ee",
-        storageBucket: "svls-289ee.firebasestorage.app",
-        messagingSenderId: "500705386198",
-        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-    };
+const firebaseConfig = { 
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+// Main App for Admin Session
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-    let currentStudentUid = null;
-    let fetchedStudents = [];
+// Secondary App for Background User Creation (Prevents Admin Logout)
+const secondaryApp = initializeApp(firebaseConfig, "SecondaryAuthInstance");
+const secondaryAuth = getAuth(secondaryApp);
 
-    window.showNotif = (msg) => {
-        document.getElementById('notifMessage').innerText = msg;
-        document.getElementById('notifModal').style.display = 'flex';
-    };
+let currentStudentUid = null;
+let fetchedStudents = [];
 
-    window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
+// --- UTILITIES ---
 
- onAuthStateChanged(auth, async user => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
-                    await loadCourses();
-                    syncData();
-                }
-            } else { window.location.href = "login.html"; }
-        });
-
-
-    async function loadCourses() {
-        const snap = await getDocs(collection(db, "courses"));
-        const sel = document.getElementById('filterCourse');
-        sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
-        snap.forEach(d => {
-            const name = d.data().name.toUpperCase();
-            sel.innerHTML += `<option value="${name}">${name}</option>`;
-        });
+// Real-time Clock
+setInterval(() => {
+    const clockEl = document.getElementById('clock');
+    if(clockEl) {
+        const now = new Date();
+        clockEl.innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
+}, 1000);
 
-    function renderTable(students) {
-        const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = '';
-        if (students.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-400 font-bold uppercase tracking-widest text-xs">No records found matching criteria</td></tr>';
-            return;
-        }
+// ID Number Auto-formatter (00-0-000)
+const idNumInput = document.getElementById('id_num');
+if(idNumInput) {
+    idNumInput.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, ''); 
+        if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
+        else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
+        e.target.value = val;
+    });
+}
 
-        students.forEach((s, idx) => {
-            const subjects = s.assignedPrograms && s.assignedPrograms.length > 0 
-                ? s.assignedPrograms.map(p => `<span class="inline-block bg-blue-50 text-blue-600 border border-blue-100 text-[9px] px-2 py-0.5 rounded-full font-bold mr-1 mb-1 uppercase tracking-tighter">${p}</span>`).join('') 
-                : '<span class="text-gray-300 text-[9px] font-bold uppercase italic tracking-tighter">No Load Assigned</span>';
+window.calculateAge = (dateString) => {
+    if(!dateString) return "";
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age;
+};
+
+// --- AUTH & ACCESS CONTROL ---
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists() && snap.data().role === 'admin') {
+            const data = snap.data();
+            const adminNameEl = document.getElementById('adminName');
+            if(adminNameEl) adminNameEl.innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
             
-            tbody.innerHTML += `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-xs font-bold text-gray-300">${idx + 1}</td>
-                    <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
-                    <td class="px-6 py-4 font-bold text-gray-800 uppercase">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-[10px] font-bold">
-                        <span class="text-gray-500">${s.course}</span><br>
-                        <span class="text-primary">Y${s.year} • ${s.semester || 'NO SEMESTER'}</span>
-                    </td>
-                    <td class="px-6 py-4"><div class="flex flex-wrap max-w-[200px]">${subjects}</div></td>
-                    <td class="px-6 py-4 text-right">
-                        <button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="bg-gray-100 hover:bg-primary hover:text-white text-gray-500 px-3 py-1.5 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest">
-                            <i class="fa-solid fa-edit mr-1"></i> Update Load
-                        </button>
-                    </td>
-                </tr>`;
-        });
+            // Initialize page-specific data
+            if(document.getElementById('studentTable')) startApprovalListeners();
+            if(document.getElementById('filterCourse')) loadCourses();
+        } else {
+            window.location.href = "login.html"; 
+        }
+    } else { 
+        window.location.href = "login.html"; 
     }
+});
 
-    document.getElementById('searchField').oninput = (e) => {
-        const q = e.target.value.toUpperCase();
-        const filtered = fetchedStudents.filter(s => 
-            s.lastname.toUpperCase().includes(q) || 
-            s.firstname.toUpperCase().includes(q) || 
-            (s.studentId && s.studentId.toUpperCase().includes(q))
-        );
-        renderTable(filtered);
-    };
+// --- MANUAL ADMISSION (CREATING AUTH ACCOUNTS) ---
 
-    window.openClassModal = async (uid, name) => {
-        currentStudentUid = uid;
-        const course = document.getElementById('filterCourse').value;
-        const year = document.getElementById('filterYear').value;
-        const sem = document.getElementById('filterSem').value;
+window.openAddModal = (role) => {
+    document.getElementById('userRole').value = role;
+    document.getElementById('modalTitle').innerText = role === 'student' ? 'Manual Student Admission' : 'Manual Faculty Hiring';
+    document.getElementById('studentFields').style.display = role === 'student' ? 'block' : 'none';
+    document.getElementById('facultyFields').style.display = role === 'teacher' ? 'block' : 'none';
+    
+    const modal = document.getElementById('userModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+};
 
-        document.getElementById('targetStudentName').innerText = name;
-        document.getElementById('targetStudentSubInfo').innerText = `${course} - YEAR ${year} - ${sem}`;
-        
-        const listDiv = document.getElementById('programList');
-        listDiv.innerHTML = '<div class="p-10 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Applying Context Filters...</p></div>';
-        document.getElementById('classModal').style.display = 'flex';
+const userForm = document.getElementById('userForm');
+if(userForm) {
+    userForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveUserBtn');
+        const email = document.getElementById('uemail').value.trim().toLowerCase();
+        const password = "ChangeMe2026!"; 
+
+        btn.disabled = true;
+        btn.innerHTML = 'PROCESSING AUTH...';
 
         try {
-            const q = query(collection(db, "programs"), 
-                where("course", "==", course),
-                where("year", "==", year),
-                where("semester", "==", sem)
-            );
+            // 1. Create the official Firebase Auth Account
+            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+            const newUser = userCred.user;
 
-            const [progSnap, userSnap] = await Promise.all([
-                getDocs(q),
-                getDoc(doc(db, "users", uid))
-            ]);
+            // 2. Immediately logout the secondary instance so admin stays logged in
+            await signOut(secondaryAuth);
 
-            const enrolled = userSnap.data().assignedPrograms || [];
-            listDiv.innerHTML = '';
+            // 3. Prepare Firestore Record using the new UID
+            const userData = {
+                uid: newUser.uid,
+                firstname: document.getElementById('fn').value.toUpperCase(),
+                lastname: document.getElementById('ln').value.toUpperCase(),
+                gender: document.getElementById('gender').value.toUpperCase(),
+                birthdate: document.getElementById('bday').value,
+                address: document.getElementById('address').value.toUpperCase(),
+                email: email,
+                role: document.getElementById('userRole').value,
+                status: "approved",
+                createdAt: new Date()
+            };
 
-            if(progSnap.empty) {
-                listDiv.innerHTML = '<div class="p-10 text-center"><i class="fa-solid fa-ban text-gray-200 text-3xl mb-2"></i><p class="text-[10px] text-gray-400 font-bold uppercase">No subjects found for this program.</p></div>';
-                return;
+            if(userData.role === 'student') {
+                userData.studentId = document.getElementById('id_num').value.toUpperCase();
+                userData.course = document.getElementById('ucourse').value.toUpperCase();
+                userData.year = document.getElementById('uyear').value.toUpperCase();
+                userData.semester = document.getElementById('usemester').value.toUpperCase();
+            } else {
+                userData.license = document.getElementById('license').value.toUpperCase();
+                userData.designation = "FACULTY";
             }
 
-            progSnap.forEach(p => {
-                const d = p.data();
-                const code = (d.code || "").toUpperCase();
-                const pName = (d.name || "").toUpperCase();
-                const checked = enrolled.includes(code) ? 'checked' : '';
-                
-                // Check if status is INACTIVE
-                const isInactive = (d.status === "INACTIVE");
-                const bgClass = isInactive ? 'bg-red-50' : 'hover:bg-primary/5';
-                const borderClass = isInactive ? 'border-red-200' : 'border-gray-50';
-                const textClass = isInactive ? 'text-red-600' : 'text-gray-800';
-                const subTextClass = isInactive ? 'text-red-400' : 'text-gray-400';
+            // 4. Save to Firestore
+            await setDoc(doc(db, "users", newUser.uid), userData);
+            
+            closeModal('userModal');
+            showNotif(`ACCOUNT CREATED IN AUTH: Use ${password} to login.`);
+            userForm.reset();
 
-                listDiv.innerHTML += `
-                    <label class="grid grid-cols-[45px_100px_1fr] gap-4 items-center px-5 py-4 border-b ${borderClass} ${bgClass} transition-colors cursor-pointer group">
-                        <input type="checkbox" value="${code}" ${checked} class="prog-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="text-[10px] font-black ${textClass} border-r border-gray-100 pr-2 group-hover:text-primary transition-colors">${code}</span>
-                        <div class="flex flex-col">
-                            <span class="text-[11px] font-bold ${textClass}">${pName} ${isInactive ? '<span class="text-[8px] italic ml-2">[INACTIVE]</span>' : ''}</span>
-                            <span class="text-[9px] ${subTextClass} font-bold uppercase tracking-tighter">${d.schedule || 'Schedule TBA'}</span>
-                        </div>
-                    </label>`;
-            });
-        } catch (err) { 
-            listDiv.innerHTML = '<div class="p-6 text-red-500 text-[10px] font-bold text-center">FAILED TO LOAD SUBJECTS</div>'; 
+        } catch (err) {
+            showNotif("Error: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'SAVE RECORD';
         }
     };
+}
 
-    document.getElementById('fetchBtn').onclick = async () => {
+// --- CLASS ASSIGNMENT LOGIC ---
+
+async function loadCourses() {
+    const snap = await getDocs(collection(db, "course")); // Collection name from admin_setup
+    const sel = document.getElementById('filterCourse');
+    const uSel = document.getElementById('ucourse'); // Manual modal select
+    
+    const options = '<option value="" disabled selected>-- SELECT COURSE --</option>' + 
+        Array.from(snap.docs).map(d => `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`).join('');
+    
+    if(sel) sel.innerHTML = options;
+    if(uSel) uSel.innerHTML = options;
+}
+
+const fetchBtn = document.getElementById('fetchBtn');
+if(fetchBtn) {
+    fetchBtn.onclick = async () => {
         const course = document.getElementById('filterCourse').value;
         const year = document.getElementById('filterYear').value;
         const sem = document.getElementById('filterSem').value;
-        const btn = document.getElementById('fetchBtn');
-        const tbody = document.getElementById('studentTableBody');
         
-        if(!course) { showNotif("Select a Course Program first."); return; }
-        
-        btn.innerHTML = '<span class="loader"></span> Fetching...';
-        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center"><span class="loader"></span><p class="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">Accessing Student Directory...</p></td></tr>';
+        if(!course) return showNotif("SELECT COURSE FIRST");
 
-        try {
-            const q = query(collection(db, "users"), 
-                where("role", "==", "student"),
-                where("status", "==", "approved"),
-                where("course", "==", course),
-                where("year", "==", year),
-                where("semester", "==", sem)
-            );
+        const q = query(collection(db, "users"), 
+            where("role", "==", "student"),
+            where("status", "==", "approved"),
+            where("course", "==", course),
+            where("year", "==", year)
+        );
 
-            const snap = await getDocs(q);
-            fetchedStudents = [];
-            snap.forEach(u => {
-                fetchedStudents.push({ uid: u.id, ...u.data() });
-            });
-            renderTable(fetchedStudents);
-            document.getElementById('searchField').value = '';
-        } catch (e) { 
-            console.error(e);
-            showNotif("Database connection error."); 
-        } finally { 
-            btn.innerHTML = '<i class="fa-solid fa-sync-alt"></i> Fetch Students'; 
-        }
+        const snap = await getDocs(q);
+        fetchedStudents = [];
+        snap.forEach(u => {
+            const d = u.data();
+            if(!d.semester || d.semester == sem) fetchedStudents.push({ uid: u.id, ...d });
+        });
+        renderTable(fetchedStudents);
     };
+}
 
-    document.getElementById('saveClassesBtn').onclick = async () => {
+function renderTable(students) {
+    const tbody = document.getElementById('studentTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    
+    students.forEach(s => {
+        const subjects = s.assignedPrograms ? s.assignedPrograms.map(p => `<span class="tag-green">${p}</span>`).join('') : '--';
+        tbody.innerHTML += `
+            <tr>
+                <td>${s.studentId || 'NO-ID'}</td>
+                <td class="font-bold">${s.lastname}, ${s.firstname}</td>
+                <td>${s.course} Y${s.year}</td>
+                <td><div class="flex flex-wrap gap-1">${subjects}</div></td>
+                <td><button onclick="openClassModal('${s.uid}', '${s.lastname}, ${s.firstname}')" class="text-blue-600 underline font-bold italic text-[10px]">UPDATE LOAD</button></td>
+            </tr>`;
+    });
+}
+
+window.openClassModal = async (uid, name) => {
+    currentStudentUid = uid;
+    document.getElementById('targetStudentName').innerText = name;
+    const listDiv = document.getElementById('programList');
+    listDiv.innerHTML = '<div class="p-4 text-center">Loading Subjects...</div>';
+    document.getElementById('classModal').style.display = 'flex';
+
+    const [progSnap, userSnap] = await Promise.all([
+        getDocs(collection(db, "programs")),
+        getDoc(doc(db, "users", uid))
+    ]);
+
+    const enrolled = userSnap.data().assignedPrograms || [];
+    listDiv.innerHTML = '';
+    
+    progSnap.forEach(p => {
+        const data = p.data();
+        const isInactive = data.status === 'INACTIVE';
+        const checked = enrolled.includes(data.code) ? 'checked' : '';
+        
+        listDiv.innerHTML += `
+            <div class="program-row ${isInactive ? 'bg-red-50' : ''}">
+                <input type="checkbox" value="${data.code}" ${checked} class="prog-checkbox">
+                <span class="font-bold ${isInactive ? 'text-red-600' : 'text-blue-800'}">${data.code}</span>
+                <span class="text-gray-600">${data.name} ${isInactive ? '(INACTIVE)' : ''}</span>
+            </div>`;
+    });
+};
+
+const saveClassesBtn = document.getElementById('saveClassesBtn');
+if(saveClassesBtn) {
+    saveClassesBtn.onclick = async () => {
         const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
-        const btn = document.getElementById('saveClassesBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span> Saving...';
-
         try {
-            await updateDoc(doc(db, "users", currentStudentUid), { 
-                assignedPrograms: selected 
-            });
+            await updateDoc(doc(db, "users", currentStudentUid), { assignedPrograms: selected });
             closeModal('classModal');
-            showNotif("Enrollment updated successfully!");
+            showNotif("SUBJECT LOAD UPDATED");
             document.getElementById('fetchBtn').click();
-        } catch (err) { showNotif("Save failed. Try again."); }
-        finally { 
-            btn.disabled = false; 
-            btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Update Load'; 
-        }
+        } catch (e) { showNotif("SAVE FAILED"); }
     };
+}
 
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+// --- SYSTEM MODALS ---
+
+window.showNotif = (msg, isConfirm = false, onYes = null) => {
+    const modal = document.getElementById('notifModal');
+    if(!modal) return alert(msg);
+    
+    document.getElementById('notifMessage').innerText = msg;
+    const confirmDiv = document.getElementById('confirmActions');
+    const alertDiv = document.getElementById('alertActions');
+
+    if (isConfirm) {
+        confirmDiv.classList.remove('hidden');
+        alertDiv.classList.add('hidden');
+        document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+    } else {
+        if(confirmDiv) confirmDiv.classList.add('hidden');
+        if(alertDiv) alertDiv.classList.remove('hidden');
+    }
+    modal.style.display = 'flex';
+};
+
+window.closeModal = (id) => {
+    document.getElementById(id).style.display = 'none';
+};
+
+window.logout = () => {
+    signOut(auth).then(() => window.location.href = "login.html");
+};
 </script>
