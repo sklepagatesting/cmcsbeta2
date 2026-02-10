@@ -207,16 +207,30 @@
 
             if (currentView === 'attendance') {
                 const dateVal = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-                hInfo.innerHTML = `<input type="date" id="attDate" value="${dateVal}" onchange="renderTable()" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold"> ${controls}`;
+                hInfo.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Class Date:</span>
+                        <input type="date" id="attDate" value="${dateVal}" onchange="renderTable()" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold border focus:border-primary">
+                    </div>
+                    ${controls}`;
                 head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
                 
-                // Fetch saved data for this date
                 const snap = await getDoc(doc(db, "attendance", `${activeSubj}_${dateVal}`));
                 const saved = snap.exists() ? snap.data().records : {};
 
                 roster.forEach(s => {
                     const status = saved[s.id] || "P";
-                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td><td class="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">${s.gender || '-'}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-4 text-xs font-bold"><label><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''} class="accent-success"> P</label><label><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''} class="accent-accent"> L</label><label><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''} class="accent-danger"> A</label></div></td></tr>`;
+                    body.innerHTML += `<tr>
+                        <td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td>
+                        <td class="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex justify-center gap-4 text-xs font-bold">
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''} class="accent-success"> P</label>
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''} class="accent-accent"> L</label>
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''} class="accent-danger"> A</label>
+                            </div>
+                        </td>
+                    </tr>`;
                 });
             } else if (currentView === 'grades') {
                 hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
@@ -224,7 +238,13 @@
                 roster.forEach(s => {
                     const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
                     const pt = calculatePoint(((parseFloat(g.prelim)||0)+(parseFloat(g.midterm)||0)+(parseFloat(g.final)||0))/3);
-                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td><td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.prelim}"></td><td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.midterm}"></td><td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.final}"></td><td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td></tr>`;
+                    body.innerHTML += `<tr>
+                        <td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td>
+                        <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.prelim}"></td>
+                        <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.midterm}"></td>
+                        <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.final}"></td>
+                        <td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td>
+                    </tr>`;
                 });
             } else if (currentView === 'materials') {
                 hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
@@ -233,14 +253,24 @@
                 const mSnap = await getDocs(q);
                 mSnap.forEach(docSnap => {
                     const m = docSnap.data();
-                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold text-xs uppercase">${m.name}</td><td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline text-xs">Resource Link</a></td><td class="px-6 py-4 text-right"><button onclick="editMat('${docSnap.id}')" class="text-blue-500 mr-3"><i class="fa-solid fa-pen"></i></button><button onclick="deleteMat('${docSnap.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                    body.innerHTML += `<tr>
+                        <td class="px-6 py-4 font-bold text-xs uppercase">${m.name}</td>
+                        <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline text-xs">Resource Link</a></td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="editMat('${docSnap.id}')" class="text-blue-500 mr-3"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteMat('${docSnap.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
                 });
             }
         }
 
         window.saveCurrentWork = async () => {
             const btn = document.getElementById('saveBtn');
+            const originalBtn = btn.innerHTML;
             btn.innerHTML = '<span class="loader"></span> SYNCING...';
+            btn.disabled = true;
+
             try {
                 if(currentView === 'attendance') {
                     const date = document.getElementById('attDate').value;
@@ -251,19 +281,83 @@
                     });
                 } else if(currentView === 'grades') {
                     for(let s of roster) {
-                        const pre = document.getElementById(`pre_${s.id}`).value, mid = document.getElementById(`mid_${s.id}`).value, fin = document.getElementById(`fin_${s.id}`).value;
+                        const pre = document.getElementById(`pre_${s.id}`).value, 
+                              mid = document.getElementById(`mid_${s.id}`).value, 
+                              fin = document.getElementById(`fin_${s.id}`).value;
                         const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
-                        await updateDoc(doc(db, "users", s.id), { [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, average: avg.toFixed(2), point: calculatePoint(avg) } });
+                        await updateDoc(doc(db, "users", s.id), { 
+                            [`grades.${activeSubj}`]: { 
+                                prelim: pre, midterm: mid, final: fin, average: avg.toFixed(2), point: calculatePoint(avg) 
+                            } 
+                        });
                     }
                 }
                 showNotif("CLOUD SYNC SUCCESSFUL.");
-            } catch (err) { showNotif("SYNC ERROR."); }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
+            } catch (err) { 
+                console.error(err);
+                showNotif("SYNC ERROR."); 
+            }
+            btn.innerHTML = originalBtn;
+            btn.disabled = false;
         };
 
+        // Material Form Actions
+        document.getElementById('materialForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const matId = document.getElementById('editMatId').value;
+            const payload = {
+                subjectCode: activeSubj,
+                name: document.getElementById('matName').value.toUpperCase(),
+                link: document.getElementById('matLink').value,
+                desc: document.getElementById('matDesc').value,
+                schedule: document.getElementById('matSchedule').value,
+                updatedAt: serverTimestamp()
+            };
+            try {
+                if(matId) { await updateDoc(doc(db, "materials", matId), payload); showNotif("UPDATED."); }
+                else { payload.createdAt = serverTimestamp(); await setDoc(doc(collection(db, "materials")), payload); showNotif("POSTED."); }
+                resetMatForm();
+                renderTable();
+            } catch (e) { showNotif("ERROR POSTING."); }
+        };
+
+        window.editMat = async (id) => {
+            const snap = await getDoc(doc(db, "materials", id));
+            if(snap.exists()){
+                const d = snap.data();
+                document.getElementById('editMatId').value = id;
+                document.getElementById('matName').value = d.name;
+                document.getElementById('matLink').value = d.link;
+                document.getElementById('matSchedule').value = d.schedule;
+                document.getElementById('matDesc').value = d.desc;
+                document.getElementById('matFormTitle').innerText = "Edit Material";
+                document.getElementById('matSubmitBtn').innerText = "Save Changes";
+                document.getElementById('cancelEditBtn').classList.remove('hidden');
+            }
+        };
+
+        window.resetMatForm = () => {
+            document.getElementById('materialForm').reset();
+            document.getElementById('editMatId').value = "";
+            document.getElementById('matFormTitle').innerText = "Post Learning Material";
+            document.getElementById('matSubmitBtn').innerText = "Post Material";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        };
+
+        window.deleteMat = async (id) => {
+            if(confirm("Permanently delete this material?")){
+                await deleteDoc(doc(db, "materials", id));
+                showNotif("DELETED.");
+                renderTable();
+            }
+        };
+
+        // UI Helpers
         window.calculatePoint = (avg) => { if (avg >= 74.5) return (avg >= 97.5 ? "1.0" : avg >= 85.5 ? "2.0" : "3.0"); return "5.0"; }
         window.calcPt = (id) => {
-            const p = parseFloat(document.getElementById(`pre_${id}`).value) || 0, m = parseFloat(document.getElementById(`mid_${id}`).value) || 0, f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
+            const p = parseFloat(document.getElementById(`pre_${id}`).value) || 0, 
+                  m = parseFloat(document.getElementById(`mid_${id}`).value) || 0, 
+                  f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
             const pt = calculatePoint((p+m+f)/3);
             document.getElementById(`pt_${id}`).innerText = pt;
             document.getElementById(`pt_${id}`).className = `px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}`;
@@ -272,6 +366,29 @@
         window.closeNotif = () => { document.getElementById('notifModal').style.display = 'none'; };
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
         window.renderTable = renderTable;
+
+        // Exports
+        window.exportCSV = () => {
+            let csv = "Name,Status/Grades\n";
+            roster.forEach(s => {
+                const val = currentView === 'attendance' ? document.querySelector(`input[name="att_${s.id}"]:checked`).value : document.getElementById(`pt_${s.id}`).innerText;
+                csv += `${s.lastname} ${s.firstname},${val}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${activeSubj}_${currentView}.csv`; a.click();
+        };
+
+        window.exportPDF = () => {
+            document.getElementById('lblCourse').innerText = subjContext.course || 'N/A';
+            document.getElementById('lblYear').innerText = subjContext.year || 'N/A';
+            document.getElementById('lblSem').innerText = subjContext.semester || 'N/A';
+            document.getElementById('lblTime').innerText = new Date().toLocaleString();
+            document.getElementById('printHeader').classList.replace('hidden', 'flex');
+            window.print();
+            document.getElementById('printHeader').classList.replace('flex', 'hidden');
+        };
     </script>
 </body>
 </html>
