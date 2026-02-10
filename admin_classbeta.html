@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,26 +215,18 @@
 
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
-    onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        
-        if (snap.exists() && snap.data().role === 'admin') {
-            const data = snap.data();
-            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-            
-            // CHANGE THIS: startListeners() to syncData()
-            syncData(); 
-            
-            // Now this will actually run
-            loadCourses(); 
-        } else {
-            window.location.href = "login.html"; 
-        }
-    } else { 
-        window.location.href = "login.html"; 
-    }
-});
+ onAuthStateChanged(auth, async user => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
+                    await loadCourses();
+                    syncData();
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
 
     async function loadCourses() {
         const snap = await getDocs(collection(db, "courses"));
