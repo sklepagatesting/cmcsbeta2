@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,17 +8,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#2563eb', // Modern Blue
-                        secondary: '#1e293b', // Slate Dark
-                        accent: '#f59e0b', // Amber
-                        danger: '#ef4444', // Red
-                        success: '#10b981' // Emerald
+                        primary: '#2563eb',
+                        secondary: '#1e293b',
+                        accent: '#f59e0b',
+                        danger: '#ef4444',
+                        success: '#10b981'
                     }
                 }
             }
@@ -25,19 +26,19 @@
     </script>
     <style>
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 transition-all duration-300">
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
             </div>
         </div>
-        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
             <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
                 <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
@@ -56,26 +57,20 @@
             </a>
         </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-    <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">
-            AD
+            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
-            <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
-                <i class="fa-solid fa-gear text-[8px]"></i> Account Settings
-            </p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white"></i>
-    </a>
-    
-    <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-    </button>
-</div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
             <h1 class="text-xl font-bold text-gray-800">Pending Approvals</h1>
             <div class="flex items-center gap-4">
@@ -83,14 +78,14 @@
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+        <div class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <div>
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Student Admission Requests</h2>
                         <p class="text-xs text-gray-500 mt-1">Review and approve new student accounts</p>
                     </div>
-                    <button onclick="openAddModal('student')" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                    <button onclick="window.open('enrollbeta.html', '_blank')" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> MANUAL ADMISSION
                     </button>
                 </div>
@@ -101,7 +96,7 @@
                                 <th class="px-6 py-3">ID & Name</th>
                                 <th class="px-6 py-3">Personal Info</th>
                                 <th class="px-6 py-3">Contact</th>
-                                <th class="px-6 py-3">Status/Course/Term</th>
+                                <th class="px-6 py-3">Course/Year</th>
                                 <th class="px-6 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -118,7 +113,7 @@
                         <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Faculty Registration Requests</h2>
                         <p class="text-xs text-gray-500 mt-1">Review and approve teaching staff</p>
                     </div>
-                    <button onclick="openAddModal('teacher')" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                    <button onclick="window.open('enroll_teacherbeta.html', '_blank')" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> MANUAL HIRE
                     </button>
                 </div>
@@ -143,376 +138,140 @@
     </main>
 
     <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-bell text-xl"></i>
-            </div>
+        <div class="bg-white rounded-2xl shadow-2xl w-80 p-6 text-center">
             <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
             <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
             <div id="confirmActions" class="hidden flex justify-center gap-3">
-                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
-                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Proceed</button>
+                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">Cancel</button>
             </div>
             <div id="alertActions" class="flex justify-center">
-                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="userModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden items-center justify-center z-40 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <span id="modalTitle" class="font-bold text-gray-800 text-sm uppercase tracking-wide">Admission Form</span>
-                <button onclick="closeModal('userModal')" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="overflow-y-auto p-6">
-                <form id="userForm" class="space-y-4">
-                    <input type="hidden" id="userRole">
-                    <div class="pb-2 border-b border-gray-100 mb-2">
-                        <h4 class="text-xs font-bold text-primary uppercase mb-3">Personal Information</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">First Name <span class="text-red-500">*</span></label>
-                                <input type="text" id="fn" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Last Name <span class="text-red-500">*</span></label>
-                                <input type="text" id="ln" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Gender <span class="text-red-500">*</span></label>
-                                <select id="gender" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" required>
-                                    <option value="">Select Gender</option>
-                                    <option value="MALE">Male</option>
-                                    <option value="FEMALE">Female</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Date of Birth <span class="text-red-500">*</span></label>
-                                <input type="date" id="bday" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none text-gray-600" required>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Permanent Address <span class="text-red-500">*</span></label>
-                                <input type="text" id="address" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="House No, Street, Brgy, City" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pb-2 border-b border-gray-100 mb-2">
-                        <h4 class="text-xs font-bold text-primary uppercase mb-3">Account Setup</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Gmail Address <span class="text-red-500">*</span></label>
-                                <input type="email" id="uemail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none lowercase" placeholder="example@gmail.com" required>
-                            </div>
-                            <div class="relative">
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Temporary Password <span class="text-red-500">*</span></label>
-                                <input type="password" id="upass" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
-                                <button type="button" onclick="togglePassword('upass')" class="absolute right-3 top-7 text-xs font-bold text-blue-600 hover:text-blue-800">SHOW</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="studentFields" class="hidden">
-                        <h4 class="text-xs font-bold text-primary uppercase mb-3">Academic Information</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Admission Status <span class="text-red-500">*</span></label>
-                                <select id="ustatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
-                                    <option value="NEW STUDENT">New Student</option>
-                                    <option value="OLD STUDENT">Old Student</option>
-                                    <option value="TRANSFEREE">Transferee</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Student ID <span class="text-red-500">*</span></label>
-                                <input type="text" id="id_num" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase" placeholder="00-0-000" maxlength="8">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Course Program <span class="text-red-500">*</span></label>
-                                <select id="ucourse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase"></select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Year Level <span class="text-red-500">*</span></label>
-                                <select id="uyear" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
-                                    <option value="1">1st Year</option>
-                                    <option value="2">2nd Year</option>
-                                    <option value="3">3rd Year</option>
-                                    <option value="4">4th Year</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-500 mb-1">Semester <span class="text-red-500">*</span></label>
-                                <select id="usemester" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
-                                    <option value="1ST SEMESTER">1st Semester</option>
-                                    <option value="2ND SEMESTER">2nd Semester</option>
-                                    <option value="SUMMER">Summer</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="facultyFields" class="hidden">
-                        <h4 class="text-xs font-bold text-primary uppercase mb-3">Professional Information</h4>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Professional License No. <span class="text-red-500">*</span></label>
-                            <input type="text" id="license" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase">
-                        </div>
-                    </div>
-
-                    <div class="pt-4 mt-2 border-t border-gray-100 flex justify-end gap-3">
-                        <button type="button" onclick="closeModal('userModal')" class="px-5 py-2 rounded-lg text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition">CANCEL</button>
-                        <button type="submit" id="saveUserBtn" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-green-600 hover:bg-green-700 shadow-md transition flex items-center gap-2">
-                            <i class="fa-solid fa-save"></i> REGISTER USER
-                        </button>
-                    </div>
-                </form>
+                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900">Okay</button>
             </div>
         </div>
     </div>
 
     <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getFirestore, collection, onSnapshot, query, where, 
-    deleteDoc, doc, getDoc, updateDoc, addDoc, getDocs 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { 
-    getAuth, onAuthStateChanged, signOut 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = { 
-    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-    authDomain: "svls-289ee.firebaseapp.com",
-    projectId: "svls-289ee",
-    storageBucket: "svls-289ee.firebasestorage.app",
-    messagingSenderId: "500705386198",
-    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-// --- UTILITIES ---
-
-// Real-time Clock
-setInterval(() => {
-    const now = new Date();
-    document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-}, 1000);
-
-// ID Number Auto-formatter (00-0-000)
-document.getElementById('id_num').addEventListener('input', (e) => {
-    let val = e.target.value.replace(/\D/g, ''); 
-    if (val.length > 2 && val.length <= 3) val = val.slice(0, 2) + '-' + val.slice(2);
-    else if (val.length > 3) val = val.slice(0, 2) + '-' + val.slice(2, 3) + '-' + val.slice(3, 6);
-    e.target.value = val;
-});
-
-window.calculateAge = (dateString) => {
-    if(!dateString) return "";
-    const today = new Date();
-    const birthDate = new Date(dateString);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return age;
-};
-
-// --- AUTH & ACCESS CONTROL ---
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        // Strict Admin-only check
-        if (snap.exists() && snap.data().role === 'admin') {
-            const data = snap.data();
-            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-            startListeners();
-            loadCourses();
-        } else {
-            console.warn("Unauthorized access.");
-            window.location.href = "login.html"; 
-        }
-    } else { 
-        window.location.href = "login.html"; 
-    }
-});
-
-// --- CORE FUNCTIONS ---
-
-function startListeners() {
-    // Listen for PENDING users only
-    onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
-        const sTable = document.getElementById('studentTable');
-        const fTable = document.getElementById('facultyTable');
-        let sContent = ''; let fContent = '';
-
-        if (snap.empty) {
-            sContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold uppercase text-[10px]">No pending students</td></tr>';
-            fContent = '<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 font-bold uppercase text-[10px]">No pending faculty</td></tr>';
-        }
-
-        snap.forEach(u => {
-            const d = u.data();
-            const age = d.birthdate ? calculateAge(d.birthdate) + ' YRS' : '';
-            const actions = `
-                <div class="flex justify-end gap-2">
-                    <button onclick="handleAction('${u.id}', true)" class="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-check text-xs"></i></button>
-                    <button onclick="handleAction('${u.id}', false)" class="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
-                </div>`;
-
-            if (d.role === 'student') {
-                sContent += `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4 font-bold text-slate-700 text-xs uppercase">${d.lastname}, ${d.firstname}<br><span class="text-[9px] text-slate-400 font-mono">${d.studentId || 'NO-ID'}</span></td>
-                    <td class="px-6 py-4 text-[10px] text-slate-500 font-bold uppercase">${d.gender || '-'} | ${age}</td>
-                    <td class="px-6 py-4 text-[10px] text-blue-500 font-semibold">${d.email}</td>
-                    <td class="px-6 py-4 text-[10px] text-slate-600 font-bold uppercase">${d.course} (Y${d.year})</td>
-                    <td class="px-6 py-4">${actions}</td>
-                </tr>`;
-            } else {
-                fContent += `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="px-6 py-4 font-bold text-slate-700 text-xs uppercase">${d.lastname}, ${d.firstname}<br><span class="text-[9px] text-slate-400 font-mono">PRC: ${d.license || 'N/A'}</span></td>
-                    <td class="px-6 py-4 text-[10px] text-slate-500 font-bold uppercase">${d.gender || '-'} | ${age}</td>
-                    <td class="px-6 py-4 text-[10px] text-blue-500 font-semibold">${d.email}</td>
-                    <td class="px-6 py-4 text-[10px] text-slate-600 font-bold uppercase">${d.designation || 'FACULTY'}</td>
-                    <td class="px-6 py-4">${actions}</td>
-                </tr>`;
-            }
-        });
-        if(sTable) sTable.innerHTML = sContent;
-        if(fTable) fTable.innerHTML = fContent;
-    });
-}
-
-async function loadCourses() {
-    const snap = await getDocs(collection(db, "courses"));
-    const sel = document.getElementById('ucourse');
-    if(!sel) return;
-    sel.innerHTML = '<option value="" disabled selected>-- SELECT COURSE --</option>';
-    snap.forEach(d => {
-        const cName = d.data().name.toUpperCase();
-        sel.innerHTML += `<option value="${cName}">${cName}</option>`;
-    });
-}
-
-window.handleAction = (uid, approved) => {
-    const msg = approved ? "Admit this user into the system?" : "Reject and delete this request?";
-    showNotif(msg, true, async () => {
-        try {
-            if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
-            else await deleteDoc(doc(db, "users", uid));
-            showNotif(approved ? "User Approved Successfully." : "Request Deleted.");
-        } catch (e) { showNotif("Error: " + e.message); }
-    });
-};
-
-// --- MANUAL ADMISSION LOGIC ---
-
-window.openAddModal = (role) => {
-    document.getElementById('userRole').value = role;
-    document.getElementById('modalTitle').innerText = role === 'student' ? 'Manual Student Admission' : 'Manual Faculty Hiring';
-    document.getElementById('studentFields').style.display = role === 'student' ? 'block' : 'none';
-    document.getElementById('facultyFields').style.display = role === 'teacher' ? 'block' : 'none';
-    
-    const modal = document.getElementById('userModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-document.getElementById('userForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('saveUserBtn');
-    const email = document.getElementById('uemail').value.trim().toLowerCase();
-    
-    // Validate email
-    if(!email.endsWith("@gmail.com")) return showNotif("Please use a valid @gmail.com account.");
-
-    btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="loader"></span> PROCESSING...';
-
-    try {
-        // Check if email already exists in Firestore
-        const check = await getDocs(query(collection(db, "users"), where("email", "==", email)));
-        if(!check.empty) throw new Error("This email is already registered in the system.");
-
-        const userData = {
-            firstname: document.getElementById('fn').value.toUpperCase(),
-            lastname: document.getElementById('ln').value.toUpperCase(),
-            gender: document.getElementById('gender').value.toUpperCase(),
-            birthdate: document.getElementById('bday').value,
-            address: document.getElementById('address').value.toUpperCase(),
-            email: email,
-            password: "ChangeMe2026!", // Default password for manual adds
-            role: document.getElementById('userRole').value,
-            status: "approved",
-            isManual: true, // IMPORTANT: Triggers activation on first login
-            createdAt: new Date()
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
         };
 
-        if(userData.role === 'student') {
-            userData.studentType = document.getElementById('ustatus').value.toUpperCase();
-            userData.studentId = document.getElementById('id_num').value.toUpperCase();
-            userData.course = document.getElementById('ucourse').value.toUpperCase();
-            userData.year = document.getElementById('uyear').value.toUpperCase();
-            userData.semester = document.getElementById('usemester').value.toUpperCase();
-            if(!/^\d{2}-\d{1}-\d{3}$/.test(userData.studentId)) throw new Error("ID Format must be 00-0-000.");
-        } else {
-            userData.license = document.getElementById('license').value.toUpperCase();
-            userData.designation = "FACULTY";
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Clock
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
+
+        // Age Calculator
+        const calculateAge = (bday) => {
+            if(!bday) return "";
+            const today = new Date();
+            const birthDate = new Date(bday);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return age;
+        };
+
+        // Auth Check
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                    startListeners();
+                } else { window.location.href = "login.html"; }
+            } else { window.location.href = "login.html"; }
+        });
+
+        // Real-time Approval Listeners
+        function startListeners() {
+            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+                const sTable = document.getElementById('studentTable');
+                const fTable = document.getElementById('facultyTable');
+                let sContent = ''; let fContent = '';
+
+                if (snap.empty) {
+                    const emptyRow = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No pending requests</td></tr>';
+                    sTable.innerHTML = emptyRow;
+                    fTable.innerHTML = emptyRow;
+                    return;
+                }
+
+                snap.forEach(u => {
+                    const d = u.data();
+                    const age = calculateAge(d.birthdate);
+                    const actions = `
+                        <div class="flex justify-end gap-2">
+                            <button onclick="handleAction('${u.id}', true)" class="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-check text-xs"></i></button>
+                            <button onclick="handleAction('${u.id}', false)" class="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </div>`;
+
+                    if (d.role === 'student') {
+                        sContent += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-gray-700">${d.lastname}, ${d.firstname}<br><span class="text-[10px] text-gray-400">${d.studentId || 'PENDING'}</span></td>
+                            <td class="px-6 py-4 text-xs">${d.gender} | ${age} YRS</td>
+                            <td class="px-6 py-4 text-xs text-blue-600 font-medium">${d.email}</td>
+                            <td class="px-6 py-4 text-xs font-bold uppercase">${d.course} (Y${d.year})</td>
+                            <td class="px-6 py-4">${actions}</td>
+                        </tr>`;
+                    } else if (d.role === 'teacher') {
+                        fContent += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-gray-700">${d.lastname}, ${d.firstname}<br><span class="text-[10px] text-gray-400">LIC: ${d.license || 'N/A'}</span></td>
+                            <td class="px-6 py-4 text-xs">${d.gender} | ${age} YRS</td>
+                            <td class="px-6 py-4 text-xs text-blue-600 font-medium">${d.email}</td>
+                            <td class="px-6 py-4 text-xs font-bold uppercase">${d.designation || 'FACULTY'}</td>
+                            <td class="px-6 py-4">${actions}</td>
+                        </tr>`;
+                    }
+                });
+                sTable.innerHTML = sContent || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No student requests</td></tr>';
+                fTable.innerHTML = fContent || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No faculty requests</td></tr>';
+            });
         }
 
-        // Add to Firestore (Wait for Activation via Login Page)
-        await addDoc(collection(db, "users"), userData);
-        
-        closeModal('userModal');
-        showNotif("User saved. They can now log in using the default password: ChangeMe2026!");
-        document.getElementById('userForm').reset();
+        window.handleAction = (uid, approved) => {
+            const msg = approved ? "Approve this user account?" : "Reject and delete this request?";
+            showNotif(msg, true, async () => {
+                try {
+                    if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
+                    else await deleteDoc(doc(db, "users", uid));
+                    showNotif(approved ? "Account Approved." : "Request Rejected.");
+                } catch (e) { showNotif("Error: " + e.message); }
+            });
+        };
 
-    } catch (err) { 
-        showNotif(err.message); 
-    } finally { 
-        btn.disabled = false; 
-        btn.innerHTML = originalText; 
-    }
-};
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            const cAct = document.getElementById('confirmActions');
+            const aAct = document.getElementById('alertActions');
+            if (isConfirm) {
+                cAct.classList.remove('hidden'); aAct.classList.add('hidden');
+                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            } else {
+                cAct.classList.add('hidden'); aAct.classList.remove('hidden');
+            }
+            document.getElementById('notifModal').classList.replace('hidden', 'flex');
+        };
 
-// --- SYSTEM MODALS ---
-
-window.showNotif = (msg, isConfirm = false, onYes = null) => {
-    document.getElementById('notifMessage').innerText = msg;
-    const confirmDiv = document.getElementById('confirmActions');
-    const alertDiv = document.getElementById('alertActions');
-
-    if (isConfirm) {
-        confirmDiv.classList.remove('hidden');
-        confirmDiv.classList.add('flex');
-        alertDiv.classList.add('hidden');
-        document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-    } else {
-        confirmDiv.classList.add('hidden');
-        alertDiv.classList.remove('hidden');
-    }
-    const modal = document.getElementById('notifModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-};
-
-window.closeModal = (id) => {
-    const modal = document.getElementById(id);
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-};
-
-window.logout = () => {
-    showNotif("Are you sure you want to exit?", true, () => {
-        signOut(auth).then(() => window.location.href = "login.html");
-    });
-};
+        window.closeModal = (id) => { document.getElementById(id).classList.replace('flex', 'hidden'); };
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
 </html>
