@@ -194,26 +194,18 @@
             document.getElementById(id).classList.remove('flex');
         };
 
-       onAuthStateChanged(auth, async (user) => {
-    if onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        
-        if (snap.exists() && snap.data().role === 'admin') {
-            const data = snap.data();
-            document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-            
-            // FIX 1: Change to the correct function name
-            syncUsers();
-            renderTable(); 
-        } else {
-            console.warn("Unauthorized access attempt.");
-            window.location.href = "login.html"; 
-        }
-    } else { 
-        window.location.href = "login.html"; 
-    }
-});
+      onAuthStateChanged(auth, async user => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
+                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
+                    await syncUsers();
+                    renderTable();
+                }
+            } else { window.location.href = "login.html"; }
+        });
+
 
 
         function syncUsers() {
