@@ -3,51 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Terminal | SVLS</title>
+    <title>Teacher Portal | SVLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .neo-shadow { shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] }
+        .neo-shadow { box-shadow: 10px 10px 0px 0px rgba(0,0,0,1); }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: black; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
-        .active-subject { background: black !important; color: white !important; transform: translate(4px, 4px); shadow: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-black min-h-screen pb-20">
-
     <div id="sysModal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-[300] p-4 backdrop-blur-sm">
         <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
-            <h3 id="sysTitle" class="font-black text-2xl mb-2 uppercase italic tracking-tighter">System_Report</h3>
-            <p id="sysMsg" class="font-medium text-gray-700 mb-6 uppercase text-xs tracking-widest"></p>
-            <button onclick="document.getElementById('sysModal').classList.add('hidden')" class="w-full bg-black text-white py-3 font-bold hover:invert transition uppercase tracking-widest">Acknowledge</button>
+            <h3 id="sysTitle" class="font-black text-2xl mb-2 uppercase italic">Notification</h3>
+            <p id="sysMsg" class="font-medium text-gray-700 mb-6"></p>
+            <button onclick="document.getElementById('sysModal').classList.add('hidden')" class="w-full bg-black text-white py-3 font-bold hover:bg-gray-800 transition uppercase tracking-widest">Continue</button>
         </div>
     </div>
 
     <div id="materialsModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
         <div class="bg-white border-4 border-black p-8 max-w-2xl w-full shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6 border-b-4 border-black pb-2">
-                <h3 class="text-3xl font-black uppercase italic tracking-tighter">Upload_Resources</h3>
-                <button onclick="closeModal('materialsModal')" class="font-black text-2xl hover:text-red-600 transition">✕</button>
+                <h3 class="text-3xl font-black uppercase italic tracking-tighter">Subject_Materials</h3>
+                <button onclick="closeModal('materialsModal')" class="font-black text-2xl">✕</button>
             </div>
             <form id="materialForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div class="md:col-span-2">
-                    <label class="text-[10px] font-black uppercase">Material Name</label>
-                    <input type="text" id="matName" class="w-full border-2 border-black p-2 outline-none focus:bg-yellow-50 font-bold uppercase" required>
+                    <label class="text-[10px] font-black uppercase tracking-widest">Material Name</label>
+                    <input type="text" id="matName" class="w-full border-2 border-black p-2 outline-none focus:bg-yellow-50 font-bold" required>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="text-[10px] font-black uppercase">Description</label>
+                    <label class="text-[10px] font-black uppercase tracking-widest">Description</label>
                     <textarea id="matDesc" class="w-full border-2 border-black p-2 outline-none h-20 focus:bg-yellow-50 font-medium"></textarea>
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase">Resource Link</label>
-                    <input type="url" id="matLink" class="w-full border-2 border-black p-2 outline-none" placeholder="https://" required>
+                    <label class="text-[10px] font-black uppercase tracking-widest">Link / URL</label>
+                    <input type="url" id="matLink" class="w-full border-2 border-black p-2 outline-none font-bold" required>
                 </div>
                 <div>
-                    <label class="text-[10px] font-black uppercase">Deadline/Schedule</label>
+                    <label class="text-[10px] font-black uppercase tracking-widest">Schedule</label>
                     <input type="datetime-local" id="matSchedule" class="w-full border-2 border-black p-2 outline-none font-bold" required>
                 </div>
-                <button type="submit" class="md:col-span-2 bg-black text-white py-4 font-black uppercase hover:invert transition tracking-widest">Publish to Class Feed</button>
+                <button type="submit" class="md:col-span-2 bg-black text-white py-4 font-black uppercase hover:invert transition tracking-widest">Publish Material</button>
             </form>
             <div id="materialsList" class="space-y-4"></div>
         </div>
@@ -56,40 +53,38 @@
     <header class="bg-white border-b-4 border-black p-6 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-black uppercase tracking-tighter leading-none">SVLS_FACULTY_PORTAL</h1>
-                <p id="teacherName" class="text-[10px] font-black text-gray-400 italic mt-1 uppercase tracking-[0.2em]">Syncing Personnel Data...</p>
+                <h1 class="text-3xl font-black uppercase tracking-tighter leading-none">Faculty_System</h1>
+                <p id="teacherName" class="text-xs font-bold text-gray-500 italic mt-1 uppercase tracking-widest">Syncing...</p>
             </div>
-            <button onclick="logout()" class="border-4 border-black px-8 py-2 text-xs font-black hover:bg-black hover:text-white transition uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">Logout</button>
+            <div class="flex gap-4">
+                <button onclick="logout()" class="border-2 border-black px-6 py-2 text-xs font-black hover:bg-black hover:text-white transition uppercase">Logout</button>
+            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
         <aside class="lg:col-span-1">
-            <h3 class="text-[10px] font-black uppercase mb-4 tracking-widest bg-black text-white inline-block px-3 py-1 italic">Assigned_Classes</h3>
-            <div id="subjectContainer" class="space-y-4">
-                </div>
+            <h3 class="text-xs font-black uppercase mb-4 tracking-widest bg-black text-white inline-block px-3 py-1 italic">Assigned_Classes</h3>
+            <div id="subjectContainer" class="space-y-3"></div>
         </aside>
 
         <section class="lg:col-span-3">
-            <div id="workspaceHeader" class="hidden mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-l-8 border-black pl-6">
+            <div id="workspaceHeader" class="hidden mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-l-8 border-black pl-4">
                 <div>
-                    <h3 id="activeSubjectTitle" class="text-6xl font-black uppercase tracking-tighter italic">CODE</h3>
-                    <p id="studentCount" class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-2"></p>
+                    <h3 id="activeSubjectTitle" class="text-5xl font-black uppercase tracking-tighter">Code</h3>
+                    <p id="studentCount" class="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1"></p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="renderView('roster')" class="border-2 border-black bg-black text-white px-5 py-2 text-[10px] font-black uppercase tracking-widest hover:invert transition shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none">Roster</button>
-                    <button onclick="renderView('attendance')" class="border-2 border-black bg-white px-5 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none">Attendance</button>
-                    <button onclick="renderView('grades')" class="border-2 border-black bg-white px-5 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none">Grades</button>
-                    <button onclick="openMaterialsModal()" class="border-2 border-black bg-yellow-400 px-5 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-yellow-500 transition shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none">Materials</button>
+                    <button onclick="renderView('roster')" class="bg-black text-white px-4 py-2 text-[10px] font-black uppercase">Roster</button>
+                    <button onclick="renderView('attendance')" class="border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-gray-100">Attendance</button>
+                    <button onclick="renderView('grades')" class="border-2 border-black px-4 py-2 text-[10px] font-black uppercase hover:bg-gray-100">Grades</button>
+                    <button onclick="openMaterialsModal()" class="border-2 border-black px-4 py-2 text-[10px] font-black uppercase bg-yellow-400 hover:bg-yellow-500">Materials</button>
                 </div>
             </div>
 
-            <div class="border-4 border-black bg-white shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] min-h-[500px] overflow-hidden">
+            <div class="border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] min-h-[500px] overflow-hidden">
                 <div id="dynamicContent" class="p-0">
-                    <div class="p-20 text-center italic text-gray-300 font-black uppercase tracking-widest text-2xl">
-                        Terminal_Standby<br>
-                        <span class="text-xs not-italic font-bold tracking-normal">Select a class to initialize interface</span>
-                    </div>
+                    <div class="p-20 text-center italic text-gray-400 uppercase font-black tracking-widest">Select a class to initialize terminal.</div>
                 </div>
             </div>
         </section>
@@ -122,7 +117,7 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists() && snap.data().role === 'teacher') {
                     currentTeacherName = snap.data().lastname;
-                    document.getElementById('teacherName').innerText = `PROF_ID: ${user.uid.substring(0,8)} | USER: ${snap.data().lastname}, ${snap.data().firstname}`;
+                    document.getElementById('teacherName').innerText = `PROF. ${snap.data().lastname}, ${snap.data().firstname}`;
                     loadClasses();
                 } else { window.location.href = "login.html"; }
             } else { window.location.href = "login.html"; }
@@ -136,29 +131,25 @@
             snap.forEach(p => {
                 const d = p.data();
                 container.innerHTML += `
-                    <button onclick="selectSubject('${d.code}', this)" class="subj-btn w-full text-left p-5 border-4 border-black bg-white hover:bg-gray-100 transition shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none group">
-                        <div class="font-black text-2xl italic tracking-tighter">${d.code}</div>
-                        <div class="text-[9px] font-black opacity-40 uppercase tracking-widest mt-1 group-hover:opacity-100">${d.name}</div>
+                    <button onclick="selectSubject('${d.code}')" class="w-full text-left p-4 border-2 border-black bg-white hover:bg-black hover:text-white transition shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group">
+                        <div class="font-black text-xl italic tracking-tighter group-hover:italic">${d.code}</div>
+                        <div class="text-[9px] font-bold opacity-60 uppercase tracking-widest mt-1">${d.name}</div>
                     </button>`;
             });
         }
 
-        window.selectSubject = async (code, btn) => {
+        window.selectSubject = async (code) => {
             activeSubj = code;
-            document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-subject'));
-            btn.classList.add('active-subject');
-            
             document.getElementById('workspaceHeader').classList.remove('hidden');
             document.getElementById('activeSubjectTitle').innerText = code;
-
             const q = query(collection(db, "users"), where("role", "==", "student"), where("subjects", "array-contains", code));
             const snap = await getDocs(q);
             rosterData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            document.getElementById('studentCount').innerText = `${rosterData.length} REGISTERED_STUDENTS`;
+            document.getElementById('studentCount').innerText = `${rosterData.length} STUDENTS ENROLLED`;
             renderView('roster');
         };
 
-        // COLLEGE GRADING LOGIC
+        // COLLEGE POINT LOGIC
         function calculatePoint(avg) {
             if (avg >= 97.5) return "1.0";
             if (avg >= 94.5) return "1.25";
@@ -184,43 +175,43 @@
         window.renderView = (view) => {
             const content = document.getElementById('dynamicContent');
             if (view === 'roster') {
-                let html = '<table class="w-full text-left"><thead class="bg-black text-white text-[10px] uppercase font-black tracking-widest italic"><tr><th class="p-5">ID_SERIAL</th><th class="p-5">FULL_NAME_STUDENT</th><th class="p-5">PROG_YEAR</th></tr></thead><tbody>';
+                let html = '<table class="w-full text-left"><thead class="bg-black text-white text-[10px] uppercase"><tr><th class="p-4">Student ID</th><th class="p-4">Full Name</th><th class="p-4">Program</th></tr></thead><tbody>';
                 rosterData.sort((a,b) => a.lastname.localeCompare(b.lastname)).forEach(s => {
-                    html += `<tr class="border-b-4 border-black hover:bg-gray-100 transition"><td class="p-5 font-mono font-black text-xs">${s.studentId || 'N/A'}</td><td class="p-5 font-black uppercase italic text-sm underline decoration-2">${s.lastname}, ${s.firstname}</td><td class="p-5 text-xs font-black uppercase tracking-widest">${s.course}-${s.year}</td></tr>`;
+                    html += `<tr class="border-b-2 border-black hover:bg-gray-50"><td class="p-4 font-mono font-bold">${s.studentId || 'UNSET'}</td><td class="p-4 font-black uppercase italic">${s.lastname}, ${s.firstname}</td><td class="p-4 text-xs font-bold uppercase tracking-widest">${s.course}-${s.year}</td></tr>`;
                 });
                 content.innerHTML = html + '</tbody></table>';
             } 
             else if (view === 'attendance') {
-                let html = `<div class="p-6 border-b-4 border-black flex justify-between bg-gray-50 items-center"><div><label class="text-[9px] font-black uppercase mr-3">LOG_DATE:</label><input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="border-4 border-black p-2 font-black text-xs outline-none bg-white"></div><button onclick="saveAttendance()" class="bg-black text-white px-8 py-3 text-xs font-black uppercase tracking-widest hover:invert transition shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">Save_Daily_Log</button></div>`;
-                html += '<table class="w-full"><thead class="bg-gray-100 text-[10px] font-black uppercase border-b-4 border-black"><tr><th class="p-5 text-left italic">Student_Lastname</th><th class="p-5 text-center">Status_Report</th></tr></thead><tbody>';
+                let html = `<div class="p-4 border-b-4 border-black flex justify-between bg-gray-50 items-center"><div><label class="text-[9px] font-black uppercase mr-2">Session Date:</label><input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="border-2 border-black p-1 font-bold text-xs outline-none"></div><button onclick="saveAttendance()" class="bg-black text-white px-6 py-2 text-xs font-black uppercase tracking-widest hover:invert transition">Save Session</button></div>`;
+                html += '<table class="w-full"><thead class="bg-gray-100 text-[10px] font-black uppercase border-b-2 border-black"><tr><th class="p-4 text-left">Student Name</th><th class="p-4 text-center">Status (P / L / A)</th></tr></thead><tbody id="attBody">';
                 rosterData.sort((a,b) => a.lastname.localeCompare(b.lastname)).forEach(s => {
-                    html += `<tr class="border-b-2 border-black hover:bg-yellow-50"><td class="p-5 font-black uppercase text-sm italic">${s.lastname}, ${s.firstname}</td><td class="p-5 text-center">
-                        <label class="inline-flex items-center cursor-pointer mx-3"><input type="radio" name="att_${s.id}" value="P" checked class="w-4 h-4 accent-black"><span class="ml-2 font-black text-xs">P</span></label>
-                        <label class="inline-flex items-center cursor-pointer mx-3"><input type="radio" name="att_${s.id}" value="L" class="w-4 h-4 accent-black"><span class="ml-2 font-black text-xs text-orange-600 italic">L</span></label>
-                        <label class="inline-flex items-center cursor-pointer mx-3"><input type="radio" name="att_${s.id}" value="A" class="w-4 h-4 accent-black"><span class="ml-2 font-black text-xs text-red-600 italic">A</span></label>
+                    html += `<tr class="border-b border-black hover:bg-yellow-50"><td class="p-4 font-black uppercase text-sm">${s.lastname}, ${s.firstname}</td><td class="p-4 text-center">
+                        <label class="inline-flex items-center cursor-pointer mx-2"><input type="radio" name="att_${s.id}" value="P" checked class="accent-black"><span class="ml-1 font-bold text-xs">P</span></label>
+                        <label class="inline-flex items-center cursor-pointer mx-2"><input type="radio" name="att_${s.id}" value="L" class="accent-black"><span class="ml-1 font-bold text-xs text-orange-600">L</span></label>
+                        <label class="inline-flex items-center cursor-pointer mx-2"><input type="radio" name="att_${s.id}" value="A" class="accent-black"><span class="ml-1 font-bold text-xs text-red-600">A</span></label>
                     </td></tr>`;
                 });
                 content.innerHTML = html + '</tbody></table>';
             }
             else if (view === 'grades') {
-                let html = `<div class="p-6 border-b-4 border-black flex justify-between bg-gray-50 items-center"><span class="font-black text-xs uppercase italic tracking-[0.2em]">Matrix_Point_Encoding</span><button onclick="saveGrades()" class="bg-black text-white px-8 py-3 text-xs font-black uppercase tracking-widest hover:invert transition shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">Sync_Master_Sheet</button></div>`;
-                html += '<table class="w-full"><thead class="bg-gray-100 text-[10px] font-black uppercase border-b-4 border-black"><tr><th class="p-5 text-left">Legal_Name</th><th class="p-5 text-center">PRE</th><th class="p-5 text-center">MID</th><th class="p-5 text-center">FIN</th><th class="p-5 text-center">AVG</th><th class="p-5 text-center">POINT</th></tr></thead><tbody>';
+                let html = `<div class="p-4 border-b-4 border-black flex justify-between bg-gray-50 items-center"><span class="font-black text-xs uppercase italic tracking-widest">College Point Encoding System</span><button onclick="saveGrades()" class="bg-black text-white px-6 py-2 text-xs font-black uppercase tracking-widest hover:invert transition">Sync to Master</button></div>`;
+                html += '<table class="w-full"><thead class="bg-gray-100 text-[10px] font-black uppercase border-b-2 border-black"><tr><th class="p-4 text-left">Name</th><th class="p-4 text-center">PRE</th><th class="p-4 text-center">MID</th><th class="p-4 text-center">FIN</th><th class="p-4 text-center">AVG</th><th class="p-4 text-center">PT</th></tr></thead><tbody>';
                 rosterData.sort((a,b) => a.lastname.localeCompare(b.lastname)).forEach(s => {
                     const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
                     const avg = ((parseFloat(g.prelim)||0) + (parseFloat(g.midterm)||0) + (parseFloat(g.final)||0)) / 3;
-                    html += `<tr class="border-b-2 border-black hover:bg-blue-50/30 transition"><td class="p-5 font-black uppercase text-xs italic underline">${s.lastname}</td>
-                        <td class="p-3"><input type="number" id="pre_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-4 border-black p-2 text-center font-black text-xs mx-auto block outline-none focus:bg-yellow-100" value="${g.prelim}"></td>
-                        <td class="p-3"><input type="number" id="mid_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-4 border-black p-2 text-center font-black text-xs mx-auto block outline-none focus:bg-yellow-100" value="${g.midterm}"></td>
-                        <td class="p-3"><input type="number" id="fin_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-4 border-black p-2 text-center font-black text-xs mx-auto block outline-none focus:bg-yellow-100" value="${g.final}"></td>
-                        <td class="p-5 text-center font-black text-sm text-blue-600" id="avg_${s.id}">${avg.toFixed(2)}</td>
-                        <td class="p-5 text-center font-black text-md bg-black text-white" id="pt_${s.id}">${calculatePoint(avg)}</td>
+                    html += `<tr class="border-b border-black"><td class="p-4 font-black uppercase text-xs italic">${s.lastname}</td>
+                        <td class="p-2"><input type="number" id="pre_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-2 border-black p-1 text-center font-bold text-xs mx-auto block" value="${g.prelim}"></td>
+                        <td class="p-2"><input type="number" id="mid_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-2 border-black p-1 text-center font-bold text-xs mx-auto block" value="${g.midterm}"></td>
+                        <td class="p-2"><input type="number" id="fin_${s.id}" oninput="updateRow('${s.id}')" class="w-16 border-2 border-black p-1 text-center font-bold text-xs mx-auto block" value="${g.final}"></td>
+                        <td class="p-4 text-center font-black text-xs text-blue-600" id="avg_${s.id}">${avg.toFixed(2)}</td>
+                        <td class="p-4 text-center font-black text-sm" id="pt_${s.id}">${calculatePoint(avg)}</td>
                     </tr>`;
                 });
                 content.innerHTML = html + '</tbody></table>';
             }
         };
 
-        // ATTENDANCE LOGIC (Consistency Fix)
+        // SAVE ATTENDANCE (One record per day per subject)
         window.saveAttendance = async () => {
             const date = document.getElementById('attDate').value;
             const docId = `${activeSubj}_${date}`;
@@ -229,38 +220,47 @@
                 records[s.id] = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
             });
             await setDoc(doc(db, "attendance", docId), { 
-                subject: activeSubj, date, records, teacher: currentTeacherName, updatedAt: serverTimestamp() 
+                subject: activeSubj, 
+                date, 
+                records, 
+                teacher: currentTeacherName,
+                updatedAt: serverTimestamp() 
             });
-            alertBox("Log_Secured", `Data stored for ${activeSubj} - Session: ${date}`);
+            alertBox("Logged", `Attendance for ${date} has been secured.`);
         };
 
-        // GRADING LOGIC (Sync Fix)
+        // SAVE GRADES (Merging objects correctly)
         window.saveGrades = async () => {
             const btn = event.target;
-            btn.innerText = "UPLOADING...";
+            btn.innerText = "SYNCING...";
             btn.disabled = true;
             try {
                 for (let s of rosterData) {
-                    const p = document.getElementById(`pre_${s.id}`).value;
-                    const m = document.getElementById(`mid_${s.id}`).value;
-                    const f = document.getElementById(`fin_${s.id}`).value;
-                    const avg = ((parseFloat(p)||0) + (parseFloat(m)||0) + (parseFloat(f)||0)) / 3;
+                    const prelim = document.getElementById(`pre_${s.id}`).value;
+                    const midterm = document.getElementById(`mid_${s.id}`).value;
+                    const final = document.getElementById(`fin_${s.id}`).value;
                     
+                    const gradeObj = {
+                        prelim,
+                        midterm,
+                        final,
+                        average: ((parseFloat(prelim)||0) + (parseFloat(midterm)||0) + (parseFloat(final)||0)) / 3,
+                        point: calculatePoint(((parseFloat(prelim)||0) + (parseFloat(midterm)||0) + (parseFloat(final)||0)) / 3)
+                    };
+
                     await updateDoc(doc(db, "users", s.id), {
-                        [`grades.${activeSubj}`]: { 
-                            prelim: p, midterm: m, final: f, 
-                            average: avg.toFixed(2), 
-                            point: calculatePoint(avg) 
-                        }
+                        [`grades.${activeSubj}`]: gradeObj
                     });
                 }
-                alertBox("Master_Synced", "Grades published to terminal and student records.");
-            } catch (e) { alertBox("Error_Log", e.message); }
-            btn.innerText = "Sync_Master_Sheet";
+                alertBox("Master Records Updated", "All grades have been successfully pushed to student portals.");
+            } catch (e) {
+                alertBox("Error", e.message);
+            }
+            btn.innerText = "SYNC TO MASTER";
             btn.disabled = false;
         };
 
-        // MATERIALS LOGIC
+        // MATERIALS
         window.openMaterialsModal = () => {
             document.getElementById('materialsModal').classList.remove('hidden');
             const list = document.getElementById('materialsList');
@@ -270,13 +270,13 @@
                 snap.forEach(mDoc => {
                     const m = mDoc.data();
                     list.innerHTML += `
-                        <div class="border-4 border-black p-5 mb-4 flex justify-between bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] items-center">
+                        <div class="border-4 border-black p-4 mb-4 flex justify-between bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] items-center">
                             <div>
-                                <div class="font-black text-md uppercase italic tracking-tighter">${m.name}</div>
-                                <div class="text-[9px] font-black text-gray-400 uppercase mt-1">DUE: ${m.schedule.replace('T', ' | ')}</div>
-                                <a href="${m.link}" target="_blank" class="text-[10px] font-black text-blue-600 underline uppercase mt-3 block tracking-tighter hover:text-black transition">Open_External_Link</a>
+                                <div class="font-black text-sm uppercase italic">${m.name}</div>
+                                <div class="text-[9px] font-bold text-gray-500 uppercase mt-1">Sched: ${m.schedule.replace('T', ' ')}</div>
+                                <a href="${m.link}" target="_blank" class="text-[10px] font-black text-blue-600 underline uppercase mt-2 block tracking-widest">Access_Resource</a>
                             </div>
-                            <button onclick="deleteMat('${mDoc.id}')" class="bg-black text-white p-3 border-2 border-black hover:bg-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
+                            <button onclick="deleteMat('${mDoc.id}')" class="bg-red-600 text-white p-2 border-2 border-black hover:bg-black transition"><i class="fa-solid fa-trash-can"></i></button>
                         </div>`;
                 });
             });
@@ -295,7 +295,7 @@
             e.target.reset();
         });
 
-        window.deleteMat = async (id) => { if(confirm("Confirm deletion of educational resource?")) await deleteDoc(doc(db, "materials", id)); };
+        window.deleteMat = async (id) => { if(confirm("Permanently delete this resource?")) await deleteDoc(doc(db, "materials", id)); };
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
         window.alertBox = (t, m) => { document.getElementById('sysTitle').innerText = t; document.getElementById('sysMsg').innerText = m; document.getElementById('sysModal').classList.remove('hidden'); };
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
