@@ -8,24 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
         body { font-family: 'Inter', sans-serif; }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .input-focus {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .input-focus:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
-
+        .input-focus { transition: all 0.2s ease-in-out; }
+        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -44,10 +29,8 @@
     </div>
 
     <div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white">
-        
         <div class="hidden lg:flex lg:col-span-4 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
-            
             <div class="relative z-10">
                 <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-blue-500/30">
                     <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
@@ -55,17 +38,8 @@
                 <h2 class="text-white text-3xl font-extrabold leading-tight tracking-tight">Join our <br>Academic <br>Faculty.</h2>
                 <p class="text-slate-400 mt-6 text-sm leading-relaxed">Submit your credentials for verification. Once approved, you will gain access to the Virtual Learning Terminal.</p>
             </div>
-
-            <div class="relative z-10">
-                <div class="flex items-center gap-3 text-white/60 text-xs font-bold tracking-widest uppercase mb-4">
-                    <span class="w-8 h-[1px] bg-white/20"></span>
-                    Verification Steps
-                </div>
-                <ul class="space-y-4">
-                    <li class="flex items-center gap-3 text-white/80 text-xs font-medium"><i class="fa-solid fa-circle-check text-blue-500"></i> Account Creation</li>
-                    <li class="flex items-center gap-3 text-white/40 text-xs font-medium"><i class="fa-solid fa-circle-notch"></i> Admin Review</li>
-                    <li class="flex items-center gap-3 text-white/40 text-xs font-medium"><i class="fa-solid fa-circle-notch"></i> Access Granted</li>
-                </ul>
+            <div class="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                CMCS Faculty Portal
             </div>
         </div>
 
@@ -130,9 +104,14 @@
                             <input type="email" id="email" placeholder="example@gmail.com" class="w-full bg-slate-50 border border-slate-200 p-4 pl-10 rounded-2xl outline-none input-focus font-semibold text-sm" required>
                         </div>
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-2 relative">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Create Password</label>
-                        <input type="password" id="pw" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                        <div class="relative">
+                            <input type="password" id="pw" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
+                                <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -144,94 +123,99 @@
     </div>
 
     <script type="module">
-       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-    authDomain: "svls-289ee.firebaseapp.com",
-    projectId: "svls-289ee",
-    storageBucket: "svls-289ee.firebasestorage.app",
-    messagingSenderId: "500705386198",
-    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
 
-// 1. Initialize Main App (Used only for Firestore access)
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        // Initialize Main App (Database)
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-// 2. Initialize SECONDARY App (Used only for Registration)
-// This name "Secondary" creates a separate auth session so the Admin is not logged out.
-const secondaryApp = initializeApp(firebaseConfig, "SecondaryRegistration");
-const secondaryAuth = getAuth(secondaryApp);
+        // Initialize SECONDARY App (Auth Isolation)
+        const secondaryApp = initializeApp(firebaseConfig, "TeacherSecondary");
+        const secondaryAuth = getAuth(secondaryApp);
 
-let redirectOnClose = false;
+        // Password Toggle Logic
+        window.togglePassword = () => {
+            const pw = document.getElementById('pw');
+            const icon = document.getElementById('eyeIcon');
+            if (pw.type === "password") {
+                pw.type = "text";
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pw.type = "password";
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        };
 
-window.showModal = (title, msg, type = 'success', redirect = false) => {
-    document.getElementById('modalTitle').innerText = title;
-    document.getElementById('modalMsg').innerText = msg;
-    const icon = document.getElementById('modalIcon');
-    icon.innerHTML = type === 'success' ? 
-        '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : 
-        '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
-    document.getElementById('msgModal').classList.replace('hidden', 'flex');
-    redirectOnClose = redirect;
-};
+        let redirectOnClose = false;
+        window.showModal = (title, msg, type = 'success', redirect = false) => {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
+            const icon = document.getElementById('modalIcon');
+            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+            document.getElementById('msgModal').classList.replace('hidden', 'flex');
+            redirectOnClose = redirect;
+        }
 
-window.closeModal = () => {
-    document.getElementById('msgModal').classList.replace('flex', 'hidden');
-    // If Admin registered someone, we just close the tab or stay on page.
-    // If you want it to close the tab automatically:
-    if(redirectOnClose) window.close(); 
-};
+        window.closeModal = () => {
+            document.getElementById('msgModal').classList.replace('flex', 'hidden');
+            if(redirectOnClose) window.close(); 
+        }
 
-document.getElementById('teacherForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const email = document.getElementById('email').value.trim().toLowerCase();
-    const password = document.getElementById('pw').value;
+        document.getElementById('teacherForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('pw').value;
 
-    if(!email.endsWith("@gmail.com")) {
-        showModal("Access Error", "You must use an official @gmail.com account.", "error");
-        return;
-    }
+            if(!email.endsWith("@gmail.com")) {
+                showModal("Access Error", "You must use an official @gmail.com account.", "error");
+                return;
+            }
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> PROCESSING...';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> PROCESSING...';
 
-    try {
-        // 3. Create User using secondaryAuth
-        const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-        const newUser = userCredential.user;
+            try {
+                // 1. Create Teacher in Secondary Instance
+                const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                
+                // 2. Save Data to Firestore
+                await setDoc(doc(db, "users", userCredential.user.uid), {
+                    uid: userCredential.user.uid,
+                    lastname: document.getElementById('ln').value.toUpperCase(),
+                    firstname: document.getElementById('fn').value.toUpperCase(),
+                    gender: document.getElementById('gender').value.toUpperCase(),
+                    birthdate: document.getElementById('bday').value,
+                    address: document.getElementById('address').value.toUpperCase(),
+                    designation: document.getElementById('designation').value.toUpperCase(),
+                    license: document.getElementById('license').value,
+                    email: email,
+                    role: "teacher",
+                    status: "pending",
+                    createdAt: new Date()
+                });
 
-        // 4. Save to Firestore using Main DB
-        await setDoc(doc(db, "users", newUser.uid), {
-            uid: newUser.uid,
-            lastname: document.getElementById('ln').value.toUpperCase(),
-            firstname: document.getElementById('fn').value.toUpperCase(),
-            gender: document.getElementById('gender').value.toUpperCase(),
-            birthdate: document.getElementById('bday').value,
-            address: document.getElementById('address').value.toUpperCase(),
-            designation: document.getElementById('designation').value.toUpperCase(),
-            license: document.getElementById('license').value,
-            email: email,
-            role: "teacher",
-            status: "pending", // Keep pending for Admin approval later
-            createdAt: new Date()
+                // 3. IMMEDIATELY LOG OUT the new teacher so Admin stays logged in
+                await signOut(secondaryAuth);
+
+                showModal("Registration Sent", "The teacher application is submitted. Admin session remains active.", "success", true);
+            } catch (error) {
+                showModal("Error", error.message, "error");
+                btn.disabled = false;
+                btn.innerHTML = "Send Application";
+            }
         });
-
-        // 5. CRITICAL: Sign out from the secondary session immediately
-        // This ensures the student/teacher session is cleared and the Admin stays logged in
-        await signOut(secondaryAuth);
-
-        showModal("Success", "Account created and authenticated. Admin session remains active.", "success", true);
-    } catch (error) {
-        showModal("Error", error.message, "error");
-        btn.disabled = false;
-        btn.innerHTML = "Send Application";
-    }
-});
     </script>
 </body>
 </html>
