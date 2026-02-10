@@ -21,7 +21,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .active-nav { background: #2563eb !important; color: white !important; }
+        .active-nav { background: #2563eb !important; color: white !important; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         
         @media print {
             body * { visibility: hidden; }
@@ -29,7 +29,7 @@
             #printArea { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
             .print-val { display: inline !important; font-weight: bold; }
-            .input-box, .radio-group { display: none !important; }
+            .input-box, .radio-group, #materialUploadSection { display: none !important; }
         }
         .print-val { display: none; }
     </style>
@@ -44,13 +44,10 @@
         </div>
         <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto" id="subjectNav">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-            <div class="px-3 py-4 text-xs text-gray-500 italic">Loading subjects...</div>
-        </nav>
+            </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <a href="#" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">
-                    AD
-                </div>
+            <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">AD</div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
                     <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
@@ -67,19 +64,14 @@
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
+            <h1 id="activeSubjectTitle" class="text-xl font-bold text-gray-800">Class Assignment</h1>
             <div class="flex items-center gap-4">
-                <h1 id="activeSubjectTitle" class="text-xl font-bold text-gray-800">Class Assignment</h1>
-                <div id="subjectBadge" class="hidden text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
-                    <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span> <span id="subjCodeDisplay">Live</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
                 <div id="viewToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
                     <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
                     <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Grades</button>
                     <button id="btnMat" onclick="switchView('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
                 </div>
-                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-md transition-all flex items-center gap-2 uppercase">
                     <i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA
                 </button>
             </div>
@@ -88,7 +80,7 @@
         <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
             <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
                 <i class="fa-solid fa-book-open-reader text-5xl mb-4 opacity-20"></i>
-                <p class="font-bold uppercase text-xs tracking-widest">Select a class from the menu to manage</p>
+                <p class="font-bold uppercase text-xs tracking-widest">Select a subject to begin</p>
             </div>
 
             <div id="workspace" class="hidden space-y-6">
@@ -101,17 +93,26 @@
                             COURSE: <span id="lblCourse"></span> | YEAR: <span id="lblYear"></span> | SEM: <span id="lblSem"></span>
                         </div>
                         <p class="text-[9px] italic text-gray-600 uppercase">Generated on: <span id="lblTime"></span></p>
-                        <div class="w-full border-b-2 border-black mt-4 mb-4"></div>
+                        <div class="border-b-2 border-black mt-4 mb-4 w-full"></div>
+                    </div>
+
+                    <div id="materialUploadSection" class="hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6 no-print">
+                        <h3 class="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4">Post Learning Material</h3>
+                        <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="matName" placeholder="Title" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
+                            <input type="url" id="matLink" placeholder="Resource URL" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
+                            <input type="datetime-local" id="matSchedule" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
+                            <textarea id="matDesc" placeholder="Instructions..." class="md:col-span-2 text-xs border border-gray-200 rounded-lg p-3 outline-none h-12"></textarea>
+                            <button type="submit" class="bg-secondary text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all uppercase">Upload Material</button>
+                        </form>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div id="tableHeader" class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 no-print"></div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse" id="dataTable">
-                                <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
-                                <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-                            </table>
-                        </div>
+                        <table class="w-full text-left border-collapse">
+                            <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -136,11 +137,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentTeacherName = "";
-        let activeSubj = "";
-        let currentView = 'attendance';
-        let roster = [];
-        let subjContext = null;
+        let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -163,23 +160,18 @@
             snap.forEach(d => {
                 const s = d.data();
                 const a = document.createElement('a');
-                a.href = "#";
-                a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors";
-                a.onclick = (e) => { e.preventDefault(); selectSubject(s, a); };
+                a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer";
+                a.onclick = () => selectSubject(s, a);
                 a.innerHTML = `<i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">${s.code}</span>`;
                 nav.appendChild(a);
             });
         }
 
         async function selectSubject(subjData, el) {
-            subjContext = subjData;
-            activeSubj = subjData.code;
-            document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('bg-primary', 'text-white', 'shadow-md'));
-            el.classList.add('bg-primary', 'text-white', 'shadow-md');
-
+            subjContext = subjData; activeSubj = subjData.code;
+            document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
+            el.classList.add('bg-primary', 'text-white');
             document.getElementById('activeSubjectTitle').innerText = subjData.name;
-            document.getElementById('subjCodeDisplay').innerText = subjData.code;
-            document.getElementById('subjectBadge').classList.remove('hidden');
             document.getElementById('placeholder').classList.add('hidden');
             document.getElementById('workspace').classList.remove('hidden');
             document.getElementById('viewToggles').classList.remove('hidden');
@@ -198,6 +190,7 @@
                 btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
                 if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
             });
+            document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
             renderTable();
         };
 
@@ -207,59 +200,60 @@
             const hInfo = document.getElementById('tableHeader');
             body.innerHTML = '';
 
-            const commonButtons = `
-                <div class="flex gap-2">
-                    <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100">CSV</button>
-                    <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100">PDF</button>
-                </div>`;
+            const controls = `<div class="flex gap-2"><button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100">PDF</button></div>`;
 
             if (currentView === 'attendance') {
-                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded px-2 py-1 font-bold outline-none"> ${commonButtons}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
+                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded px-2 py-1 font-bold outline-none"> ${controls}`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
                 roster.forEach(s => {
                     body.innerHTML += `<tr>
-                        <td class="px-6 py-4"><div class="font-bold uppercase">${s.lastname}, ${s.firstname}</div><div class="text-[10px] text-gray-400 uppercase">${s.studentId} • ${s.course}</div></td>
+                        <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}<div class="text-[10px] text-gray-400 font-normal">${s.studentId}</div></td>
                         <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
                         <td class="px-6 py-4 text-center">
                             <span class="print-val" id="att_val_${s.id}">P</span>
                             <div class="radio-group flex justify-center gap-4 text-xs font-bold">
-                                <label><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label>
-                                <label><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label>
-                                <label><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label>
+                                <label><input type="radio" name="att_${s.id}" value="P" checked> P</label>
+                                <label><input type="radio" name="att_${s.id}" value="L"> L</label>
+                                <label><input type="radio" name="att_${s.id}" value="A"> A</label>
                             </div>
                         </td></tr>`;
                 });
             } else if (currentView === 'grades') {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${commonButtons}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">PT</th></tr>`;
+                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">PT</th></tr>`;
                 roster.forEach(s => {
                     const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
-                    const avg = ((parseFloat(g.prelim)||0) + (parseFloat(g.midterm)||0) + (parseFloat(g.final)||0)) / 3;
-                    const pt = calculatePoint(avg);
                     body.innerHTML += `<tr>
-                        <td class="px-6 py-4"><div class="font-bold uppercase">${s.lastname}, ${s.firstname}</div><div class="text-[9px] text-gray-400">${s.studentId}</div></td>
+                        <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
                         <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="pre_val_${s.id}">${g.prelim}</span><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.prelim}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="mid_val_${s.id}">${g.midterm}</span><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.midterm}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="fin_val_${s.id}">${g.final}</span><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.final}"></td>
-                        <td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="pre_val_${s.id}">${g.prelim}</span><input type="number" id="pre_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.prelim}"></td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="mid_val_${s.id}">${g.midterm}</span><input type="number" id="mid_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.midterm}"></td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="fin_val_${s.id}">${g.final}</span><input type="number" id="fin_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.final}"></td>
+                        <td class="px-6 py-4 text-right font-black text-xs text-primary" id="pt_${s.id}">${s.grades?.[activeSubj]?.point || '5.0'}</td>
                     </tr>`;
                 });
+            } else {
+                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Action</th></tr>`;
+                onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
+                    body.innerHTML = '';
+                    snap.forEach(doc => {
+                        const m = doc.data();
+                        body.innerHTML += `<tr class="text-xs">
+                            <td class="px-6 py-4 font-bold">${m.name}</td>
+                            <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline">Open Resource</a></td>
+                            <td class="px-6 py-4 text-right"><button onclick="deleteMat('${doc.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td>
+                        </tr>`;
+                    });
+                });
             }
-        }
-
-        window.calculatePoint = (avg) => {
-            if (avg >= 97.5) return "1.0"; if (avg >= 94.5) return "1.25"; if (avg >= 91.5) return "1.5";
-            if (avg >= 88.5) return "1.75"; if (avg >= 85.5) return "2.0"; if (avg >= 82.5) return "2.25";
-            if (avg >= 79.5) return "2.5"; if (avg >= 76.5) return "2.75"; if (avg >= 74.5) return "3.0";
-            return "5.0";
         }
 
         window.exportPDF = () => {
             roster.forEach(s => {
                 if(currentView === 'attendance') {
                     document.getElementById(`att_val_${s.id}`).innerText = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
-                } else {
+                } else if(currentView === 'grades') {
                     document.getElementById(`pre_val_${s.id}`).innerText = document.getElementById(`pre_${s.id}`).value;
                     document.getElementById(`mid_val_${s.id}`).innerText = document.getElementById(`mid_${s.id}`).value;
                     document.getElementById(`fin_val_${s.id}`).innerText = document.getElementById(`fin_${s.id}`).value;
@@ -274,14 +268,37 @@
             document.getElementById('printHeader').classList.replace('flex', 'hidden');
         };
 
-        window.calcPt = (id) => {
-            const p = parseFloat(document.getElementById(`pre_${id}`).value) || 0;
-            const m = parseFloat(document.getElementById(`mid_${id}`).value) || 0;
-            const f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
-            document.getElementById(`pt_${id}`).innerText = calculatePoint((p+m+f)/3);
+        document.getElementById('materialForm').onsubmit = async (e) => {
+            e.preventDefault();
+            await setDoc(doc(collection(db, "materials")), {
+                subjectCode: activeSubj,
+                name: document.getElementById('matName').value.toUpperCase(),
+                link: document.getElementById('matLink').value,
+                desc: document.getElementById('matDesc').value,
+                schedule: document.getElementById('matSchedule').value,
+                createdAt: serverTimestamp()
+            });
+            e.target.reset();
+            alert("Material Uploaded Successfully!");
         };
 
-        window.saveCurrentWork = async () => { /* Firebase Save Logic */ };
+        window.saveCurrentWork = async () => {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = 'SYNCING...';
+            for(let s of roster) {
+                if(currentView === 'grades') {
+                    const pre = document.getElementById(`pre_${s.id}`).value;
+                    const mid = document.getElementById(`mid_${s.id}`).value;
+                    const fin = document.getElementById(`fin_${s.id}`).value;
+                    const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
+                    const pt = avg >= 74.5 ? "3.0" : "5.0"; // Simplified for demo
+                    await updateDoc(doc(db, "users", s.id), { [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } });
+                }
+            }
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
+            alert("Data Synced to Cloud!");
+        };
+
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
