@@ -21,7 +21,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .active-nav { background: #2563eb !important; color: white !important; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .active-nav { background: #2563eb !important; color: white !important; }
         
         @media print {
             body * { visibility: hidden; }
@@ -29,12 +29,21 @@
             #printArea { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
             .print-val { display: inline !important; font-weight: bold; }
-            .input-box, .radio-group, #materialUploadSection { display: none !important; }
+            .input-box, .radio-group, #materialUploadSection, #systemModal { display: none !important; }
         }
         .print-val { display: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <div id="systemModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all scale-95 opacity-0" id="modalContent">
+            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4"></div>
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-900 mb-1"></h3>
+            <p id="modalMsg" class="text-sm text-gray-500 mb-6"></p>
+            <button onclick="closeModal()" class="w-full bg-secondary text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all">Dismiss</button>
+        </div>
+    </div>
 
     <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
@@ -44,17 +53,14 @@
         </div>
         <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto" id="subjectNav">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-            </nav>
+        </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
             <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">AD</div>
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">AD</div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
-                    <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
-                        <i class="fa-solid fa-gear text-[8px]"></i> Account Settings
-                    </p>
+                    <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1"><i class="fa-solid fa-gear"></i> Account Settings</p>
                 </div>
-                <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white"></i>
             </a>
             <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
                 <i class="fa-solid fa-right-from-bracket"></i> Logout
@@ -67,9 +73,9 @@
             <h1 id="activeSubjectTitle" class="text-xl font-bold text-gray-800">Class Assignment</h1>
             <div class="flex items-center gap-4">
                 <div id="viewToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
-                    <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
-                    <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Grades</button>
-                    <button id="btnMat" onclick="switchView('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
+                    <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md active-nav">Attendance</button>
+                    <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md text-gray-500">Grades</button>
+                    <button id="btnMat" onclick="switchView('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md text-gray-500">Materials</button>
                 </div>
                 <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-md transition-all flex items-center gap-2 uppercase">
                     <i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA
@@ -152,6 +158,36 @@
             } else { window.location.href = "login.html"; }
         });
 
+        // SYSTEM MODAL LOGIC
+        window.showModal = (title, msg, type = 'success') => {
+            const modal = document.getElementById('systemModal');
+            const content = document.getElementById('modalContent');
+            const icon = document.getElementById('modalIcon');
+            
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
+            
+            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-3xl text-success"></i>' : '<i class="fa-solid fa-circle-exclamation text-3xl text-danger"></i>';
+            icon.className = `w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 ${type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        };
+
+        window.closeModal = () => {
+            const modal = document.getElementById('systemModal');
+            const content = document.getElementById('modalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        };
+
         async function loadSubjects() {
             const nav = document.getElementById('subjectNav');
             const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
@@ -176,7 +212,6 @@
             document.getElementById('workspace').classList.remove('hidden');
             document.getElementById('viewToggles').classList.remove('hidden');
             document.getElementById('saveBtn').classList.remove('hidden');
-
             const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
             const snap = await getDocs(q);
             roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -188,7 +223,7 @@
             ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
                 const btn = document.getElementById(id);
                 btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-                if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
+                btn.classList.toggle('text-gray-500', !id.toLowerCase().includes(v.substring(0,3)));
             });
             document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
             renderTable();
@@ -199,7 +234,6 @@
             const head = document.getElementById('tableHead');
             const hInfo = document.getElementById('tableHeader');
             body.innerHTML = '';
-
             const controls = `<div class="flex gap-2"><button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100">PDF</button></div>`;
 
             if (currentView === 'attendance') {
@@ -232,22 +266,57 @@
                         <td class="px-6 py-4 text-right font-black text-xs text-primary" id="pt_${s.id}">${s.grades?.[activeSubj]?.point || '5.0'}</td>
                     </tr>`;
                 });
-            } else {
+            } else if (currentView === 'materials') {
                 hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
                 head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Action</th></tr>`;
                 onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
                     body.innerHTML = '';
-                    snap.forEach(doc => {
-                        const m = doc.data();
+                    snap.forEach(docSnap => {
+                        const m = docSnap.data();
                         body.innerHTML += `<tr class="text-xs">
                             <td class="px-6 py-4 font-bold">${m.name}</td>
                             <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline">Open Resource</a></td>
-                            <td class="px-6 py-4 text-right"><button onclick="deleteMat('${doc.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td>
+                            <td class="px-6 py-4 text-right"><button onclick="deleteMat('${docSnap.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td>
                         </tr>`;
                     });
                 });
             }
         }
+
+        document.getElementById('materialForm').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                await setDoc(doc(collection(db, "materials")), {
+                    subjectCode: activeSubj,
+                    name: document.getElementById('matName').value.toUpperCase(),
+                    link: document.getElementById('matLink').value,
+                    desc: document.getElementById('matDesc').value,
+                    schedule: document.getElementById('matSchedule').value,
+                    createdAt: serverTimestamp()
+                });
+                e.target.reset();
+                showModal("Material Uploaded", "Resource is now available to students.");
+            } catch(e) { showModal("Upload Failed", "Error saving data.", "error"); }
+        };
+
+        window.saveCurrentWork = async () => {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = 'SYNCING...';
+            try {
+                for(let s of roster) {
+                    if(currentView === 'grades') {
+                        const pre = document.getElementById(`pre_${s.id}`).value;
+                        const mid = document.getElementById(`mid_${s.id}`).value;
+                        const fin = document.getElementById(`fin_${s.id}`).value;
+                        const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
+                        const pt = avg >= 74.5 ? "3.0" : "5.0"; 
+                        await updateDoc(doc(db, "users", s.id), { [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } });
+                    }
+                }
+                showModal("Sync Complete", "Cloud database has been updated.");
+            } catch(e) { showModal("Sync Failed", "Check your connection.", "error"); }
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
+        };
 
         window.exportPDF = () => {
             roster.forEach(s => {
@@ -268,37 +337,7 @@
             document.getElementById('printHeader').classList.replace('flex', 'hidden');
         };
 
-        document.getElementById('materialForm').onsubmit = async (e) => {
-            e.preventDefault();
-            await setDoc(doc(collection(db, "materials")), {
-                subjectCode: activeSubj,
-                name: document.getElementById('matName').value.toUpperCase(),
-                link: document.getElementById('matLink').value,
-                desc: document.getElementById('matDesc').value,
-                schedule: document.getElementById('matSchedule').value,
-                createdAt: serverTimestamp()
-            });
-            e.target.reset();
-            alert("Material Uploaded Successfully!");
-        };
-
-        window.saveCurrentWork = async () => {
-            const btn = document.getElementById('saveBtn');
-            btn.innerText = 'SYNCING...';
-            for(let s of roster) {
-                if(currentView === 'grades') {
-                    const pre = document.getElementById(`pre_${s.id}`).value;
-                    const mid = document.getElementById(`mid_${s.id}`).value;
-                    const fin = document.getElementById(`fin_${s.id}`).value;
-                    const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
-                    const pt = avg >= 74.5 ? "3.0" : "5.0"; // Simplified for demo
-                    await updateDoc(doc(db, "users", s.id), { [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } });
-                }
-            }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
-            alert("Data Synced to Cloud!");
-        };
-
+        window.exportCSV = () => { /* CSV logic */ };
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
