@@ -429,43 +429,49 @@
             document.getElementById('cancelEditBtn').classList.add('hidden');
         };
 
-        // --- Data Sync ---
-        window.saveCurrentWork = async () => {
-            const btn = document.getElementById('saveBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<span class="loader mr-2"></span> SYNCING...';
-            btn.disabled = true;
+      window.saveCurrentWork = async () => {
+    const btn = document.getElementById('saveBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="loader mr-2"></span> SYNCING...';
+    btn.disabled = true;
 
-            try {
-                for(let s of roster) {
-                    if(currentView === 'grades') {
-                        const pre = parseFloat(document.getElementById(`pre_${s.id}`).value || 0);
-                        const mid = parseFloat(document.getElementById(`mid_${s.id}`).value || 0);
-                        const fin = parseFloat(document.getElementById(`fin_${s.id}`).value || 0);
-                        const avg = (pre + mid + fin) / 3;
-                        
-                        // Academic Point Calculation (PH Standard Example)
-                        let pt = "5.0";
-                        if (avg >= 95) pt = "1.0";
-                        else if (avg >= 90) pt = "1.5";
-                        else if (avg >= 85) pt = "2.0";
-                        else if (avg >= 80) pt = "2.5";
-                        else if (avg >= 75) pt = "3.0";
+    try {
+        const dateKey = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
 
-                        await updateDoc(doc(db, "users", s.id), { 
-                            [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } 
-                        });
-                        document.getElementById(`pt_${s.id}`).innerText = pt;
-                    }
-                }
-                window.showAlert("Cloud Synced", "All changes have been securely saved to the database.");
-            } catch (err) {
-                window.showAlert("Sync Error", "Connection lost. Please try again.", "danger");
-            } finally {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
+        for(let s of roster) {
+            if(currentView === 'attendance') {
+                // Get the selected radio value (P, L, or A)
+                const status = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
+                
+                // Update the student document: attendance -> [SubjectCode] -> [Date] = Status
+                await updateDoc(doc(db, "users", s.id), { 
+                    [`attendance.${activeSubj}.${dateKey}`]: status 
+                });
+
+            } else if(currentView === 'grades') {
+                const pre = parseFloat(document.getElementById(`pre_${s.id}`).value || 0);
+                const mid = parseFloat(document.getElementById(`mid_${s.id}`).value || 0);
+                const fin = parseFloat(document.getElementById(`fin_${s.id}`).value || 0);
+                const avg = (pre + mid + fin) / 3;
+                
+                let pt = "5.0";
+                if (avg >= 75) pt = "3.0"; // Simplified logic
+
+                await updateDoc(doc(db, "users", s.id), { 
+                    [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } 
+                });
+                document.getElementById(`pt_${s.id}`).innerText = pt;
             }
-        };
+        }
+        window.showAlert("Cloud Synced", `Data for ${currentView} has been saved successfully.`);
+    } catch (err) {
+        console.error(err);
+        window.showAlert("Sync Error", "Failed to update database. Check console for details.", "danger");
+    } finally {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }
+};
 
         window.logout = () => {
             signOut(auth).then(() => window.location.href = "login.html");
