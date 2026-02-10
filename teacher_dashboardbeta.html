@@ -32,9 +32,26 @@
             .input-box, .radio-group, #materialUploadSection { display: none !important; }
         }
         .print-val { display: none; }
+        
+        /* Modal Animation */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <div id="modalOverlay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="modalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+            <div class="p-6 text-center">
+                <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-900 mb-2"></h3>
+                <p id="modalBody" class="text-gray-500 text-sm mb-6"></p>
+                <div class="flex gap-3 justify-center" id="modalButtons">
+                    <button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase transition-all">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
@@ -44,7 +61,7 @@
         </div>
         <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto" id="subjectNav">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-            </nav>
+        </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
             <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
                 <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">AD</div>
@@ -97,22 +114,28 @@
                     </div>
 
                     <div id="materialUploadSection" class="hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6 no-print">
-                        <h3 class="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4">Post Learning Material</h3>
+                        <h3 id="matFormTitle" class="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4">Post Learning Material</h3>
                         <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="text" id="matName" placeholder="Title" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                            <input type="url" id="matLink" placeholder="Resource URL" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                            <input type="datetime-local" id="matSchedule" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                            <textarea id="matDesc" placeholder="Instructions..." class="md:col-span-2 text-xs border border-gray-200 rounded-lg p-3 outline-none h-12"></textarea>
-                            <button type="submit" class="bg-secondary text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all uppercase">Upload Material</button>
+                            <input type="hidden" id="editMatId">
+                            <input type="text" id="matName" placeholder="Title" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
+                            <input type="url" id="matLink" placeholder="Resource URL" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
+                            <input type="datetime-local" id="matSchedule" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
+                            <textarea id="matDesc" placeholder="Instructions..." class="md:col-span-2 text-xs border border-gray-200 rounded-lg p-3 outline-none h-12 focus:border-primary transition-all"></textarea>
+                            <div class="flex gap-2">
+                                <button type="submit" id="matSubmitBtn" class="flex-1 bg-secondary text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all uppercase">Upload Material</button>
+                                <button type="button" id="cancelEditBtn" onclick="resetMatForm()" class="hidden bg-gray-200 text-gray-600 px-4 rounded-lg text-xs font-bold uppercase">Cancel</button>
+                            </div>
                         </form>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div id="tableHeader" class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 no-print"></div>
-                        <table class="w-full text-left border-collapse">
-                            <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
-                            <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-                        </table>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
+                                <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,6 +162,46 @@
 
         let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null;
 
+        // --- UI Utils ---
+        window.showAlert = (title, message, type = 'success') => {
+            const overlay = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const bodyEl = document.getElementById('modalBody');
+            const btnContainer = document.getElementById('modalButtons');
+
+            btnContainer.innerHTML = `<button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase transition-all">Dismiss</button>`;
+            
+            titleEl.innerText = title;
+            bodyEl.innerText = message;
+            
+            if(type === 'success') {
+                icon.innerHTML = '<i class="fa-solid fa-circle-check text-success"></i>';
+                icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-emerald-50';
+            } else if(type === 'danger') {
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger"></i>';
+                icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-red-50';
+            }
+
+            overlay.classList.remove('hidden');
+        };
+
+        window.showConfirm = (title, message, onConfirm) => {
+            window.showAlert(title, message, 'danger');
+            const btnContainer = document.getElementById('modalButtons');
+            btnContainer.innerHTML = `
+                <button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase">Cancel</button>
+                <button id="confirmBtn" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs uppercase">Delete</button>
+            `;
+            document.getElementById('confirmBtn').onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+        };
+
+        window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
+
+        // --- Core Auth ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
@@ -146,7 +209,7 @@
                     const data = snap.data();
                     currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
                     document.getElementById('adminName').innerText = currentTeacherName;
-                    document.getElementById('adminInitial').innerText = data.firstname[0].toUpperCase() + data.lastname[0].toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
                     loadSubjects();
                 }
             } else { window.location.href = "login.html"; }
@@ -200,10 +263,13 @@
             const hInfo = document.getElementById('tableHeader');
             body.innerHTML = '';
 
-            const controls = `<div class="flex gap-2"><button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100">PDF</button></div>`;
+            const controls = `<div class="flex gap-2">
+                <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">CSV</button>
+                <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 hover:bg-red-100 transition-all">PDF</button>
+            </div>`;
 
             if (currentView === 'attendance') {
-                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded px-2 py-1 font-bold outline-none"> ${controls}`;
+                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded px-2 py-1 font-bold outline-none border border-transparent focus:border-primary"> ${controls}`;
                 head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
                 roster.forEach(s => {
                     body.innerHTML += `<tr>
@@ -212,9 +278,9 @@
                         <td class="px-6 py-4 text-center">
                             <span class="print-val" id="att_val_${s.id}">P</span>
                             <div class="radio-group flex justify-center gap-4 text-xs font-bold">
-                                <label><input type="radio" name="att_${s.id}" value="P" checked> P</label>
-                                <label><input type="radio" name="att_${s.id}" value="L"> L</label>
-                                <label><input type="radio" name="att_${s.id}" value="A"> A</label>
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" checked class="accent-primary"> P</label>
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" class="accent-primary"> L</label>
+                                <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" class="accent-primary"> A</label>
                             </div>
                         </td></tr>`;
                 });
@@ -226,28 +292,63 @@
                     body.innerHTML += `<tr>
                         <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
                         <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="pre_val_${s.id}">${g.prelim}</span><input type="number" id="pre_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.prelim}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="mid_val_${s.id}">${g.midterm}</span><input type="number" id="mid_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.midterm}"></td>
-                        <td class="px-6 py-4 text-center"><span class="print-val" id="fin_val_${s.id}">${g.final}</span><input type="number" id="fin_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold" value="${g.final}"></td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="pre_val_${s.id}">${g.prelim}</span><input type="number" id="pre_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.prelim}"></td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="mid_val_${s.id}">${g.midterm}</span><input type="number" id="mid_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.midterm}"></td>
+                        <td class="px-6 py-4 text-center"><span class="print-val" id="fin_val_${s.id}">${g.final}</span><input type="number" id="fin_${s.id}" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.final}"></td>
                         <td class="px-6 py-4 text-right font-black text-xs text-primary" id="pt_${s.id}">${s.grades?.[activeSubj]?.point || '5.0'}</td>
                     </tr>`;
                 });
             } else {
                 hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Action</th></tr>`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Actions</th></tr>`;
                 onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
                     body.innerHTML = '';
-                    snap.forEach(doc => {
-                        const m = doc.data();
+                    snap.forEach(docSnap => {
+                        const m = docSnap.data();
+                        const id = docSnap.id;
                         body.innerHTML += `<tr class="text-xs">
-                            <td class="px-6 py-4 font-bold">${m.name}</td>
-                            <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline">Open Resource</a></td>
-                            <td class="px-6 py-4 text-right"><button onclick="deleteMat('${doc.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td>
+                            <td class="px-6 py-4">
+                                <p class="font-bold">${m.name}</p>
+                                <p class="text-[10px] text-gray-400 italic">${m.schedule?.replace('T', ' ') || 'No Sched'}</p>
+                            </td>
+                            <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline font-medium">Open Resource <i class="fa-solid fa-external-link text-[10px]"></i></a></td>
+                            <td class="px-6 py-4 text-right flex justify-end gap-3">
+                                <button onclick="editMat('${id}')" class="text-primary hover:scale-110 transition-transform"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteMat('${id}')" class="text-danger hover:scale-110 transition-transform"><i class="fa-solid fa-trash"></i></button>
+                            </td>
                         </tr>`;
                     });
                 });
             }
         }
+
+        // --- CSV Export Logic ---
+        window.exportCSV = () => {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            if (currentView === 'attendance') {
+                csvContent += "Student Name,Gender,Status\n";
+                roster.forEach(s => {
+                    const status = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
+                    csvContent += `"${s.lastname}, ${s.firstname}","${s.gender || '-'}","${status}"\n`;
+                });
+            } else if (currentView === 'grades') {
+                csvContent += "Student Name,Prelim,Midterm,Final,Point\n";
+                roster.forEach(s => {
+                    const pre = document.getElementById(`pre_${s.id}`).value;
+                    const mid = document.getElementById(`mid_${s.id}`).value;
+                    const fin = document.getElementById(`fin_${s.id}`).value;
+                    const pt = document.getElementById(`pt_${s.id}`).innerText;
+                    csvContent += `"${s.lastname}, ${s.firstname}","${pre}","${mid}","${fin}","${pt}"\n`;
+                });
+            }
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${activeSubj}_${currentView}_${new Date().toLocaleDateString()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
 
         window.exportPDF = () => {
             roster.forEach(s => {
@@ -268,38 +369,107 @@
             document.getElementById('printHeader').classList.replace('flex', 'hidden');
         };
 
+        // --- Materials Management ---
         document.getElementById('materialForm').onsubmit = async (e) => {
             e.preventDefault();
-            await setDoc(doc(collection(db, "materials")), {
+            const matId = document.getElementById('editMatId').value;
+            const payload = {
                 subjectCode: activeSubj,
                 name: document.getElementById('matName').value.toUpperCase(),
                 link: document.getElementById('matLink').value,
                 desc: document.getElementById('matDesc').value,
                 schedule: document.getElementById('matSchedule').value,
-                createdAt: serverTimestamp()
-            });
-            e.target.reset();
-            alert("Material Uploaded Successfully!");
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                if (matId) {
+                    await updateDoc(doc(db, "materials", matId), payload);
+                    window.showAlert("Updated", "Learning material updated successfully!");
+                } else {
+                    payload.createdAt = serverTimestamp();
+                    await setDoc(doc(collection(db, "materials")), payload);
+                    window.showAlert("Success", "Material posted to class feed!");
+                }
+                resetMatForm();
+            } catch (err) {
+                window.showAlert("Error", "Failed to save material.", "danger");
+            }
         };
 
+        window.deleteMat = async (id) => {
+            window.showConfirm("Delete Material?", "This action cannot be undone. Students will lose access to this link.", async () => {
+                await deleteDoc(doc(db, "materials", id));
+                window.showAlert("Deleted", "Resource removed successfully.");
+            });
+        };
+
+        window.editMat = async (id) => {
+            const snap = await getDoc(doc(db, "materials", id));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('editMatId').value = id;
+                document.getElementById('matName').value = data.name;
+                document.getElementById('matLink').value = data.link;
+                document.getElementById('matDesc').value = data.desc;
+                document.getElementById('matSchedule').value = data.schedule;
+                
+                document.getElementById('matFormTitle').innerText = "Edit Learning Material";
+                document.getElementById('matSubmitBtn').innerText = "Update Material";
+                document.getElementById('cancelEditBtn').classList.remove('hidden');
+                document.getElementById('materialUploadSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        };
+
+        window.resetMatForm = () => {
+            document.getElementById('materialForm').reset();
+            document.getElementById('editMatId').value = "";
+            document.getElementById('matFormTitle').innerText = "Post Learning Material";
+            document.getElementById('matSubmitBtn').innerText = "Upload Material";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        };
+
+        // --- Data Sync ---
         window.saveCurrentWork = async () => {
             const btn = document.getElementById('saveBtn');
-            btn.innerText = 'SYNCING...';
-            for(let s of roster) {
-                if(currentView === 'grades') {
-                    const pre = document.getElementById(`pre_${s.id}`).value;
-                    const mid = document.getElementById(`mid_${s.id}`).value;
-                    const fin = document.getElementById(`fin_${s.id}`).value;
-                    const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
-                    const pt = avg >= 74.5 ? "3.0" : "5.0"; // Simplified for demo
-                    await updateDoc(doc(db, "users", s.id), { [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } });
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="loader mr-2"></span> SYNCING...';
+            btn.disabled = true;
+
+            try {
+                for(let s of roster) {
+                    if(currentView === 'grades') {
+                        const pre = parseFloat(document.getElementById(`pre_${s.id}`).value || 0);
+                        const mid = parseFloat(document.getElementById(`mid_${s.id}`).value || 0);
+                        const fin = parseFloat(document.getElementById(`fin_${s.id}`).value || 0);
+                        const avg = (pre + mid + fin) / 3;
+                        
+                        // Academic Point Calculation (PH Standard Example)
+                        let pt = "5.0";
+                        if (avg >= 95) pt = "1.0";
+                        else if (avg >= 90) pt = "1.5";
+                        else if (avg >= 85) pt = "2.0";
+                        else if (avg >= 80) pt = "2.5";
+                        else if (avg >= 75) pt = "3.0";
+
+                        await updateDoc(doc(db, "users", s.id), { 
+                            [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, point: pt } 
+                        });
+                        document.getElementById(`pt_${s.id}`).innerText = pt;
+                    }
                 }
+                window.showAlert("Cloud Synced", "All changes have been securely saved to the database.");
+            } catch (err) {
+                window.showAlert("Sync Error", "Connection lost. Please try again.", "danger");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
             }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
-            alert("Data Synced to Cloud!");
         };
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+        window.logout = () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        };
     </script>
 </body>
 </html>
