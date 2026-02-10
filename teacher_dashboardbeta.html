@@ -23,12 +23,17 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .active-nav { background: #2563eb !important; color: white !important; }
         
+        /* Print-specific styles to ensure inputs show up */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
+            input { border: none !important; appearance: none !important; -webkit-appearance: none !important; }
+            .print-val { display: inline !important; font-weight: bold; }
+            .input-box { display: none !important; }
         }
+        .print-val { display: none; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
@@ -183,7 +188,6 @@
             activeSubj = subjData.code;
             document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
             btn.classList.add('active-nav');
-
             document.getElementById('activeSubjectTitle').innerText = subjData.name;
             document.getElementById('subjectBadge').innerText = subjData.code;
             document.getElementById('subjectBadge').classList.remove('hidden');
@@ -219,8 +223,8 @@
 
             const commonInfo = `
                 <div class="flex gap-2">
-                    <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV</button>
-                    <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF</button>
+                    <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV Export</button>
+                    <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF Report</button>
                 </div>`;
 
             if (currentView === 'attendance') {
@@ -231,11 +235,13 @@
                     body.innerHTML += `<tr>
                         <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase">${s.lastname}, ${s.firstname}</div><div class="text-[10px] text-gray-400 font-medium uppercase">${s.studentId || 'NO ID'} • ${s.course}</div></td>
                         <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><div class="flex justify-center gap-4 text-xs font-bold">
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label>
-                        </div></td></tr>`;
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex justify-center gap-4 text-xs font-bold">
+                                <label><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label>
+                                <label><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label>
+                                <label><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label>
+                            </div>
+                        </td></tr>`;
                 });
             } else if (currentView === 'grades') {
                 hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${commonInfo}`;
@@ -244,19 +250,24 @@
                     const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
                     const avg = ((parseFloat(g.prelim)||0) + (parseFloat(g.midterm)||0) + (parseFloat(g.final)||0)) / 3;
                     const pt = calculatePoint(avg);
-                    body.innerHTML += `<tr class="hover:bg-gray-50/50">
+                    body.innerHTML += `<tr>
                         <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase text-xs">${s.lastname}, ${s.firstname}</div><div class="text-[9px] text-gray-400 uppercase">${s.studentId}</div></td>
                         <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.prelim}"></td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.midterm}"></td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.final}"></td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="print-val" id="pre_val_${s.id}">${g.prelim}</span>
+                            <input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-50 border-none rounded text-center text-xs font-bold" value="${g.prelim}">
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="print-val" id="mid_val_${s.id}">${g.midterm}</span>
+                            <input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-50 border-none rounded text-center text-xs font-bold" value="${g.midterm}">
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="print-val" id="fin_val_${s.id}">${g.final}</span>
+                            <input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 bg-gray-50 border-none rounded text-center text-xs font-bold" value="${g.final}">
+                        </td>
                         <td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td>
                     </tr>`;
                 });
-            } else {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Learning Materials</h2>`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Resource</th><th class="px-6 py-4">Instructions</th><th class="px-6 py-4 text-right">Action</th></tr>`;
-                // Materials Logic...
             }
         }
 
@@ -273,8 +284,30 @@
             const f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
             const pt = calculatePoint((p+m+f)/3);
             document.getElementById(`pt_${id}`).innerText = pt;
-            document.getElementById(`pt_${id}`).className = `text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}`;
+            // Also update the print spans for real-time printing
+            if(document.getElementById(`pre_val_${id}`)) document.getElementById(`pre_val_${id}`).innerText = p || '';
+            if(document.getElementById(`mid_val_${id}`)) document.getElementById(`mid_val_${id}`).innerText = m || '';
+            if(document.getElementById(`fin_val_${id}`)) document.getElementById(`fin_val_${id}`).innerText = f || '';
         }
+
+        window.exportPDF = () => {
+            // Sync current input values into print spans before printing
+            roster.forEach(s => {
+                if(currentView === 'grades') {
+                    document.getElementById(`pre_val_${s.id}`).innerText = document.getElementById(`pre_${s.id}`).value;
+                    document.getElementById(`mid_val_${s.id}`).innerText = document.getElementById(`mid_${s.id}`).value;
+                    document.getElementById(`fin_val_${s.id}`).innerText = document.getElementById(`fin_${s.id}`).value;
+                }
+            });
+
+            document.getElementById('lblCourse').innerText = subjContext.course;
+            document.getElementById('lblYear').innerText = subjContext.year;
+            document.getElementById('lblSem').innerText = subjContext.semester;
+            document.getElementById('lblTime').innerText = new Date().toLocaleString();
+            document.getElementById('printHeader').classList.replace('hidden', 'flex');
+            window.print();
+            document.getElementById('printHeader').classList.replace('flex', 'hidden');
+        };
 
         window.exportCSV = () => {
             let csv = "Student ID,Name,Gender," + (currentView === 'attendance' ? "Status" : "Prelim,Midterm,Final,Point") + "\n";
@@ -290,16 +323,6 @@
             a.setAttribute('href', url);
             a.setAttribute('download', `${activeSubj}_${currentView}.csv`);
             a.click();
-        };
-
-        window.exportPDF = () => {
-            document.getElementById('lblCourse').innerText = subjContext.course;
-            document.getElementById('lblYear').innerText = subjContext.year;
-            document.getElementById('lblSem').innerText = subjContext.semester;
-            document.getElementById('lblTime').innerText = new Date().toLocaleString();
-            document.getElementById('printHeader').classList.replace('hidden', 'flex');
-            window.print();
-            document.getElementById('printHeader').classList.replace('flex', 'hidden');
         };
 
         window.saveCurrentWork = async () => {
