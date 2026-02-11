@@ -141,7 +141,7 @@
         </div>
     </main>
 
-    <script type="module">
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -226,16 +226,15 @@
         subjContext = subjData; activeSubj = subjData.code;
         document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
         el.classList.add('bg-primary', 'text-white');
-        
+                
         document.getElementById('activeSubjectTitle').innerText = subjData.name;
         document.getElementById('subjectSubDetails').innerText = `${subjData.course} ${subjData.year} | ${subjData.schedule} | ${subjData.startTime}-${subjData.endTime} | ${subjData.semester}`;
-        
+                
         document.getElementById('placeholder').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('viewToggles').classList.remove('hidden');
         document.getElementById('saveBtn').classList.remove('hidden');
 
-        // Real-time listener for the student roster to reflect changes immediately
         const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
         onSnapshot(q, (snap) => {
             roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -259,12 +258,19 @@
         renderTable();
     };
 
+    // Date Change with Loading UI
+    window.handleDateChange = (val) => {
+        const body = document.getElementById('tableBody');
+        body.innerHTML = `<tr><td colspan="3" class="py-20 text-center"><div class="loader mb-2"></div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Updating Attendance View...</p></td></tr>`;
+        setTimeout(() => renderTable(), 300);
+    };
+
     window.calculatePoint = (id) => {
         const pre = parseFloat(document.getElementById(`pre_${id}`).value || 0);
         const mid = parseFloat(document.getElementById(`mid_${id}`).value || 0);
         const fin = parseFloat(document.getElementById(`fin_${id}`).value || 0);
         const avg = (pre + mid + fin) / 3;
-        
+                
         let pt = "5.0";
         if (avg >= 97) pt = "1.0";
         else if (avg >= 94) pt = "1.25";
@@ -275,7 +281,7 @@
         else if (avg >= 79) pt = "2.5";
         else if (avg >= 76) pt = "2.75";
         else if (avg >= 75) pt = "3.0";
-        
+                
         const el = document.getElementById(`pt_${id}`);
         el.innerText = pt;
         el.className = parseFloat(pt) > 3.0 ? "px-6 py-4 text-right font-black text-xs text-danger" : "px-6 py-4 text-right font-black text-xs text-primary";
@@ -294,13 +300,13 @@
         );
 
         const searchUI = `<div class="relative flex-1 max-w-xs ml-4"><i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]"></i><input type="text" oninput="handleSearch(this.value)" placeholder="Search student..." class="w-full text-[11px] bg-white border border-gray-200 rounded-full py-1.5 pl-8 pr-4 focus:border-primary outline-none"></div>`;
-        const controls = `<div class="flex gap-2">${searchUI}<button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 hover:bg-red-100 transition-all">PDF</button></div>`;
+        const controls = `<div class="flex gap-2 no-print">${searchUI}<button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 hover:bg-red-100 transition-all">PDF</button></div>`;
 
         if (currentView === 'attendance') {
             const dateVal = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-            hInfo.innerHTML = `<div class="flex items-center gap-2"><input type="date" id="attDate" value="${dateVal}" onchange="renderTable()" class="text-xs bg-white rounded px-2 py-1 font-bold outline-none border border-gray-200 focus:border-primary"> <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Attendance Sheet</span></div> ${controls}`;
+            hInfo.innerHTML = `<div class="flex items-center gap-2 no-print"><input type="date" id="attDate" value="${dateVal}" onchange="handleDateChange(this.value)" class="text-xs bg-white rounded px-2 py-1 font-bold outline-none border border-gray-200 focus:border-primary"> <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Attendance Sheet</span></div> ${controls}`;
             head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-            
+                        
             filteredRoster.forEach(s => {
                 const status = s.attendance?.[activeSubj]?.[dateVal] || "P";
                 body.innerHTML += `<tr>
@@ -312,20 +318,30 @@
                             <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''} class="accent-primary"> L</label>
                             <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''} class="accent-primary"> A</label>
                         </div>
+                        <span class="print-val">${status}</span>
                     </td></tr>`;
             });
         } else if (currentView === 'grades') {
-            hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
+            hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400 no-print">Class Gradebook</h2> ${controls}`;
             head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
-            
+                        
             filteredRoster.forEach(s => {
                 const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '', point: '5.0' };
                 body.innerHTML += `<tr>
                     <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
                     <td class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase">${s.gender || '-'}</td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.prelim}"></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.midterm}"></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.final}"></td>
+                    <td class="px-6 py-4 text-center">
+                        <input type="number" id="pre_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.prelim}">
+                        <span class="print-val">${g.prelim || '0'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <input type="number" id="mid_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.midterm}">
+                        <span class="print-val">${g.midterm || '0'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <input type="number" id="fin_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1" value="${g.final}">
+                        <span class="print-val">${g.final || '0'}</span>
+                    </td>
                     <td class="px-6 py-4 text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-danger':'text-primary'}" id="pt_${s.id}">${g.point}</td>
                 </tr>`;
             });
@@ -348,12 +364,11 @@
         }
     }
 
-    // --- Functional Data Sync ---
     window.saveCurrentWork = async () => {
         const btn = document.getElementById('saveBtn');
         const originalHTML = btn.innerHTML;
         const selectedDate = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-        
+                
         btn.innerHTML = '<span class="loader mr-2"></span> SYNCING...';
         btn.disabled = true;
 
@@ -388,10 +403,46 @@
         }
     };
 
-    // --- Inherited Logic (Materials/Logout/Export) ---
-    window.exportCSV = () => { /* ... existing csv logic ... */ };
-    window.exportPDF = () => { /* ... existing pdf logic ... */ };
-    
+    window.exportCSV = () => {
+        let csv = "";
+        if (currentView === 'attendance') {
+            const date = document.getElementById('attDate').value;
+            csv = "Student ID,Lastname,Firstname,Status\n";
+            roster.forEach(s => {
+                const status = s.attendance?.[activeSubj]?.[date] || "P";
+                csv += `${s.studentId},${s.lastname},${s.firstname},${status}\n`;
+            });
+        } else {
+            csv = "Student ID,Lastname,Firstname,Prelim,Midterm,Final,Point\n";
+            roster.forEach(s => {
+                const g = s.grades?.[activeSubj] || { prelim: 0, midterm: 0, final: 0, point: '5.0' };
+                csv += `${s.studentId},${s.lastname},${s.firstname},${g.prelim},${g.midterm},${g.final},${g.point}\n`;
+            });
+        }
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${activeSubj}_${currentView}_${new Date().toLocaleDateString()}.csv`;
+        a.click();
+    };
+
+    window.exportPDF = () => {
+        document.getElementById('lblCourse').innerText = subjContext?.course || "-";
+        document.getElementById('lblYear').innerText = subjContext?.year || "-";
+        document.getElementById('lblSem').innerText = subjContext?.semester || "-";
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
+        
+        const printHeader = document.getElementById('printHeader');
+        printHeader.classList.remove('hidden');
+        printHeader.classList.add('flex');
+        
+        window.print();
+        
+        printHeader.classList.add('hidden');
+        printHeader.classList.remove('flex');
+    };
+
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
 
     document.getElementById('materialForm').onsubmit = async (e) => {
