@@ -35,7 +35,8 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+<button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase">PDF</button>
+               <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
 
     <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
@@ -85,8 +86,7 @@
                 </div>
                 <div id="exportGroup" class="flex gap-2">
                     <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold uppercase">CSV</button>
-                    <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase">PDF</button>
-                </div>
+                     </div>
             </div>
         </header>
 
@@ -104,36 +104,86 @@
                 </div>
 
                 <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-6">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
-                            <div class="text-center">
-                                <h2 class="text-xl font-black uppercase text-black">Central Mindanao Computer School</h2>
-                                <p class="text-[10px] font-bold">Poblacion, Tulunan, Cotabato</p>
-                                <p class="text-[12px] font-black mt-1 uppercase tracking-widest border-t border-black pt-1" id="lblReportType"></p>
-                            </div>
-                        </div>
-                        
-                        <div class="print-header-info w-full text-[10px] font-bold uppercase">
-                            <div class="space-y-1">
-                                <p>Student: <span id="pName" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Student ID: <span id="pID" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Gender: <span id="pGender" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                            </div>
-                            <div class="space-y-1">
-                                <p>Course: <span id="pCourse" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Year & Sem: <span id="pYearSem" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>School Year: <span id="pSY" class="font-normal border-b border-gray-300 inline-block w-40">2025-2026</span></p>
-                            </div>
-                        </div>
-                    </div>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col md:flex-row overflow-hidden">
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b"></thead>
-                            <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-                        </table>
-                    </div>
+    <div class="md:hidden bg-secondary text-white p-4 flex justify-between items-center z-30 shadow-md">
+        <div class="font-bold text-sm tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white p-2">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-secondary text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl no-print md:relative">
+        <div class="h-16 hidden md:flex items-center px-6 border-b border-gray-700 bg-slate-900">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+            </div>
+        </div>
+        
+        <div class="md:hidden flex justify-end p-4">
+            <button onclick="toggleMobileMenu()" class="text-gray-400"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Academic Overview</p>
+            <a onclick="switchGlobalView('schedules'); closeMobileMenu()" id="navSched" class="sidebar-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1">
+                <i class="fa-solid fa-calendar-alt text-sm"></i> <span class="font-bold text-xs uppercase">Class Schedules</span>
+            </a>
+            <a onclick="switchGlobalView('grades'); closeMobileMenu()" id="navGrades" class="sidebar-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1">
+                <i class="fa-solid fa-star text-sm"></i> <span class="font-bold text-xs uppercase">Scholastic Records</span>
+            </a>
+            <div class="mt-6">
+                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Subject Selection</p>
+                <div id="subjectNavItems"></div>
+            </div>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg bg-white/5">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">..</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[9px] text-gray-400 font-bold uppercase" id="studentIdDisplay">ID: ---</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-[10px] font-bold transition-all uppercase tracking-widest">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <div id="sidebarOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-auto min-h-[5rem] py-4 bg-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-8 z-10 no-print gap-4">
+            <div class="flex flex-col">
+                <h1 id="headerTitle" class="text-base md:text-lg font-black text-gray-800 leading-none">STUDENT PORTAL</h1>
+                <div id="headerContext" class="flex items-center gap-2 mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-tighter"></div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div id="subjectToggles" class="hidden bg-gray-100 p-1 rounded-lg flex flex-1 md:flex-none">
+                    <button id="btnAtt" onclick="switchSubTab('attendance')" class="flex-1 md:flex-none px-3 md:px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
+                    <button id="btnMat" onclick="switchSubTab('materials')" class="flex-1 md:flex-none px-3 md:px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
+                </div>
+                <div id="exportGroup" class="flex gap-2">
+                    <button onclick="exportCSV()" class="px-3 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[9px] font-bold">CSV</button>
+                    <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[9px] font-bold">PDF</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide">
+            <div id="workspace" class="space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 no-print" id="infoSummary"></div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[600px] md:min-w-full">
+                        <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b"></thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
