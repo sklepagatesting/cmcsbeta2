@@ -253,7 +253,7 @@
     async function selectSubject(s) {
         subjContext = s; activeSubj = s.code;
         document.getElementById('activeSubjectTitle').innerText = s.name;
-        document.getElementById('subjectSubDetails').innerText = `${s.course} | ${s.semester}`;
+        document.getElementById('subjectSubDetails').innerText = `${subjData.course} ${subjData.year} | ${subjData.schedule} | ${subjData.startTime}-${subjData.endTime} | ${subjData.semester}`;
         document.getElementById('placeholder').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('viewToggles').classList.remove('hidden');
