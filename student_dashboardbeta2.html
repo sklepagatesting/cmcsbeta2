@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#2563eb', secondary: '#1e293b', success: '#10b981', danger: '#ef4444' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .active-nav { background: #2563eb !important; color: white !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .sidebar-link.active { background: rgba(255,255,255,0.1); border-left: 4px solid #2563eb; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+            .no-print { display: none !important; }
+            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
+            th, td { border: 1pt solid black !important; padding: 6px 10px !important; color: black !important; font-size: 10pt !important; }
+            thead { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
+        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
+            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+            </div>
+        </div>
+        
+        <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-hide">
+            <p class="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-2">Main Menu</p>
+            <a onclick="switchGlobalView('schedules')" id="navSched" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-white/5 transition-all cursor-pointer group">
+                <i class="fa-solid fa-calendar-days text-sm group-hover:text-primary"></i>
+                <span class="text-xs font-bold uppercase">My Schedules</span>
+            </a>
+            <a onclick="switchGlobalView('grades')" id="navGrades" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-white/5 transition-all cursor-pointer group">
+                <i class="fa-solid fa-file-invoice text-sm group-hover:text-primary"></i>
+                <span class="text-xs font-bold uppercase">Master Grades</span>
+            </a>
+
+            <div class="pt-4 mt-4 border-t border-gray-700">
+                <p class="px-3 text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-2">Subject Handle</p>
+                <div id="subjectListNav" class="space-y-1">
+                    </div>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-gray-700 bg-slate-900">
+            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg bg-white/5">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">..</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] font-bold text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[9px] text-gray-400 font-bold uppercase" id="studentIdDisplay">ID: ---</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-[10px] font-bold transition-all uppercase tracking-widest">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
+            <div class="flex flex-col">
+                <h1 id="viewTitle" class="text-lg font-black text-gray-800 leading-none uppercase">Student Dashboard</h1>
+                <p id="viewSubtitle" class="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-wider">Welcome Back</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="subjectToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
+                    <button id="btnAtt" onclick="switchSubjectTab('attendance')" class="px-4 py-1.5 text-[10px] font-bold rounded-md transition-all active-nav">Attendance</button>
+                    <button id="btnMat" onclick="switchSubjectTab('materials')" class="px-4 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Materials</button>
+                </div>
+                
+                <div id="actionButtons" class="flex gap-2">
+                    <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold uppercase hover:bg-emerald-100 transition-all">CSV</button>
+                    <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase hover:bg-red-100 transition-all">PDF</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+            <div id="workspace" class="space-y-6">
+                <div id="searchContainer" class="no-print">
+                    <div class="relative w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="text" id="masterSearch" placeholder="Search records..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm outline-none focus:border-primary transition-all">
+                    </div>
+                </div>
+
+                <div id="printArea">
+                    <div id="printHeader" class="hidden flex-col items-center mb-8">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16 mb-2">
+                        <h2 class="text-2xl font-black uppercase text-black text-center">Central Mindanao Computer School</h2>
+                        <p class="text-[11px] font-bold uppercase tracking-widest border-b border-black pb-1 mb-2" id="lblReportType"></p>
+                        <div class="grid grid-cols-2 gap-x-8 text-[10px] font-bold uppercase w-full max-w-lg">
+                            <div>NAME: <span id="lblStudent" class="font-normal underline"></span></div>
+                            <div>STUDENT ID: <span id="lblId" class="font-normal underline"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b"></thead>
+                                <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let enrolledPrograms = [];
+    let currentMode = 'schedules'; // schedules, grades, subject-attendance, subject-materials
+    let activeSubject = null;
+    let searchTerm = "";
+
+    onAuthStateChanged(auth, async user => {
+        if (user) {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists() && snap.data().role === 'student') {
+                currentUser = { id: user.uid, ...snap.data() };
+                setupUI();
+                await fetchPrograms();
+                switchGlobalView('schedules');
+            } else { window.location.href = "login.html"; }
+        } else { window.location.href = "login.html"; }
+    });
+
+    function setupUI() {
+        document.getElementById('adminName').innerText = `${currentUser.lastname}, ${currentUser.firstname}`;
+        document.getElementById('adminInitial').innerText = currentUser.firstname[0];
+        document.getElementById('studentIdDisplay').innerText = `ID: ${currentUser.studentId}`;
+    }
+
+    async function fetchPrograms() {
+        const codes = currentUser.assignedPrograms || [];
+        if (codes.length === 0) return;
+
+        const q = query(collection(db, "programs"), where("code", "in", codes));
+        const snap = await getDocs(q);
+        enrolledPrograms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const nav = document.getElementById('subjectListNav');
+        nav.innerHTML = '';
+        enrolledPrograms.forEach(p => {
+            nav.innerHTML += `
+                <a onclick="switchSubjectView('${p.code}')" id="nav_${p.code}" class="sidebar-link flex flex-col px-3 py-2 rounded-lg text-gray-400 hover:bg-white/5 transition-all cursor-pointer group mb-1">
+                    <span class="text-[10px] font-black uppercase text-primary">${p.code}</span>
+                    <span class="text-[9px] font-bold uppercase truncate opacity-60">${p.name}</span>
+                </a>`;
+        });
+    }
+
+    // Navigation Logic
+    window.switchGlobalView = (mode) => {
+        currentMode = mode;
+        activeSubject = null;
+        document.getElementById('subjectToggles').classList.add('hidden');
+        document.getElementById('actionButtons').classList.remove('hidden');
+        document.getElementById('searchContainer').classList.remove('hidden');
+        
+        // Update Sidebar Active State
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(mode === 'schedules' ? 'navSched' : 'navGrades').classList.add('active');
+
+        if (mode === 'schedules') {
+            document.getElementById('viewTitle').innerText = "My Weekly Schedule";
+            document.getElementById('viewSubtitle').innerText = `${currentUser.course} | YEAR ${currentUser.year} | ${currentUser.semester}`;
+        } else {
+            document.getElementById('viewTitle').innerText = "Academic Gradebook";
+            document.getElementById('viewSubtitle').innerText = "Official Recorded Performance";
+        }
+        renderTable();
+    };
+
+    window.switchSubjectView = (code) => {
+        activeSubject = enrolledPrograms.find(p => p.code === code);
+        currentMode = 'subject-attendance';
+        
+        document.getElementById('viewTitle').innerText = activeSubject.name;
+        document.getElementById('viewSubtitle').innerText = `${activeSubject.code} • ${activeSubject.teacher} • ${activeSubject.schedule}`;
+        
+        document.getElementById('subjectToggles').classList.remove('hidden');
+        document.getElementById('actionButtons').classList.remove('hidden'); // PDF/CSV default for attendance
+        document.getElementById('searchContainer').classList.remove('hidden');
+
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(`nav_${code}`).classList.add('active');
+        
+        switchSubjectTab('attendance');
+    };
+
+    window.switchSubjectTab = (tab) => {
+        currentMode = `subject-${tab}`;
+        document.getElementById('btnAtt').classList.toggle('active-nav', tab === 'attendance');
+        document.getElementById('btnMat').classList.toggle('active-nav', tab === 'materials');
+        
+        // Material Requirement: No PDF/CSV buttons
+        if(tab === 'materials') {
+            document.getElementById('actionButtons').classList.add('hidden');
+            document.getElementById('searchContainer').classList.add('hidden');
+        } else {
+            document.getElementById('actionButtons').classList.remove('hidden');
+            document.getElementById('searchContainer').classList.remove('hidden');
+        }
+        renderTable();
+    };
+
+    // Rendering Logic
+    async function renderTable() {
+        const body = document.getElementById('tableBody');
+        const head = document.getElementById('tableHead');
+        body.innerHTML = '';
+
+        if (currentMode === 'schedules') {
+            head.innerHTML = `<tr><th class="px-6 py-4">Code</th><th class="px-6 py-4">Subject Name</th><th class="px-6 py-4">Schedule</th><th class="px-6 py-4">Teacher</th></tr>`;
+            const filtered = enrolledPrograms.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.code.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered.forEach(p => {
+                body.innerHTML += `<tr><td class="px-6 py-4 font-black text-primary">${p.code}</td><td class="px-6 py-4 font-bold uppercase">${p.name}</td><td class="px-6 py-4 text-xs font-bold">${p.schedule}</td><td class="px-6 py-4 text-xs uppercase">${p.teacher}</td></tr>`;
+            });
+        } 
+        else if (currentMode === 'grades') {
+            head.innerHTML = `<tr><th class="px-6 py-4">Subject</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
+            enrolledPrograms.forEach(p => {
+                const g = currentUser.grades?.[p.code] || { prelim: '--', midterm: '--', final: '--', point: '--' };
+                if (p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.code.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    body.innerHTML += `<tr>
+                        <td class="px-6 py-4 font-bold uppercase">${p.name}<div class="text-[9px] text-gray-400 font-normal">${p.teacher}</div></td>
+                        <td class="px-6 py-4 text-center font-bold">${g.prelim}</td>
+                        <td class="px-6 py-4 text-center font-bold">${g.midterm}</td>
+                        <td class="px-6 py-4 text-center font-bold">${g.final}</td>
+                        <td class="px-6 py-4 text-right font-black text-primary">${g.point}</td>
+                    </tr>`;
+                }
+            });
+        }
+        else if (currentMode === 'subject-attendance') {
+            head.innerHTML = `<tr><th class="px-6 py-4">Date</th><th class="px-6 py-4 text-center">Status</th></tr>`;
+            const att = currentUser.attendance?.[activeSubject.code] || {};
+            const dates = Object.keys(att).sort().reverse();
+            dates.forEach(d => {
+                if (d.includes(searchTerm)) {
+                    const status = att[d];
+                    const color = status === 'P' ? 'text-success' : status === 'L' ? 'text-yellow-500' : 'text-danger';
+                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold">${d}</td><td class="px-6 py-4 text-center font-black ${color}">${status === 'P' ? 'PRESENT' : status === 'L' ? 'LATE' : 'ABSENT'}</td></tr>`;
+                }
+            });
+        }
+        else if (currentMode === 'subject-materials') {
+            head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Instruction</th><th class="px-6 py-4 text-right">Access</th></tr>`;
+            const q = query(collection(db, "materials"), where("subjectCode", "==", activeSubject.code));
+            const snap = await getDocs(q);
+            snap.forEach(d => {
+                const m = d.data();
+                body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${m.name}<div class="text-[9px] text-gray-400 font-normal">${m.schedule}</div></td><td class="px-6 py-4 text-xs italic text-gray-500">${m.desc}</td><td class="px-6 py-4 text-right"><a href="${m.link}" target="_blank" class="text-primary font-bold text-[10px] uppercase underline">Open Link</a></td></tr>`;
+            });
+        }
+    }
+
+    // Export Logic
+    window.exportCSV = () => {
+        let csv = "Subject,Schedule,Teacher,Status\n";
+        if (currentMode === 'schedules') {
+            enrolledPrograms.forEach(p => csv += `${p.code},${p.schedule},${p.teacher},ENROLLED\n`);
+        } else if (currentMode === 'grades') {
+            csv = "Subject,Prelim,Midterm,Final,GPA\n";
+            enrolledPrograms.forEach(p => {
+                const g = currentUser.grades?.[p.code] || { prelim:0, midterm:0, final:0, point:0 };
+                csv += `${p.code},${g.prelim},${g.midterm},${g.final},${g.point}\n`;
+            });
+        }
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${currentMode}_${currentUser.studentId}.csv`;
+        a.click();
+    };
+
+    window.exportPDF = () => {
+        document.getElementById('lblReportType').innerText = currentMode.toUpperCase();
+        document.getElementById('lblStudent').innerText = `${currentUser.lastname}, ${currentUser.firstname}`;
+        document.getElementById('lblId').innerText = currentUser.studentId;
+        document.getElementById('printHeader').classList.remove('hidden');
+        document.getElementById('printHeader').classList.add('flex');
+        window.print();
+        document.getElementById('printHeader').classList.add('hidden');
+        document.getElementById('printHeader').classList.remove('flex');
+    };
+
+    document.getElementById('masterSearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value;
+        renderTable();
+    });
+
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+</script>
+</body>
+</html>
