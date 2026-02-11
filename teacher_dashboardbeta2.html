@@ -203,73 +203,41 @@
             renderTable();
         };
 
-      // --- TABLE RENDERING ---
-async function renderTable() {
-    const head = document.getElementById('tableHead');
-    const body = document.getElementById('tableBody');
-    const hInfo = document.getElementById('tableHeader');
-    body.innerHTML = '';
+        // --- TABLE RENDERING ---
+        function renderTable() {
+            const head = document.getElementById('tableHead');
+            const body = document.getElementById('tableBody');
+            const hInfo = document.getElementById('tableHeader');
+            body.innerHTML = '';
 
-    const controls = `<div class="flex gap-2">
-        <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV</button>
-        <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF</button>
-    </div>`;
+            const controls = `<div class="flex gap-2"><button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV</button><button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF</button></div>`;
 
-    if (currentView === 'attendance') {
-        // 1. Setup Header with Date Listener
-        const today = new Date().toISOString().split('T')[0];
-        hInfo.innerHTML = `<input type="date" id="attDate" value="${today}" onchange="renderTable()" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold"> ${controls}`;
-        head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-
-        // 2. Fetch existing data for the selected date
-        const selectedDate = document.getElementById('attDate').value;
-        const existingData = await fetchAttendance(selectedDate);
-
-        // 3. Render rows with saved data or default to "P"
-        roster.forEach(s => {
-            const savedStatus = (existingData && existingData[s.id]) ? existingData[s.id] : "P";
-            
-            body.innerHTML += `<tr>
-                <td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td>
-                <td class="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
-                <td class="px-6 py-4 text-center">
-                    <div class="flex justify-center gap-4 text-xs font-bold">
-                        <label><input type="radio" name="att_${s.id}" value="P" ${savedStatus === 'P' ? 'checked' : ''} class="accent-success"> P</label>
-                        <label><input type="radio" name="att_${s.id}" value="L" ${savedStatus === 'L' ? 'checked' : ''} class="accent-accent"> L</label>
-                        <label><input type="radio" name="att_${s.id}" value="A" ${savedStatus === 'A' ? 'checked' : ''} class="accent-danger"> A</label>
-                    </div>
-                </td>
-            </tr>`;
-        });
-
-    } else if (currentView === 'grades') {
-        // ... (Grades logic remains the same)
-        hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
-        head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
-        roster.forEach(s => {
-            const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
-            const pt = calculatePoint(((parseFloat(g.prelim)||0)+(parseFloat(g.midterm)||0)+(parseFloat(g.final)||0))/3);
-            body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td><td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.prelim}"></td><td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.midterm}"></td><td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.final}"></td><td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td></tr>`;
-        });
-    } else if (currentView === 'materials') {
-        // ... (Materials logic remains the same)
-    }
-}
-
-// --- NEW HELPER TO FETCH SAVED ATTENDANCE ---
-async function fetchAttendance(date) {
-    try {
-        const docRef = doc(db, "attendance", `${activeSubj}_${date}`);
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-            return snap.data().records; // Returns the { studentId: status } object
+            if (currentView === 'attendance') {
+                hInfo.innerHTML = `<input type="date" id="attDate" value="${new Date().toISOString().split('T')[0]}" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold"> ${controls}`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
+                roster.forEach(s => {
+                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td><td class="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">${s.gender || '-'}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-4 text-xs font-bold"><label><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label><label><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label><label><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label></div></td></tr>`;
+                });
+            } else if (currentView === 'grades') {
+                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${controls}`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Student</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
+                roster.forEach(s => {
+                    const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
+                    const pt = calculatePoint(((parseFloat(g.prelim)||0)+(parseFloat(g.midterm)||0)+(parseFloat(g.final)||0))/3);
+                    body.innerHTML += `<tr><td class="px-6 py-4 font-bold uppercase text-xs">${s.lastname}, ${s.firstname}</td><td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.prelim}"></td><td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.midterm}"></td><td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 rounded text-center text-xs font-bold" value="${g.final}"></td><td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td></tr>`;
+                });
+            } else if (currentView === 'materials') {
+                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Materials Feed</h2>`;
+                head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Action</th></tr>`;
+                onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
+                    body.innerHTML = '';
+                    snap.forEach(docSnap => {
+                        const m = docSnap.data();
+                        body.innerHTML += `<tr><td class="px-6 py-4 font-bold text-xs uppercase">${m.name}</td><td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary hover:underline text-xs">Resource Link</a></td><td class="px-6 py-4 text-right"><button onclick="editMat('${docSnap.id}')" class="text-blue-500 mr-3"><i class="fa-solid fa-pen"></i></button><button onclick="deleteMat('${docSnap.id}')" class="text-danger"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                    });
+                });
+            }
         }
-        return null;
-    } catch (err) {
-        console.error("Error fetching attendance:", err);
-        return null;
-    }
-}
 
         // --- CORE SYNC LOGIC ---
         window.saveCurrentWork = async () => {
