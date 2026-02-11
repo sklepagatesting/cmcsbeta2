@@ -23,314 +23,301 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .active-nav { background: #2563eb !important; color: white !important; }
         
+        .print-val { display: none; }
+
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
             .no-print { display: none !important; }
+            
+            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
+            th, td { border: 1pt solid black !important; padding: 6px !important; color: black !important; font-size: 9pt !important; }
+            thead { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+            
+            .print-val { display: inline-block !important; font-weight: bold; }
+            .input-box, .radio-group, #materialUploadSection, #saveBtn, #viewToggles, .search-container { display: none !important; }
         }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
-        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
-            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+    <div id="modalOverlay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="modalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="p-6 text-center">
+                <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
+                <h3 id="modalTitle" class="text-xl font-bold mb-2"></h3>
+                <p id="modalBody" class="text-gray-500 text-sm mb-6"></p>
+                <div id="modalButtons" class="flex gap-3 justify-center"></div>
             </div>
         </div>
-        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
-            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">My Handle Subjects</p>
-            <div id="subjectNav" class="space-y-1"></div>
-        </nav>
+    </div>
+
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
+        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900 font-bold text-lg">
+             <i class="fa-solid fa-graduation-cap text-primary mr-2"></i> CMCS <span class="text-primary ml-1">VLS</span>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto" id="subjectNav"></nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="teacherInitial">--</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-white truncate uppercase" id="teacherName">Loading...</p>
-                    <p class="text-[10px] text-gray-400 uppercase">Faculty</p>
-                </div>
-            </div>
-            <button onclick="logout()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
-                <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase">
+                Logout
             </button>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
-        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 border-b border-gray-100 no-print">
-            <div class="flex items-center gap-4">
-                <h1 id="activeSubjectTitle" class="text-xl font-bold text-gray-800">Faculty Dashboard</h1>
-                <div id="subjectBadge" class="hidden text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold uppercase border border-blue-100"></div>
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
+            <div class="flex flex-col">
+                <h1 id="activeSubjectTitle" class="text-lg font-black text-gray-800 leading-none">Select Subject</h1>
+                <p id="subjectSubDetails" class="text-[10px] text-gray-400 font-bold uppercase mt-1"></p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-4">
                 <div id="viewToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
-                    <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
-                    <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Grades</button>
-                    <button id="btnMat" onclick="switchView('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
+                    <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md active-nav">Attendance</button>
+                    <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md text-gray-500">Grades</button>
                 </div>
-                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA
+                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> SYNC
                 </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 scrollbar-hide" id="mainScroll">
-            <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
-                <i class="fa-solid fa-book-open-reader text-5xl mb-4 opacity-20"></i>
-                <p class="font-bold uppercase text-xs tracking-widest">Select a class from the menu to manage</p>
+        <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
+            <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-400">
+                <p class="font-bold uppercase text-xs">Please select a subject from the sidebar</p>
             </div>
 
             <div id="workspace" class="hidden space-y-6">
-                <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-6">
-                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16 mb-2">
-                        <h2 class="text-2xl font-black uppercase text-black text-center">Central Mindanao Computer School</h2>
-                        <p class="text-[11px] font-bold uppercase tracking-tight">Master Student Academic Enrollment List</p>
-                        <div class="mt-2 text-[10px] font-bold uppercase">
-                            COURSE: <span id="lblCourse">ALL</span> | YEAR: <span id="lblYear">ALL</span> | SEM: <span id="lblSem">ALL</span>
-                        </div>
-                        <p class="text-[9px] italic text-gray-600 uppercase">Generated on: <span id="lblTime"></span></p>
-                        <div class="w-full border-b-2 border-black mt-4 mb-4"></div>
+                <div class="flex flex-wrap items-center justify-between gap-4 no-print">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input type="text" id="masterSearch" placeholder="Search by ID or Name..." 
+                               class="w-full pl-10 pr-4 py-2 border rounded-full text-sm focus:ring-2 ring-primary outline-none">
                     </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div id="tableHeader" class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 no-print"></div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse" id="dataTable">
-                                <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
-                                <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
-                            </table>
-                        </div>
+                    <div class="flex gap-2">
+                        <button onclick="exportCSV()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700">CSV EXPORT</button>
+                        <button onclick="exportPDF()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-700">PRINT PDF</button>
                     </div>
                 </div>
 
-                <div id="materialUploadSection" class="hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm no-print">
-                    <h3 class="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4">Post Learning Material</h3>
-                    <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input type="text" id="matName" placeholder="Title" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                        <input type="url" id="matLink" placeholder="Resource URL" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                        <input type="datetime-local" id="matSchedule" class="text-xs border border-gray-200 rounded-lg p-3 outline-none" required>
-                        <textarea id="matDesc" placeholder="Instructions..." class="md:col-span-2 text-xs border border-gray-200 rounded-lg p-3 outline-none h-12"></textarea>
-                        <button type="submit" class="bg-secondary text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all uppercase">Upload</button>
-                    </form>
+                <div id="printArea">
+                    <div id="printHeader" class="hidden flex-col items-center mb-6 text-center">
+                        <h2 class="text-xl font-bold uppercase">Central Mindanao Computer School</h2>
+                        <p class="text-sm font-semibold" id="printReportTitle"></p>
+                        <p class="text-xs mt-1" id="printMeta"></p>
+                        <div class="border-b-2 border-black w-full my-4"></div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <div id="attendanceDatePicker" class="px-6 py-3 border-b bg-gray-50 flex items-center gap-3 no-print">
+                            <span class="text-xs font-bold">Select Date:</span>
+                            <input type="date" id="attDate" class="border p-1 text-xs rounded">
+                        </div>
+                        <table class="w-full text-left">
+                            <thead id="tableHead" class="bg-gray-50 text-[10px] uppercase font-bold text-gray-500 border-b"></thead>
+                            <tbody id="tableBody" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-80 p-6 text-center">
-            <p id="notifMessage" class="text-sm text-gray-600 mb-6 font-bold"></p>
-            <button onclick="document.getElementById('notifModal').classList.add('hidden')" class="w-full bg-primary text-white py-2 rounded-lg text-sm font-semibold uppercase">Okay</button>
-        </div>
-    </div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    const firebaseConfig = {
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    let currentTeacher = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null, searchTerm = "";
 
-        let currentTeacherName = "";
-        let activeSubj = "";
-        let currentView = 'attendance';
-        let roster = [];
-        let subjContext = null;
+    // Search Fix: Update searchTerm without re-rendering the whole header
+    document.getElementById('masterSearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderTable();
+    });
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('teacherName').innerText = currentTeacherName;
-                    document.getElementById('teacherInitial').innerText = data.firstname[0].toUpperCase() + data.lastname[0].toUpperCase();
-                    loadSubjects();
-                }
-            } else { window.location.href = "login.html"; }
+    // Date change listener
+    document.getElementById('attDate').addEventListener('change', () => {
+        renderTable();
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                currentTeacher = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
+                loadSubjects();
+            }
+        } else { window.location.href = "login.html"; }
+    });
+
+    async function loadSubjects() {
+        const q = query(collection(db, "programs"), where("teacher", "==", currentTeacher));
+        const snap = await getDocs(q);
+        const nav = document.getElementById('subjectNav');
+        nav.innerHTML = '<p class="text-xs font-bold text-gray-400 uppercase p-3">My Subjects</p>';
+        snap.forEach(d => {
+            const s = d.data();
+            const a = document.createElement('a');
+            a.className = "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors";
+            a.onclick = () => selectSubject(s);
+            a.innerHTML = `<i class="fa-solid fa-book text-sm"></i> <span class="text-sm">${s.code}</span>`;
+            nav.appendChild(a);
         });
+    }
 
-        async function loadSubjects() {
-            const nav = document.getElementById('subjectNav');
-            const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
-            const snap = await getDocs(q);
-            nav.innerHTML = '';
-            snap.forEach(d => {
-                const s = d.data();
-                const btn = document.createElement('button');
-                btn.className = "subj-btn w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors text-left";
-                btn.onclick = () => selectSubject(s, btn);
-                btn.innerHTML = `<i class="fa-solid fa-chalkboard-user w-5 text-primary"></i> <span class="font-medium text-sm">${s.code}</span>`;
-                nav.appendChild(btn);
-            });
-        }
+    async function selectSubject(s) {
+        subjContext = s; activeSubj = s.code;
+        document.getElementById('activeSubjectTitle').innerText = s.name;
+        document.getElementById('subjectSubDetails').innerText = `${s.course} | ${s.year}`;
+        document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
+        
+        document.getElementById('placeholder').classList.add('hidden');
+        document.getElementById('workspace').classList.remove('hidden');
+        document.getElementById('viewToggles').classList.remove('hidden');
+        document.getElementById('saveBtn').classList.remove('hidden');
 
-        async function selectSubject(subjData, btn) {
-            subjContext = subjData;
-            activeSubj = subjData.code;
-            document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
-            btn.classList.add('active-nav');
-
-            document.getElementById('activeSubjectTitle').innerText = subjData.name;
-            document.getElementById('subjectBadge').innerText = subjData.code;
-            document.getElementById('subjectBadge').classList.remove('hidden');
-            document.getElementById('placeholder').classList.add('hidden');
-            document.getElementById('workspace').classList.remove('hidden');
-            document.getElementById('viewToggles').classList.remove('hidden');
-            document.getElementById('saveBtn').classList.remove('hidden');
-
-            const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
-            const snap = await getDocs(q);
+        onSnapshot(query(collection(db, "users"), where("assignedPrograms", "array-contains", activeSubj)), (snap) => {
             roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTable();
-        }
+        });
+    }
 
-        window.switchView = (v) => {
-            currentView = v;
-            ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
-                const btn = document.getElementById(id);
-                btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-                if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
-                else btn.classList.remove('text-gray-500');
+    window.switchView = (v) => {
+        currentView = v;
+        document.getElementById('btnAtt').className = v === 'attendance' ? 'px-4 py-1.5 text-xs font-bold rounded-md active-nav' : 'px-4 py-1.5 text-xs font-bold rounded-md text-gray-500';
+        document.getElementById('btnGrd').className = v === 'grades' ? 'px-4 py-1.5 text-xs font-bold rounded-md active-nav' : 'px-4 py-1.5 text-xs font-bold rounded-md text-gray-500';
+        document.getElementById('attendanceDatePicker').classList.toggle('hidden', v !== 'attendance');
+        renderTable();
+    };
+
+    function renderTable() {
+        const body = document.getElementById('tableBody');
+        const head = document.getElementById('tableHead');
+        body.innerHTML = '';
+
+        const filtered = roster.filter(s => 
+            s.lastname?.toLowerCase().includes(searchTerm) || 
+            s.firstname?.toLowerCase().includes(searchTerm) ||
+            s.studentId?.toLowerCase().includes(searchTerm)
+        ).sort((a,b) => a.lastname.localeCompare(b.lastname));
+
+        if (currentView === 'attendance') {
+            const dateVal = document.getElementById('attDate').value;
+            head.innerHTML = `<tr><th class="px-6 py-3">Student ID</th><th class="px-6 py-3">Student Name</th><th class="px-6 py-3 text-center">Status</th></tr>`;
+            filtered.forEach(s => {
+                const status = s.attendance?.[activeSubj]?.[dateVal] || "P";
+                body.innerHTML += `<tr>
+                    <td class="px-6 py-4 font-mono text-xs">${s.studentId || 'N/A'}</td>
+                    <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="radio-group no-print flex justify-center gap-3">
+                            <label><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''}> P</label>
+                            <label><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''}> A</label>
+                            <label><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''}> L</label>
+                        </div>
+                        <span class="print-val">${status}</span>
+                    </td></tr>`;
             });
-            document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
-            document.getElementById('saveBtn').style.display = (v === 'materials') ? 'none' : 'flex';
-            renderTable();
-        };
-
-        function renderTable() {
-            const head = document.getElementById('tableHead');
-            const body = document.getElementById('tableBody');
-            const hInfo = document.getElementById('tableHeader');
-            body.innerHTML = '';
-
-            const commonInfo = `
-                <div class="flex gap-2">
-                    <button onclick="exportCSV()" class="text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 uppercase">CSV</button>
-                    <button onclick="exportPDF()" class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 uppercase">PDF</button>
-                </div>`;
-
-            if (currentView === 'attendance') {
-                const today = new Date().toISOString().split('T')[0];
-                hInfo.innerHTML = `<div class="flex items-center gap-3"><input type="date" id="attDate" value="${today}" class="text-xs bg-gray-100 rounded-lg px-2 py-1 outline-none font-bold"></div> ${commonInfo}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student Name & Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-                roster.sort((a,b) => a.lastname.localeCompare(b.lastname)).forEach(s => {
-                    body.innerHTML += `<tr>
-                        <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase">${s.lastname}, ${s.firstname}</div><div class="text-[10px] text-gray-400 font-medium uppercase">${s.studentId || 'NO ID'} • ${s.course}</div></td>
-                        <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><div class="flex justify-center gap-4 text-xs font-bold">
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" checked class="accent-success"> P</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" class="accent-accent"> L</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" class="accent-danger"> A</label>
-                        </div></td></tr>`;
-                });
-            } else if (currentView === 'grades') {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Class Gradebook</h2> ${commonInfo}`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Student Name & Details</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
-                roster.forEach(s => {
-                    const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '' };
-                    const avg = ((parseFloat(g.prelim)||0) + (parseFloat(g.midterm)||0) + (parseFloat(g.final)||0)) / 3;
-                    const pt = calculatePoint(avg);
-                    body.innerHTML += `<tr class="hover:bg-gray-50/50">
-                        <td class="px-6 py-4"><div class="font-bold text-gray-900 uppercase text-xs">${s.lastname}, ${s.firstname}</div><div class="text-[9px] text-gray-400 uppercase">${s.studentId}</div></td>
-                        <td class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">${s.gender || '-'}</td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.prelim}"></td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.midterm}"></td>
-                        <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 bg-gray-50 border-none rounded text-center text-xs font-bold no-print" value="${g.final}"></td>
-                        <td class="px-6 py-4 text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}" id="pt_${s.id}">${pt}</td>
-                    </tr>`;
-                });
-            } else {
-                hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400">Learning Materials</h2>`;
-                head.innerHTML = `<tr><th class="px-6 py-4">Resource</th><th class="px-6 py-4">Instructions</th><th class="px-6 py-4 text-right">Action</th></tr>`;
-                // Materials Logic...
-            }
+        } else {
+            head.innerHTML = `<tr><th class="px-6 py-3">Student ID</th><th class="px-6 py-3">Student Name</th><th class="px-6 py-3 text-center">PRE</th><th class="px-6 py-3 text-center">MID</th><th class="px-6 py-3 text-center">FIN</th><th class="px-6 py-3 text-right">PT</th></tr>`;
+            filtered.forEach(s => {
+                const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '', point: '5.0' };
+                body.innerHTML += `<tr>
+                    <td class="px-6 py-4 font-mono text-xs">${s.studentId || 'N/A'}</td>
+                    <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-10 border text-center rounded no-print" value="${g.prelim}"><span class="print-val">${g.prelim || '-'}</span></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-10 border text-center rounded no-print" value="${g.midterm}"><span class="print-val">${g.midterm || '-'}</span></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-10 border text-center rounded no-print" value="${g.final}"><span class="print-val">${g.final || '-'}</span></td>
+                    <td class="px-6 py-4 text-right font-black" id="pt_${s.id}">${g.point}</td>
+                </tr>`;
+            });
         }
+    }
 
-        window.calculatePoint = (avg) => {
-            if (avg >= 97.5) return "1.0"; if (avg >= 94.5) return "1.25"; if (avg >= 91.5) return "1.5";
-            if (avg >= 88.5) return "1.75"; if (avg >= 85.5) return "2.0"; if (avg >= 82.5) return "2.25";
-            if (avg >= 79.5) return "2.5"; if (avg >= 76.5) return "2.75"; if (avg >= 74.5) return "3.0";
-            return "5.0";
-        }
-
-        window.calcPt = (id) => {
-            const p = parseFloat(document.getElementById(`pre_${id}`).value) || 0;
-            const m = parseFloat(document.getElementById(`mid_${id}`).value) || 0;
-            const f = parseFloat(document.getElementById(`fin_${id}`).value) || 0;
-            const pt = calculatePoint((p+m+f)/3);
-            document.getElementById(`pt_${id}`).innerText = pt;
-            document.getElementById(`pt_${id}`).className = `text-right font-black text-xs ${pt === '5.0' ? 'text-danger' : 'text-primary'}`;
-        }
-
-        window.exportCSV = () => {
-            let csv = "Student ID,Name,Gender," + (currentView === 'attendance' ? "Status" : "Prelim,Midterm,Final,Point") + "\n";
+    window.exportCSV = () => {
+        let csv = "Student ID,Lastname,Firstname,";
+        if (currentView === 'attendance') {
+            const date = document.getElementById('attDate').value;
+            csv += `Status (${date})\n`;
             roster.forEach(s => {
-                let row = `${s.studentId},${s.lastname} ${s.firstname},${s.gender || 'N/A'},`;
-                if(currentView === 'attendance') row += document.querySelector(`input[name="att_${s.id}"]:checked`).value;
-                else row += `${document.getElementById(`pre_${s.id}`).value},${document.getElementById(`mid_${s.id}`).value},${document.getElementById(`fin_${s.id}`).value},${document.getElementById(`pt_${s.id}`).innerText}`;
-                csv += row + "\n";
+                const status = s.attendance?.[activeSubj]?.[date] || "P";
+                csv += `${s.studentId || ''},${s.lastname},${s.firstname},${status}\n`;
             });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `${activeSubj}_${currentView}.csv`);
-            a.click();
-        };
+        } else {
+            csv += "Prelim,Midterm,Final,Point\n";
+            roster.forEach(s => {
+                const g = s.grades?.[activeSubj] || { prelim: 0, midterm: 0, final: 0, point: '5.0' };
+                csv += `${s.studentId || ''},${s.lastname},${s.firstname},${g.prelim},${g.midterm},${g.final},${g.point}\n`;
+            });
+        }
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${activeSubj}_${currentView}.csv`;
+        a.click();
+    };
 
-        window.exportPDF = () => {
-            document.getElementById('lblCourse').innerText = subjContext.course;
-            document.getElementById('lblYear').innerText = subjContext.year;
-            document.getElementById('lblSem').innerText = subjContext.semester;
-            document.getElementById('lblTime').innerText = new Date().toLocaleString();
-            document.getElementById('printHeader').classList.replace('hidden', 'flex');
-            window.print();
-            document.getElementById('printHeader').classList.replace('flex', 'hidden');
-        };
+    window.exportPDF = () => {
+        document.getElementById('printReportTitle').innerText = currentView.toUpperCase() + " SUMMARY REPORT";
+        document.getElementById('printMeta').innerText = `Subject: ${subjContext.name} (${subjContext.code}) | Course: ${subjContext.course} | Date: ${new Date().toLocaleDateString()}`;
+        document.getElementById('printHeader').classList.remove('hidden');
+        window.print();
+        document.getElementById('printHeader').classList.add('hidden');
+    };
 
-        window.saveCurrentWork = async () => {
-            const btn = document.getElementById('saveBtn');
-            btn.innerHTML = '<span class="loader"></span> SYNCING...';
-            try {
-                if(currentView === 'attendance') {
-                    const date = document.getElementById('attDate').value;
-                    const log = {};
-                    roster.forEach(s => log[s.id] = document.querySelector(`input[name="att_${s.id}"]:checked`).value);
-                    await setDoc(doc(db, "attendance", `${activeSubj}_${date}`), {
-                        subject: activeSubj, date, records: log, teacher: currentTeacherName, updatedAt: serverTimestamp()
-                    });
-                } else if(currentView === 'grades') {
-                    for(let s of roster) {
-                        const pre = document.getElementById(`pre_${s.id}`).value;
-                        const mid = document.getElementById(`mid_${s.id}`).value;
-                        const fin = document.getElementById(`fin_${s.id}`).value;
-                        const avg = (parseFloat(pre||0)+parseFloat(mid||0)+parseFloat(fin||0))/3;
-                        await updateDoc(doc(db, "users", s.id), {
-                            [`grades.${activeSubj}`]: { prelim: pre, midterm: mid, final: fin, average: avg.toFixed(2), point: calculatePoint(avg) }
-                        });
-                    }
+    window.calcPt = (id) => {
+        const p = parseFloat(document.getElementById(`pre_${id}`).value || 0);
+        const m = parseFloat(document.getElementById(`mid_${id}`).value || 0);
+        const f = parseFloat(document.getElementById(`fin_${id}`).value || 0);
+        const avg = (p + m + f) / 3;
+        let pt = avg >= 75 ? (avg >= 97 ? "1.0" : avg >= 94 ? "1.25" : avg >= 91 ? "1.5" : avg >= 88 ? "1.75" : avg >= 85 ? "2.0" : avg >= 82 ? "2.25" : avg >= 79 ? "2.5" : avg >= 76 ? "2.75" : "3.0") : "5.0";
+        document.getElementById(`pt_${id}`).innerText = pt;
+    };
+
+    window.saveCurrentWork = async () => {
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.innerHTML = 'SAVING...';
+        const date = document.getElementById('attDate').value;
+        try {
+            const promises = roster.map(s => {
+                const ref = doc(db, "users", s.id);
+                let payload = {};
+                if (currentView === 'attendance') {
+                    const sel = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
+                    payload[`attendance.${activeSubj}.${date}`] = sel;
+                } else {
+                    payload[`grades.${activeSubj}`] = {
+                        prelim: document.getElementById(`pre_${s.id}`).value,
+                        midterm: document.getElementById(`mid_${s.id}`).value,
+                        final: document.getElementById(`fin_${s.id}`).value,
+                        point: document.getElementById(`pt_${s.id}`).innerText
+                    };
                 }
-                showNotif("CLOUD SYNC SUCCESSFUL.");
-            } catch (err) { showNotif("SYNC ERROR."); }
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA';
-        };
+                return updateDoc(ref, payload);
+            });
+            await Promise.all(promises);
+            alert("Sync Successful");
+        } catch (e) { alert("Sync Error"); }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> SYNC';
+    };
 
-        window.showNotif = (msg) => { document.getElementById('notifMessage').innerText = msg; document.getElementById('notifModal').classList.remove('hidden'); document.getElementById('notifModal').classList.add('flex'); };
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-    </script>
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+</script>
 </body>
 </html>
