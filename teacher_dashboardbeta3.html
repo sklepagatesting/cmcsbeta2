@@ -280,25 +280,23 @@
     );
 }
 
-   // 1. Update the switchView function in your <script> tag
-window.switchView = (v) => {
+  window.switchView = (v) => {
     currentView = v;
     
-    // Toggle active classes for buttons
+    // UI Button States
     ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
         const btn = document.getElementById(id);
         btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
         if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
     });
 
-    // --- ADDED LOGIC TO HIDE SEARCH AND EXPORT BUTTONS ---
-    const searchAndExportContainer = document.getElementById('searchExportActions');
+    // Hide Search & Export buttons if we are in Materials tab
+    const searchExportActions = document.getElementById('searchExportActions');
     if (v === 'materials') {
-        searchAndExportContainer.classList.add('hidden');
+        searchExportActions.classList.add('hidden');
     } else {
-        searchAndExportContainer.classList.remove('hidden');
+        searchExportActions.classList.remove('hidden');
     }
-    // ----------------------------------------------------
 
     document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
     renderTable();
