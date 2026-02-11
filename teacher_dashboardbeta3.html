@@ -251,19 +251,27 @@
     }
 
     async function selectSubject(s) {
-        subjContext = s; activeSubj = s.code;
-        document.getElementById('activeSubjectTitle').innerText = s.name;
-        document.getElementById('subjectSubDetails').innerText = `${subjData.course} ${subjData.year} | ${subjData.schedule} | ${subjData.startTime}-${subjData.endTime} | ${subjData.semester}`;
-        document.getElementById('placeholder').classList.add('hidden');
-        document.getElementById('workspace').classList.remove('hidden');
-        document.getElementById('viewToggles').classList.remove('hidden');
-        document.getElementById('saveBtn').classList.remove('hidden');
+    subjContext = s;
+    activeSubj = s.code;
 
-        onSnapshot(query(collection(db, "users"), where("assignedPrograms", "array-contains", activeSubj)), snap => {
+    document.getElementById('activeSubjectTitle').innerText = s.name;
+    document.getElementById('subjectSubDetails').innerText =
+        `${s.course} ${s.year} | ${s.schedule} | ${s.startTime}-${s.endTime} | ${s.semester}`;
+
+    document.getElementById('placeholder').classList.add('hidden');
+    document.getElementById('workspace').classList.remove('hidden');
+    document.getElementById('viewToggles').classList.remove('hidden');
+    document.getElementById('saveBtn').classList.remove('hidden');
+
+    onSnapshot(
+        query(collection(db, "users"),
+        where("assignedPrograms", "array-contains", activeSubj)),
+        snap => {
             roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTable();
-        });
-    }
+        }
+    );
+}
 
     window.switchView = (v) => {
         currentView = v;
