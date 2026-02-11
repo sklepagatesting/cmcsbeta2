@@ -369,6 +369,27 @@
             });
         }
     }
+    function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const isHidden = sidebar.classList.contains('-translate-x-full');
+    
+    if (isHidden) {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+    } else {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+    }
+}
+
+function closeMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+}
+    
 
     window.exportCSV = () => {
         let csv = "STUDENT NAME," + currentStudent.lastname + " " + currentStudent.firstname + "\n";
