@@ -114,10 +114,17 @@
                         <input type="text" id="masterSearch" placeholder="Search Student ID or Name..." 
                                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm outline-none focus:border-primary transition-all">
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold uppercase">CSV</button>
-                        <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase">PDF</button>
-                    </div>
+                   <div id="searchExportActions" class="flex justify-between items-center no-print">
+    <div class="relative w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        <input type="text" id="masterSearch" placeholder="Search Student ID or Name..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm outline-none focus:border-primary transition-all">
+    </div>
+    <div class="flex gap-2">
+        <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold uppercase">CSV</button>
+        <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase">PDF</button>
+    </div>
+</div>
                 </div>
 
                 <div id="materialUploadSection" class="hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm no-print">
@@ -273,16 +280,29 @@
     );
 }
 
-    window.switchView = (v) => {
-        currentView = v;
-        ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
-            const btn = document.getElementById(id);
-            btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
-        });
-        document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
-        renderTable();
-    };
+   // 1. Update the switchView function in your <script> tag
+window.switchView = (v) => {
+    currentView = v;
+    
+    // Toggle active classes for buttons
+    ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
+        if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
+    });
+
+    // --- ADDED LOGIC TO HIDE SEARCH AND EXPORT BUTTONS ---
+    const searchAndExportContainer = document.getElementById('searchExportActions');
+    if (v === 'materials') {
+        searchAndExportContainer.classList.add('hidden');
+    } else {
+        searchAndExportContainer.classList.remove('hidden');
+    }
+    // ----------------------------------------------------
+
+    document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
+    renderTable();
+};
 
     // RESTORED DATE CHANGE LOADING
     window.handleDateChange = () => {
