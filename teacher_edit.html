@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Security | CMCS VLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #strengthBar { transition: width 0.3s ease-in-out; height: 4px; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-6">
+
+    <div id="notifModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl text-center">
+            <div id="notifIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"></div>
+            <h3 id="notifTitle" class="font-black uppercase tracking-widest text-sm mb-1 text-slate-800">System Message</h3>
+            <p id="notifMessage" class="text-[11px] text-gray-500 font-bold uppercase leading-relaxed mb-6"></p>
+            <button onclick="closeNotif()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all">Acknowledge</button>
+        </div>
+    </div>
+
+    <div id="loginGate" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 italic font-black">VLS</div>
+                <h3 class="font-bold uppercase tracking-widest text-lg text-slate-800">Teacher Verify</h3>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Verify current credentials to update security</p>
+            </div>
+            <div class="space-y-3">
+                <input type="email" id="gateEmail" placeholder="Email Address" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
+                <div class="relative">
+                    <input type="password" id="gatePw" placeholder="Current Password" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
+                    <button type="button" onclick="togglePassword('gatePw', 'gateIcon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        <i id="gateIcon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <button id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">Verify & Access</button>
+                <a href="teacher_dashboard.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="editArea" class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hidden">
+        <div class="bg-slate-900 p-8 text-center relative">
+            <a href="teacher_dashboard.html" class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">T</div>
+            <h2 id="teacherName" class="text-white font-bold uppercase tracking-wider text-sm">Teacher Security</h2>
+        </div>
+
+        <form id="updatePasswordForm" class="p-8 space-y-5">
+            <div class="space-y-1 text-center mb-4">
+                <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Account: <span id="displayEmail" class="text-gray-400">---</span></p>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">New Password</label>
+                <div class="relative">
+                    <input type="password" id="newPw" oninput="checkStrength(this.value)" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+                    <button type="button" onclick="togglePassword('newPw', 'newPwIcon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        <i id="newPwIcon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+                <div class="mt-2">
+                    <div class="bg-gray-100 w-full h-1 rounded-full overflow-hidden">
+                        <div id="strengthBar" class="bg-red-500" style="width: 0%"></div>
+                    </div>
+                    <p id="strengthText" class="text-[8px] font-bold uppercase mt-1 text-gray-400">Strength: Weak</p>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase">Confirm New Password</label>
+                <input type="password" id="confirmPw" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+            </div>
+
+            <button type="submit" id="saveBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-green-600 transition-all uppercase tracking-widest text-xs mt-4">Update Security</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // CONFIGURATION
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUser = null;
+        let redirectOnClose = false;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { currentUser = user; } 
+            else { window.location.href = "login.html"; }
+        });
+
+        // VERIFY TEACHER
+        document.getElementById('verifyBtn').onclick = async () => {
+            const email = document.getElementById('gateEmail').value.trim();
+            const pass = document.getElementById('gatePw').value;
+            const btn = document.getElementById('verifyBtn');
+
+            if(!email || !pass) return showNotif("Credentials required.", "error");
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span>';
+
+            try {
+                const credential = EmailAuthProvider.credential(email, pass);
+                await reauthenticateWithCredential(currentUser, credential);
+
+                const snap = await getDoc(doc(db, "users", currentUser.uid));
+                if (snap.exists()) {
+                    const d = snap.data();
+                    // SECURITY CHECK: Only allow 'teacher' role
+                    if(d.role !== 'teacher') throw new Error("This portal is for Teachers only.");
+
+                    document.getElementById('teacherName').innerText = `${d.firstname} ${d.lastname}`;
+                    document.getElementById('displayEmail').innerText = d.email;
+                    document.getElementById('profileCircle').innerText = d.firstname[0].toUpperCase();
+                    
+                    document.getElementById('loginGate').style.display = 'none';
+                    document.getElementById('editArea').classList.remove('hidden');
+                }
+            } catch (err) {
+                showNotif(err.message, "error");
+                btn.disabled = false; btn.innerText = "Verify & Access";
+            }
+        };
+
+        // UPDATE PASSWORD
+        document.getElementById('updatePasswordForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            const newPw = document.getElementById('newPw').value;
+            const confirmPw = document.getElementById('confirmPw').value;
+
+            if(newPw !== confirmPw) return showNotif("Passwords do not match.", "error");
+            if(newPw.length < 6) return showNotif("Password too weak.", "error");
+
+            btn.disabled = true; btn.innerHTML = '<span class="loader"></span> UPDATING...';
+
+            try {
+                await updatePassword(currentUser, newPw);
+                await updateDoc(doc(db, "users", currentUser.uid), { password: newPw });
+                showNotif("Security updated successfully!", "success", true);
+            } catch (err) {
+                showNotif(err.message, "error");
+                btn.disabled = false; btn.innerText = "Update Security";
+            }
+        };
+
+        // UTILS
+        window.showNotif = (msg, type = 'success', redirect = false) => {
+            const modal = document.getElementById('notifModal');
+            const iconBox = document.getElementById('notifIcon');
+            redirectOnClose = redirect;
+            iconBox.className = type === 'success' ? "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600" : "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100 text-red-600";
+            iconBox.innerHTML = type === 'success' ? '<i class="fa-solid fa-check text-xl"></i>' : '<i class="fa-solid fa-triangle-exclamation text-xl"></i>';
+            document.getElementById('notifTitle').innerText = type === 'success' ? "Success" : "Security Alert";
+            document.getElementById('notifMessage').innerText = msg;
+            modal.style.display = 'flex';
+        };
+
+        window.closeNotif = () => {
+            document.getElementById('notifModal').style.display = 'none';
+            if(redirectOnClose) window.location.href = "teacher_dashboard.html";
+        };
+
+        window.togglePassword = (id, iconId) => {
+            const el = document.getElementById(id);
+            const icon = document.getElementById(iconId);
+            el.type = el.type === "password" ? "text" : "password";
+            icon.classList.toggle('fa-eye'); icon.classList.toggle('fa-eye-slash');
+        };
+
+        window.checkStrength = (p) => {
+            const bar = document.getElementById('strengthBar');
+            const text = document.getElementById('strengthText');
+            if (p.length < 6) { bar.style.width = '30%'; bar.className = 'bg-red-500 h-full'; text.innerText = "Strength: Weak"; }
+            else if (p.length < 10) { bar.style.width = '60%'; bar.className = 'bg-yellow-500 h-full'; text.innerText = "Strength: Medium"; }
+            else { bar.style.width = '100%'; bar.className = 'bg-green-500 h-full'; text.innerText = "Strength: Strong"; }
+        };
+    </script>
+</body>
+</html>
