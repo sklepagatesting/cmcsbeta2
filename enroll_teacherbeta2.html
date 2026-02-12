@@ -142,36 +142,45 @@ const db = getFirestore(app);
 const secondaryApp = initializeApp(firebaseConfig, "TeacherSecondary");
 const secondaryAuth = getAuth(secondaryApp);
 
-// --- EDIT MODE DETECTION ---
 const urlParams = new URLSearchParams(window.location.search);
 const editId = urlParams.get('edit');
+let redirectOnClose = false;
+
+window.showModal = (title, msg, type = 'success', redirect = false) => {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalMsg').innerText = msg;
+    const icon = document.getElementById('modalIcon');
+    icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+    document.getElementById('msgModal').classList.replace('hidden', 'flex');
+    redirectOnClose = redirect;
+};
+
+window.closeModal = () => {
+    document.getElementById('msgModal').classList.replace('flex', 'hidden');
+    if(redirectOnClose) window.close(); 
+};
 
 async function checkEditMode() {
     if (!editId) return;
-
     document.querySelector('h3').innerText = "Edit Faculty Profile";
     document.getElementById('submitBtn').innerText = "Update Profile";
     document.getElementById('pw').required = false;
     document.getElementById('pw').closest('.space-y-2').parentElement.classList.add('hidden');
     document.getElementById('email').readOnly = true;
 
-    try {
-        const snap = await getDoc(doc(db, "users", editId));
-        if (snap.exists()) {
-            const d = snap.data();
-            document.getElementById('ln').value = d.lastname || '';
-            document.getElementById('fn').value = d.firstname || '';
-            document.getElementById('gender').value = d.gender || '';
-            document.getElementById('bday').value = d.birthdate || '';
-            document.getElementById('address').value = d.address || '';
-            document.getElementById('designation').value = d.designation || '';
-            document.getElementById('license').value = d.license || '';
-            document.getElementById('email').value = d.email || '';
-        }
-    } catch (e) { console.error(e); }
+    const snap = await getDoc(doc(db, "users", editId));
+    if (snap.exists()) {
+        const d = snap.data();
+        document.getElementById('ln').value = d.lastname;
+        document.getElementById('fn').value = d.firstname;
+        document.getElementById('gender').value = d.gender;
+        document.getElementById('bday').value = d.birthdate;
+        document.getElementById('address').value = d.address;
+        document.getElementById('designation').value = d.designation;
+        document.getElementById('license').value = d.license;
+        document.getElementById('email').value = d.email;
+    }
 }
-
-checkEditMode();
 
 document.getElementById('teacherForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -192,21 +201,14 @@ document.getElementById('teacherForm').addEventListener('submit', async (e) => {
     try {
         if (editId) {
             await updateDoc(doc(db, "users", editId), userData);
-            showModal("Success", "Faculty profile updated.", "success", true);
+            showModal("Profile Updated", "Teacher information has been saved.", "success", true);
         } else {
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('pw').value;
             const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-            await setDoc(doc(db, "users", cred.user.uid), {
-                ...userData,
-                uid: cred.user.uid,
-                email: email,
-                role: "teacher",
-                status: "pending",
-                createdAt: new Date()
-            });
+            await setDoc(doc(db, "users", cred.user.uid), { ...userData, uid: cred.user.uid, email, role: "teacher", status: "pending", createdAt: new Date() });
             await signOut(secondaryAuth);
-            showModal("Success", "Faculty account created.", "success", true);
+            showModal("Application Sent", "New faculty record created.", "success", true);
         }
     } catch (error) {
         showModal("Error", error.message, "error");
@@ -214,6 +216,8 @@ document.getElementById('teacherForm').addEventListener('submit', async (e) => {
         btn.innerText = editId ? "Update Profile" : "Send Application";
     }
 });
+
+checkEditMode();
     </script>
 </body>
 </html>
