@@ -281,10 +281,28 @@
     window.switchSubjectView = (p, event) => {
         activeSubj = p;
         currentMode = 'attendance';
+        
+        // UI Updates for Sidebar
         document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
         if(event && event.currentTarget) event.currentTarget.classList.add('active-nav');
         
+        // Update Header Title
         document.getElementById('headerTitle').innerText = p.name;
+        
+        // Add Schedule Details to Header Context
+        const headerCtx = document.getElementById('headerContext');
+        headerCtx.innerHTML = `
+            <span class="bg-blue-600 text-white px-2 py-0.5 rounded flex items-center gap-1">
+                <i class="fa-solid fa-calendar-day text-[8px]"></i> ${p.schedule}
+            </span>
+            <span class="bg-amber-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
+                <i class="fa-solid fa-clock text-[8px]"></i> ${p.startTime} - ${p.endTime}
+            </span>
+            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200">
+                ${p.teacher}
+            </span>
+        `;
+
         document.getElementById('subjectToggles').classList.remove('hidden');
         switchSubTab('attendance');
     };
