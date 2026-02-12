@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMCS Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background-color: #050505;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .hero-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            padding: 0 20px;
+            background: radial-gradient(circle at bottom, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 1) 50%);
+        }
+
+        /* The Horizon Glow Effect */
+        .hero-container::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            width: 150%;
+            height: 300px;
+            background: #fff;
+            filter: blur(80px);
+            opacity: 0.15;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .logo-box {
+            margin-bottom: 2rem;
+            z-index: 10;
+        }
+
+        .logo-box img {
+            height: 100px;
+            width: auto;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+        }
+
+        .pill-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 16px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(180deg, #FFFFFF 0%, #999999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: 10;
+        }
+
+        .description {
+            color: #888;
+            max-width: 600px;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            z-index: 10;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .footer-info {
+            position: absolute;
+            bottom: 40px;
+            z-index: 10;
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero-container">
+        <div class="logo-box">
+            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" alt="CMCS Logo">
+        </div>
+
+        <div class="pill-badge">
+            TRUTH • KNOWLEDGE • TECHNOLOGY
+        </div>
+
+        <h1>Shape Your Future <br> with Technology</h1>
+
+        <p class="description">
+            Access your modules, track your grades, and connect with the CMCS academic community through our unified student portal.
+        </p>
+
+        <div class="cta-group">
+            <a href="#" class="btn btn-primary">Login</a>
+            <a href="#" class="btn btn-secondary">Register</a>
+        </div>
+
+        <div class="footer-info">
+            2nd Floor Villasor Building, Burgos Street, Mlang, Cotabato
+        </div>
+    </section>
+
+</body>
+</html>
 
