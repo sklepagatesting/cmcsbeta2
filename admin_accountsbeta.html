@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accounts Management | CMCS VLS</title>
+    <title>Approvals | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script>
         tailwind.config = {
             theme: {
@@ -16,6 +15,7 @@
                     colors: {
                         primary: '#2563eb',
                         secondary: '#1e293b',
+                        accent: '#f59e0b',
                         danger: '#ef4444',
                         success: '#10b981'
                     }
@@ -25,34 +25,20 @@
     </script>
     <style>
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        
-        .modern-table thead th {
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: #64748b;
-            background: #f8fafc;
-            padding: 12px 24px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .modern-table tbody td {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f1f5f9;
-        }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
+    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20">
         <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
             <div class="font-bold text-lg tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
             </div>
         </div>
-        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
             <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-            <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+            <a href="admin_approvalbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
                 <i class="fa-solid fa-check-to-slot w-5"></i> <span class="font-medium text-sm">Approvals</span>
             </a>
             <a href="admin_setupbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
@@ -64,97 +50,121 @@
             <a href="admin_recordsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <i class="fa-solid fa-folder-open w-5"></i> <span class="font-medium text-sm">Master Record</span>
             </a>
-            <a href="admin_accountsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-md transition-colors">
+            <a href="admin_accountsbeta.html" class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
                 <i class="fa-solid fa-users-gear w-5"></i> <span class="font-medium text-sm">Accounts</span>
             </a>
         </nav>
         <div class="p-4 border-t border-gray-700 bg-slate-900">
-    <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">
-            AD
+            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">AD</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-bold text-white truncate uppercase" id="adminName">Loading...</p>
+                    <p class="text-[10px] text-gray-400 uppercase">Administrator</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
-            <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
-                <i class="fa-solid fa-gear text-[8px]"></i> Account Settings
-            </p>
-        </div>
-        <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white"></i>
-    </a>
-    
-    <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-    </button>
-</div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
-            <h1 class="text-xl font-bold text-gray-800">User Account Management</h1>
+            <h1 class="text-xl font-bold text-gray-800">Pending Approvals</h1>
             <div class="flex items-center gap-4">
-                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full uppercase font-bold tracking-tight">System Console</span>
+                <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full"><i class="fa-regular fa-clock mr-1"></i> <span id="clock">--:--</span></span>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-6 items-end">
-                <div class="w-48">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">View Role</label>
-                    <select id="roleFilter" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-bold text-gray-700 outline-none">
-                        <option value="ALL">ALL USERS</option>
-                        <option value="student">STUDENTS</option>
-                        <option value="teacher">TEACHERS</option>
-                    </select>
-                </div>
-                <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Search Directory</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-gray-400 text-xs"></i>
-                        <input type="text" id="userSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium outline-none" placeholder="SEARCH BY NAME OR ID NUMBER...">
+        <div class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Student Admission Requests</h2>
+                        <p class="text-xs text-gray-500 mt-1">Review and approve new student accounts</p>
                     </div>
+                    <button onclick="window.open('enrollbeta2.html', '_blank')" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> MANUAL ADMISSION
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="px-6 py-3">ID & Name</th>
+                                <th class="px-6 py-3">Personal Info</th>
+                                <th class="px-6 py-3">Contact</th>
+                                <th class="px-6 py-3">Course/Year</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTable" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">Loading requests...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Faculty Registration Requests</h2>
+                        <p class="text-xs text-gray-500 mt-1">Review and approve teaching staff</p>
+                    </div>
+                    <button onclick="window.open('enroll_teacherbeta2.html', '_blank')" class="bg-accent hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> MANUAL HIRE
+                    </button>
+                </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse modern-table">
-                        <thead>
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
                             <tr>
-                                <th>User ID / Role</th>
-                                <th>Full Name</th>
-                                <th>Email Address</th>
-                                <th>Dept / Course</th>
-                                <th>Status</th>
-                                <th class="text-right">Actions</th>
+                                <th class="px-6 py-3">License & Name</th>
+                                <th class="px-6 py-3">Personal Info</th>
+                                <th class="px-6 py-3">Contact</th>
+                                <th class="px-6 py-3">Designation</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100"></tbody>
+                        <tbody id="facultyTable" class="divide-y divide-gray-100 text-sm text-gray-700">
+                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">Loading requests...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-bell text-xl"></i>
+    <div id="reviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                <h3 class="font-bold text-gray-800">Registration Details</h3>
+                <button onclick="closeModal('reviewModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            <div id="reviewContent" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                </div>
+            <div id="reviewActions" class="p-6 border-t bg-gray-50 flex gap-3">
+                </div>
+        </div>
+    </div>
+
+    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-80 p-6 text-center">
             <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
             <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
             <div id="confirmActions" class="hidden flex justify-center gap-3">
-                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
-                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Proceed</button>
+                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">Cancel</button>
             </div>
             <div id="alertActions" class="flex justify-center">
-                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
+                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900">Okay</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
@@ -170,112 +180,136 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let allUsers = [];
+        // Clock
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
 
-        // Notification System
-        window.showNotif = (msg, isConfirm = false, onYes = null) => {
-            document.getElementById('notifMessage').innerText = msg;
-            const confirmDiv = document.getElementById('confirmActions');
-            const alertDiv = document.getElementById('alertActions');
-            if (isConfirm) {
-                confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
-                alertDiv.classList.add('hidden');
-                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-            } else {
-                confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
-                alertDiv.classList.remove('hidden');
-            }
-            document.getElementById('notifModal').classList.remove('hidden');
-            document.getElementById('notifModal').classList.add('flex');
+        // Age Calculator
+        const calculateAge = (bday) => {
+            if(!bday) return "";
+            const today = new Date();
+            const birthDate = new Date(bday);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+            return age;
         };
 
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        };
-
-      onAuthStateChanged(auth, async user => {
+        // Auth Check
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
-                    await syncUsers();
-                    renderTable();
-                }
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                    startListeners();
+                } else { window.location.href = "login.html"; }
             } else { window.location.href = "login.html"; }
         });
 
+        // Real-time Approval Listeners
+        function startListeners() {
+            onSnapshot(query(collection(db, "users"), where("status", "==", "pending")), (snap) => {
+                const sTable = document.getElementById('studentTable');
+                const fTable = document.getElementById('facultyTable');
+                let sContent = ''; let fContent = '';
 
+                if (snap.empty) {
+                    const emptyRow = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No pending requests</td></tr>';
+                    sTable.innerHTML = emptyRow;
+                    fTable.innerHTML = emptyRow;
+                    return;
+                }
 
-        function syncUsers() {
-            onSnapshot(collection(db, "users"), (snap) => {
-                allUsers = [];
-                snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
-                renderTable();
+                snap.forEach(u => {
+                    const d = u.data();
+                    const age = calculateAge(d.birthdate);
+                    const actions = `
+                        <div class="flex justify-end gap-2">
+                            <button onclick="openReview('${u.id}')" class="px-3 py-1 text-[10px] font-bold bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition">REVIEW</button>
+                            <button onclick="handleAction('${u.id}', true)" class="w-8 h-8 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-check text-xs"></i></button>
+                            <button onclick="handleAction('${u.id}', false)" class="w-8 h-8 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </div>`;
+
+                    if (d.role === 'student') {
+                        sContent += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-gray-700">${d.lastname}, ${d.firstname}<br><span class="text-[10px] text-gray-400">${d.studentId || 'PENDING'}</span></td>
+                            <td class="px-6 py-4 text-xs">${d.gender} | ${age} YRS</td>
+                            <td class="px-6 py-4 text-xs text-blue-600 font-medium">${d.email}</td>
+                            <td class="px-6 py-4 text-xs font-bold uppercase">${d.course} (Y${d.year})</td>
+                            <td class="px-6 py-4">${actions}</td>
+                        </tr>`;
+                    } else if (d.role === 'teacher') {
+                        fContent += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-gray-700">${d.lastname}, ${d.firstname}<br><span class="text-[10px] text-gray-400">LIC: ${d.license || 'N/A'}</span></td>
+                            <td class="px-6 py-4 text-xs">${d.gender} | ${age} YRS</td>
+                            <td class="px-6 py-4 text-xs text-blue-600 font-medium">${d.email}</td>
+                            <td class="px-6 py-4 text-xs font-bold uppercase">${d.designation || 'FACULTY'}</td>
+                            <td class="px-6 py-4">${actions}</td>
+                        </tr>`;
+                    }
+                });
+                sTable.innerHTML = sContent || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No student requests</td></tr>';
+                fTable.innerHTML = fContent || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No faculty requests</td></tr>';
             });
         }
 
-        function renderTable() {
-            const role = document.getElementById('roleFilter').value;
-            const search = document.getElementById('userSearch').value.toUpperCase();
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
+        window.openReview = async (uid) => {
+            const snap = await getDoc(doc(db, "users", uid));
+            if(!snap.exists()) return;
+            const d = snap.data();
+            
+            let details = `
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Full Name</p><p class="font-semibold">${d.lastname}, ${d.firstname} ${d.middlename || ''}</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Role</p><p class="font-semibold uppercase text-primary">${d.role}</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Email</p><p class="font-semibold">${d.email}</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Contact</p><p class="font-semibold">${d.contact || 'N/A'}</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Birthdate</p><p class="font-semibold">${d.birthdate} (${calculateAge(d.birthdate)} yrs)</p></div>
+                    <div><p class="text-[10px] text-gray-400 uppercase font-bold">Gender</p><p class="font-semibold uppercase">${d.gender}</p></div>
+                    <div class="col-span-2 border-t pt-2 mt-2">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold">${d.role === 'student' ? 'Academic Info' : 'Professional Info'}</p>
+                        <p class="font-semibold uppercase">${d.role === 'student' ? `${d.course} - Year ${d.year}` : `License: ${d.license || 'N/A'} | ${d.designation || 'Faculty'}`}</p>
+                    </div>
+                </div>`;
+            
+            document.getElementById('reviewContent').innerHTML = details;
+            document.getElementById('reviewActions').innerHTML = `
+                <button onclick="closeModal('reviewModal'); handleAction('${uid}', true)" class="flex-1 bg-success text-white py-2 rounded-lg text-sm font-bold shadow-sm">APPROVE</button>
+                <button onclick="closeModal('reviewModal'); handleAction('${uid}', false)" class="flex-1 bg-danger text-white py-2 rounded-lg text-sm font-bold shadow-sm">REJECT</button>
+            `;
+            document.getElementById('reviewModal').classList.replace('hidden', 'flex');
+        };
 
-            const filtered = allUsers.filter(u => {
-                const matchRole = role === 'ALL' || u.role === role;
-                const fullName = `${u.lastname} ${u.firstname}`.toUpperCase();
-                const matchSearch = fullName.includes(search) || (u.studentId && u.studentId.includes(search));
-                return matchRole && matchSearch && u.role !== 'admin';
-            });
-
-            filtered.forEach(u => {
-                const isBlocked = u.status === 'disabled';
-                const dept = u.role === 'student' ? u.course : 'FACULTY';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-blue-50/30 transition-all">
-                        <td class="px-6 py-4">
-                            <div class="font-bold text-gray-800">${u.studentId || 'N/A'}</div>
-                            <div class="text-[10px] text-primary font-bold uppercase">${u.role}</div>
-                        </td>
-                        <td class="px-6 py-4 font-bold uppercase text-gray-800">${u.lastname}, ${u.firstname}</td>
-                        <td class="px-6 py-4 text-xs lowercase text-gray-500">${u.email}</td>
-                        <td class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">${dept || '---'}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold ${!isBlocked ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}">
-                                ${!isBlocked ? 'ACTIVE' : 'BLOCKED'}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                <button onclick="handleBlock('${u.uid}', '${u.status}')" class="px-3 py-2 rounded-lg border border-gray-200 text-[10px] font-bold hover:bg-slate-800 hover:text-white transition-all">
-                                    <i class="fa-solid ${!isBlocked ? 'fa-ban' : 'fa-circle-check'}"></i> ${!isBlocked ? 'BLOCK' : 'UNBLOCK'}
-                                </button>
-                                <button onclick="handleDelete('${u.uid}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">
-                                    <i class="fa-solid fa-trash-can"></i> DELETE
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        window.handleBlock = (uid, currentStatus) => {
-            const isApproved = currentStatus === 'approved';
-            const msg = isApproved ? "Are you sure you want to BLOCK this user?" : "Restore access for this user?";
+        window.handleAction = (uid, approved) => {
+            const msg = approved ? "Approve this user account?" : "Reject and delete this request?";
             showNotif(msg, true, async () => {
-                await updateDoc(doc(db, "users", uid), { status: isApproved ? 'disabled' : 'approved' });
+                try {
+                    if(approved) await updateDoc(doc(db, "users", uid), { status: "approved" });
+                    else await deleteDoc(doc(db, "users", uid));
+                    showNotif(approved ? "Account Approved." : "Request Rejected.");
+                } catch (e) { showNotif("Error: " + e.message); }
             });
         };
 
-        window.handleDelete = (uid) => {
-            showNotif("PERMANENTLY DELETE THIS ACCOUNT? This action cannot be reversed.", true, async () => {
-                await deleteDoc(doc(db, "users", uid));
-            });
+        window.showNotif = (msg, isConfirm = false, onYes = null) => {
+            document.getElementById('notifMessage').innerText = msg;
+            const cAct = document.getElementById('confirmActions');
+            const aAct = document.getElementById('alertActions');
+            if (isConfirm) {
+                cAct.classList.remove('hidden'); aAct.classList.add('hidden');
+                document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
+            } else {
+                cAct.classList.add('hidden'); aAct.classList.remove('hidden');
+            }
+            document.getElementById('notifModal').classList.replace('hidden', 'flex');
         };
 
-        document.getElementById('roleFilter').onchange = renderTable;
-        document.getElementById('userSearch').oninput = renderTable;
+        window.closeModal = (id) => { document.getElementById(id).classList.replace('flex', 'hidden'); };
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
