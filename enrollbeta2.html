@@ -164,71 +164,65 @@ const db = getFirestore(app);
 const secondaryApp = initializeApp(firebaseConfig, "SecondaryInstance");
 const secondaryAuth = getAuth(secondaryApp);
 
-// --- EDIT MODE DETECTION ---
 const urlParams = new URLSearchParams(window.location.search);
 const editId = urlParams.get('edit');
+let redirectOnClose = false;
 
-async function checkEditMode() {
-    if (!editId) return;
+// --- Modal System ---
+window.showModal = (title, msg, type = 'success', redirect = false) => {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalMsg').innerText = msg;
+    const icon = document.getElementById('modalIcon');
+    icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+    document.getElementById('msgModal').classList.replace('hidden', 'flex');
+    redirectOnClose = redirect;
+};
 
-    // UI Adjustments for Editing
-    document.querySelector('h3').innerText = "Edit Student Profile";
-    document.getElementById('submitBtn').innerText = "Update Record";
-    document.getElementById('pw').required = false;
-    document.getElementById('pw').closest('.space-y-1').parentElement.classList.add('hidden'); // Hide password field
-    document.getElementById('email').readOnly = true;
-    document.getElementById('email').classList.add('bg-gray-200', 'cursor-not-allowed');
+window.closeModal = () => {
+    document.getElementById('msgModal').classList.replace('flex', 'hidden');
+    if(redirectOnClose) window.close(); 
+};
 
-    try {
+// --- Edit Mode Logic ---
+async function initForm() {
+    await loadCourses();
+    if (editId) {
+        document.querySelector('h3').innerText = "Edit Student Profile";
+        document.getElementById('submitBtn').innerText = "Update Record";
+        document.getElementById('pw').required = false;
+        document.getElementById('pw').closest('.space-y-1').parentElement.classList.add('hidden');
+        document.getElementById('email').readOnly = true;
+
         const snap = await getDoc(doc(db, "users", editId));
         if (snap.exists()) {
             const d = snap.data();
-            document.getElementById('ln').value = d.lastname || '';
-            document.getElementById('fn').value = d.firstname || '';
-            document.getElementById('gender').value = d.gender || '';
-            document.getElementById('bday').value = d.birthdate || '';
-            document.getElementById('address').value = d.address || '';
-            document.getElementById('studentId').value = d.studentId || '';
-            document.getElementById('course').value = d.course || '';
-            document.getElementById('year').value = d.year || '';
-            document.getElementById('semester').value = d.semester || '';
-            document.getElementById('email').value = d.email || '';
+            document.getElementById('ln').value = d.lastname;
+            document.getElementById('fn').value = d.firstname;
+            document.getElementById('gender').value = d.gender;
+            document.getElementById('bday').value = d.birthdate;
+            document.getElementById('address').value = d.address;
+            document.getElementById('studentId').value = d.studentId;
+            document.getElementById('course').value = d.course;
+            document.getElementById('year').value = d.year;
+            document.getElementById('semester').value = d.semester;
+            document.getElementById('email').value = d.email;
         }
-    } catch (e) { console.error("Error loading student:", e); }
+    }
 }
 
-// Initialize
-loadCourses().then(checkEditMode);
-
-// --- UTILITIES ---
-window.togglePassword = () => {
-    const pw = document.getElementById('pw');
-    const icon = document.getElementById('eyeIcon');
-    pw.type = pw.type === "password" ? "text" : "password";
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-};
-
 async function loadCourses() {
-    try {
-        const snap = await getDocs(collection(db, "courses"));
-        const sel = document.getElementById('course');
-        let options = '<option value="" disabled selected>SELECT COURSE</option>';
-        snap.forEach(d => {
-            const name = d.data().name.toUpperCase();
-            options += `<option value="${name}">${name}</option>`;
-        });
-        sel.innerHTML = options;
-    } catch(e) { console.error(e); }
+    const snap = await getDocs(collection(db, "courses"));
+    const sel = document.getElementById('course');
+    let options = '<option value="" disabled selected>SELECT COURSE</option>';
+    snap.forEach(d => { options += `<option value="${d.data().name.toUpperCase()}">${d.data().name.toUpperCase()}</option>`; });
+    sel.innerHTML = options;
 }
 
 document.getElementById('studentForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
-    const email = document.getElementById('email').value.trim().toLowerCase();
-    
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> SAVING...';
+    btn.innerHTML = '<span class="loader"></span> PROCESSING...';
 
     const userData = {
         firstname: document.getElementById('fn').value.toUpperCase(),
@@ -244,23 +238,15 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
 
     try {
         if (editId) {
-            // Update Existing
             await updateDoc(doc(db, "users", editId), userData);
-            showModal("Success", "Student record has been updated.", "success", true);
+            showModal("Update Successful", "The student record has been updated.", "success", true);
         } else {
-            // Create New
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('pw').value;
             const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-            await setDoc(doc(db, "users", cred.user.uid), {
-                ...userData,
-                uid: cred.user.uid,
-                email: email,
-                role: "student",
-                status: "pending",
-                createdAt: new Date()
-            });
+            await setDoc(doc(db, "users", cred.user.uid), { ...userData, uid: cred.user.uid, email, role: "student", status: "pending", createdAt: new Date() });
             await signOut(secondaryAuth);
-            showModal("Registration Successful", "New student account created.", "success", true);
+            showModal("Registration Successful", "New account created.", "success", true);
         }
     } catch (err) {
         showModal("Error", err.message, "error");
@@ -268,6 +254,8 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
         btn.innerText = editId ? "Update Record" : "Submit Enrollment";
     }
 });
+
+initForm();
     </script>
 </body>
 </html>
