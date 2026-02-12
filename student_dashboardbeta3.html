@@ -72,18 +72,31 @@
             </div>
         </nav>
 
-        <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg bg-white/5">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">..</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-white truncate uppercase" id="adminName">Loading...</p>
-                    <p class="text-[9px] text-gray-400 font-bold uppercase" id="studentIdDisplay">ID: ---</p>
-                </div>
-            </div>
-            <button onclick="logout()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-[10px] font-bold transition-all uppercase tracking-widest">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
+       <div class="p-4 border-t border-gray-700 bg-slate-900">
+    <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">
+            ..
         </div>
+        
+        <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">
+                Loading...
+            </p>
+            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wide" id="studentIdDisplay">
+                ID: ---
+            </p>
+            <p class="text-[10px] text-gray-500 uppercase flex items-center gap-1 mt-0.5">
+                <i class="fa-solid fa-gear text-[8px]"></i> Settings
+            </p>
+        </div>
+        
+        <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white transition-colors"></i>
+    </a>
+
+    <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-[10px] font-bold transition-all uppercase tracking-widest">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+</div>
     </aside>
 
     <div id="sidebarOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
