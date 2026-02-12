@@ -39,14 +39,15 @@
                     </button>
                 </div>
                 <button id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">Verify & Access</button>
-                <a href="teacher_dashboard.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel</a>
+                <a href="teacher_dashboardbeta3.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel</a>
             </div>
         </div>
     </div>
 
     <div id="editArea" class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hidden">
         <div class="bg-slate-900 p-8 text-center relative">
-            <a href="teacher_dashboard.html" class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="teacher_dashboardbeta3.html
+                " class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
             <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">T</div>
             <h2 id="teacherName" class="text-white font-bold uppercase tracking-wider text-sm">Teacher Security</h2>
         </div>
@@ -175,7 +176,7 @@
 
         window.closeNotif = () => {
             document.getElementById('notifModal').style.display = 'none';
-            if(redirectOnClose) window.location.href = "teacher_dashboard.html";
+            if(redirectOnClose) window.location.href = "teacher_dashboardbeta3.html";
         };
 
         window.togglePassword = (id, iconId) => {
