@@ -5,158 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMCS Student Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            margin: 0;
-            background-color: #050505;
             font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
+            background-color: #050505;
+            color: white;
+            overflow: hidden;
         }
 
-        .hero-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            padding: 0 20px;
-            background: radial-gradient(circle at bottom, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 1) 50%);
-        }
-
-        /* The Horizon Glow Effect */
-        .hero-container::after {
-            content: '';
+        /* The Hero Gradient Background */
+        .hero-glow {
             position: absolute;
-            bottom: -150px;
-            width: 150%;
-            height: 300px;
-            background: #fff;
-            filter: blur(80px);
-            opacity: 0.15;
+            bottom: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120%;
+            height: 40%;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
             border-radius: 50%;
-            z-index: 1;
+            z-index: 0;
         }
 
-        .logo-box {
-            margin-bottom: 2rem;
-            z-index: 10;
+        /* Logo Stroke Animation */
+        .logo-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0.15; /* Faded dark look */
+            filter: grayscale(1) brightness(0.5);
+            animation: fadeInLogo 3s ease-forward;
         }
 
-        .logo-box img {
-            height: 100px;
-            width: auto;
-            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+        @keyframes fadeInLogo {
+            0% { opacity: 0; filter: grayscale(1) brightness(1); }
+            50% { opacity: 0.3; filter: grayscale(1) brightness(0.8); }
+            100% { opacity: 0.15; filter: grayscale(0) brightness(0.5); }
         }
 
-        .pill-badge {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 16px;
-            border-radius: 99px;
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-bottom: 1.5rem;
-            letter-spacing: 1px;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(180deg, #FFFFFF 0%, #999999 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            z-index: 10;
-        }
-
-        .description {
-            color: #888;
-            max-width: 600px;
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-            line-height: 1.6;
-            z-index: 10;
-        }
-
-        .cta-group {
-            display: flex;
-            gap: 1rem;
-            z-index: 10;
-        }
-
-        .btn {
-            padding: 14px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
+        /* Button Hover Effects */
         .btn-primary {
-            background: #fff;
-            color: #000;
+            background: white;
+            color: black;
+            transition: all 0.3s ease;
         }
-
         .btn-primary:hover {
-            background: #e0e0e0;
+            background: #e2e2e2;
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
-
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
 
-        .footer-info {
-            position: absolute;
-            bottom: 40px;
-            z-index: 10;
-            color: #666;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .address-bar {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
         }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen">
 
-    <section class="hero-container">
-        <div class="logo-box">
-            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" alt="CMCS Logo">
-        </div>
+    <div class="logo-container">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" 
+             alt="CMCS Logo" 
+             class="w-[500px] md:w-[800px] opacity-40">
+    </div>
 
-        <div class="pill-badge">
-            TRUTH • KNOWLEDGE • TECHNOLOGY
-        </div>
-
-        <h1>Shape Your Future <br> with Technology</h1>
-
-        <p class="description">
-            Access your modules, track your grades, and connect with the CMCS academic community through our unified student portal.
-        </p>
-
-        <div class="cta-group">
-            <a href="#" class="btn btn-primary">Login</a>
-            <a href="#" class="btn btn-secondary">Register</a>
-        </div>
-
-        <div class="footer-info">
+    <main class="relative z-10 text-center px-6 max-w-4xl">
+        
+        <div class="inline-flex items-center px-4 py-1.5 mb-8 rounded-full address-text text-xs font-medium tracking-wide address-bar text-gray-400">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></span>
             2nd Floor Villasor Building, Burgos Street, Mlang, Cotabato
         </div>
-    </section>
+
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+            Central Mindanao <br> Computer School
+        </h1>
+
+        <p class="text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
+            Access your academic resources, manage your profile, and stay connected with the CMCS student community through our unified portal.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="#" class="btn-primary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto">
+                Login
+            </a>
+            <a href="#" class="btn-secondary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto text-white">
+                Register
+            </a>
+        </div>
+    </main>
+
+    <div class="hero-glow"></div>
+    <div class="absolute bottom-0 w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent opacity-50"></div>
 
 </body>
 </html>
-
