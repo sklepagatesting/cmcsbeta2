@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment | SVLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .input-focus { transition: all 0.2s ease-in-out; }
+        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="msgModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform transition-all">
+            <div id="modalIcon" class="text-5xl mb-4"></div>
+            <h3 id="modalTitle" class="text-xl font-bold mb-2 tracking-tight">Notice</h3>
+            <p id="modalMsg" class="text-slate-500 text-sm font-medium leading-relaxed mb-8"></p>
+            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all">Continue</button>
+        </div>
+    </div>
+
+    <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white">
+        <div class="hidden lg:flex lg:col-span-4 bg-[#0070c0] p-12 flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-[100px] opacity-10 -mr-32 -mt-32"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
+                    <i class="fa-solid fa-user-graduate text-white text-xl"></i>
+                </div>
+                <h2 class="text-white text-3xl font-extrabold leading-tight tracking-tight">Begin your <br>Academic <br>Journey.</h2>
+                <p class="text-white/70 mt-6 text-sm leading-relaxed">Fill out the official enrollment form accurately to ensure a smooth verification process.</p>
+            </div>
+            <div class="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                CMCS Virtual Learning System
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 p-8 md:p-12 overflow-y-auto max-h-[90vh]">
+            <div class="mb-10 flex justify-between items-start">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Student Enrollment</h3>
+                    <p class="text-slate-400 text-sm mt-1">Academic Year 2026-2027</p>
+                </div>
+                <div class="text-right">
+                    <span class="bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Registration</span>
+                </div>
+            </div>
+
+            <form id="studentForm" class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Last Name</label>
+                        <input type="text" id="ln" placeholder="e.g. DELA CRUZ" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">First Name</label>
+                        <input type="text" id="fn" placeholder="e.g. JUAN" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Gender</label>
+                        <select id="gender" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>SELECT</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Date of Birth</label>
+                        <input type="date" id="bday" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Complete Home Address</label>
+                    <input type="text" id="address" placeholder="House No., Street, Brgy, City" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID</label>
+                        <input type="text" id="studentId" placeholder="00-0-000" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-bold text-sm" required>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Course Program</label>
+                        <select id="course" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>SELECT COURSE</option>
+                            <option value="BSIT">BS Information Technology</option>
+                            <option value="BSBA">BS Business Administration</option>
+                            <option value="BSED">BS Education</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Year Level</label>
+                        <select id="year" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>SELECT</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Semester</label>
+                        <select id="semester" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>SELECT</option>
+                            <option value="1ST SEMESTER">1st Semester</option>
+                            <option value="2ND SEMESTER">2nd Semester</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Email Address</label>
+                        <input type="email" id="email" placeholder="student@gmail.com" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                    <div class="space-y-1 relative">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Password</label>
+                        <div class="relative">
+                            <input type="password" id="pw" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
+                                <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-[#0070c0] text-white py-5 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-200 transition-all transform active:scale-[0.98] mt-4">
+                    Submit Enrollment
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, collection, getDocs, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = { 
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const secondaryApp = initializeApp(firebaseConfig, "SecondaryInstance");
+const secondaryAuth = getAuth(secondaryApp);
+
+// --- EDIT MODE DETECTION ---
+const urlParams = new URLSearchParams(window.location.search);
+const editId = urlParams.get('edit');
+
+async function checkEditMode() {
+    if (!editId) return;
+
+    // UI Adjustments for Editing
+    document.querySelector('h3').innerText = "Edit Student Profile";
+    document.getElementById('submitBtn').innerText = "Update Record";
+    document.getElementById('pw').required = false;
+    document.getElementById('pw').closest('.space-y-1').parentElement.classList.add('hidden'); // Hide password field
+    document.getElementById('email').readOnly = true;
+    document.getElementById('email').classList.add('bg-gray-200', 'cursor-not-allowed');
+
+    try {
+        const snap = await getDoc(doc(db, "users", editId));
+        if (snap.exists()) {
+            const d = snap.data();
+            document.getElementById('ln').value = d.lastname || '';
+            document.getElementById('fn').value = d.firstname || '';
+            document.getElementById('gender').value = d.gender || '';
+            document.getElementById('bday').value = d.birthdate || '';
+            document.getElementById('address').value = d.address || '';
+            document.getElementById('studentId').value = d.studentId || '';
+            document.getElementById('course').value = d.course || '';
+            document.getElementById('year').value = d.year || '';
+            document.getElementById('semester').value = d.semester || '';
+            document.getElementById('email').value = d.email || '';
+        }
+    } catch (e) { console.error("Error loading student:", e); }
+}
+
+// Initialize
+loadCourses().then(checkEditMode);
+
+// --- UTILITIES ---
+window.togglePassword = () => {
+    const pw = document.getElementById('pw');
+    const icon = document.getElementById('eyeIcon');
+    pw.type = pw.type === "password" ? "text" : "password";
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+};
+
+async function loadCourses() {
+    try {
+        const snap = await getDocs(collection(db, "courses"));
+        const sel = document.getElementById('course');
+        let options = '<option value="" disabled selected>SELECT COURSE</option>';
+        snap.forEach(d => {
+            const name = d.data().name.toUpperCase();
+            options += `<option value="${name}">${name}</option>`;
+        });
+        sel.innerHTML = options;
+    } catch(e) { console.error(e); }
+}
+
+document.getElementById('studentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> SAVING...';
+
+    const userData = {
+        firstname: document.getElementById('fn').value.toUpperCase(),
+        lastname: document.getElementById('ln').value.toUpperCase(),
+        gender: document.getElementById('gender').value.toUpperCase(),
+        birthdate: document.getElementById('bday').value,
+        address: document.getElementById('address').value.toUpperCase(),
+        studentId: document.getElementById('studentId').value,
+        course: document.getElementById('course').value.toUpperCase(),
+        year: document.getElementById('year').value,
+        semester: document.getElementById('semester').value.toUpperCase(),
+    };
+
+    try {
+        if (editId) {
+            // Update Existing
+            await updateDoc(doc(db, "users", editId), userData);
+            showModal("Success", "Student record has been updated.", "success", true);
+        } else {
+            // Create New
+            const password = document.getElementById('pw').value;
+            const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+            await setDoc(doc(db, "users", cred.user.uid), {
+                ...userData,
+                uid: cred.user.uid,
+                email: email,
+                role: "student",
+                status: "pending",
+                createdAt: new Date()
+            });
+            await signOut(secondaryAuth);
+            showModal("Registration Successful", "New student account created.", "success", true);
+        }
+    } catch (err) {
+        showModal("Error", err.message, "error");
+        btn.disabled = false;
+        btn.innerText = editId ? "Update Record" : "Submit Enrollment";
+    }
+});
+    </script>
+</body>
+</html>
