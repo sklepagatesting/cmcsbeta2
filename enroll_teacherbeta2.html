@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Enrollment | SVLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .input-focus { transition: all 0.2s ease-in-out; }
+        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="msgModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform transition-all">
+            <div id="modalIcon" class="text-5xl mb-4"></div>
+            <h3 id="modalTitle" class="text-xl font-bold mb-2 tracking-tight">Notice</h3>
+            <p id="modalMsg" class="text-slate-500 text-sm font-medium leading-relaxed mb-8"></p>
+            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white">
+        <div class="hidden lg:flex lg:col-span-4 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+                </div>
+                <h2 class="text-white text-3xl font-extrabold leading-tight tracking-tight">Join our <br>Academic <br>Faculty.</h2>
+                <p class="text-slate-400 mt-6 text-sm leading-relaxed">Submit your credentials for verification. Once approved, you will gain access to the Virtual Learning Terminal.</p>
+            </div>
+            <div class="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                CMCS Faculty Portal
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 p-8 md:p-12">
+            <div class="mb-10">
+                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Teacher Enrollment</h3>
+                <p class="text-slate-400 text-sm mt-1">Please provide your professional information below.</p>
+            </div>
+
+            <form id="teacherForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Legal Last Name</label>
+                        <input type="text" id="ln" placeholder="e.g. DOE" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Legal First Name</label>
+                        <input type="text" id="fn" placeholder="e.g. JOHN" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Gender</label>
+                        <select id="gender" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Date of Birth</label>
+                        <input type="date" id="bday" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Residential Address</label>
+                    <input type="text" id="address" placeholder="Unit, Street, Barangay, City" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Designation</label>
+                        <select id="designation" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>Select Role</option>
+                            <option value="SUBJECT TEACHER">Subject Teacher</option>
+                            <option value="ADVISER">Adviser</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">PRC License Number</label>
+                        <input type="text" id="license" maxlength="7" pattern="\d{7}" placeholder="0000000" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Gmail Account</label>
+                        <div class="relative">
+                            <i class="fa-brands fa-google absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                            <input type="email" id="email" placeholder="example@gmail.com" class="w-full bg-slate-50 border border-slate-200 p-4 pl-10 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                        </div>
+                    </div>
+                    <div class="space-y-2 relative">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Create Password</label>
+                        <div class="relative">
+                            <input type="password" id="pw" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
+                                <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-200 transition-all duration-300 transform active:scale-[0.98] mt-4">
+                    Send Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+    authDomain: "svls-289ee.firebaseapp.com",
+    projectId: "svls-289ee",
+    storageBucket: "svls-289ee.firebasestorage.app",
+    messagingSenderId: "500705386198",
+    appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const secondaryApp = initializeApp(firebaseConfig, "TeacherSecondary");
+const secondaryAuth = getAuth(secondaryApp);
+
+// --- EDIT MODE DETECTION ---
+const urlParams = new URLSearchParams(window.location.search);
+const editId = urlParams.get('edit');
+
+async function checkEditMode() {
+    if (!editId) return;
+
+    document.querySelector('h3').innerText = "Edit Faculty Profile";
+    document.getElementById('submitBtn').innerText = "Update Profile";
+    document.getElementById('pw').required = false;
+    document.getElementById('pw').closest('.space-y-2').parentElement.classList.add('hidden');
+    document.getElementById('email').readOnly = true;
+
+    try {
+        const snap = await getDoc(doc(db, "users", editId));
+        if (snap.exists()) {
+            const d = snap.data();
+            document.getElementById('ln').value = d.lastname || '';
+            document.getElementById('fn').value = d.firstname || '';
+            document.getElementById('gender').value = d.gender || '';
+            document.getElementById('bday').value = d.birthdate || '';
+            document.getElementById('address').value = d.address || '';
+            document.getElementById('designation').value = d.designation || '';
+            document.getElementById('license').value = d.license || '';
+            document.getElementById('email').value = d.email || '';
+        }
+    } catch (e) { console.error(e); }
+}
+
+checkEditMode();
+
+document.getElementById('teacherForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> SAVING...';
+
+    const userData = {
+        lastname: document.getElementById('ln').value.toUpperCase(),
+        firstname: document.getElementById('fn').value.toUpperCase(),
+        gender: document.getElementById('gender').value.toUpperCase(),
+        birthdate: document.getElementById('bday').value,
+        address: document.getElementById('address').value.toUpperCase(),
+        designation: document.getElementById('designation').value.toUpperCase(),
+        license: document.getElementById('license').value,
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "users", editId), userData);
+            showModal("Success", "Faculty profile updated.", "success", true);
+        } else {
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('pw').value;
+            const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+            await setDoc(doc(db, "users", cred.user.uid), {
+                ...userData,
+                uid: cred.user.uid,
+                email: email,
+                role: "teacher",
+                status: "pending",
+                createdAt: new Date()
+            });
+            await signOut(secondaryAuth);
+            showModal("Success", "Faculty account created.", "success", true);
+        }
+    } catch (error) {
+        showModal("Error", error.message, "error");
+        btn.disabled = false;
+        btn.innerText = editId ? "Update Profile" : "Send Application";
+    }
+});
+    </script>
+</body>
+</html>
