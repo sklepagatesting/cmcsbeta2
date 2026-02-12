@@ -30,29 +30,33 @@
                 <h3 class="font-bold uppercase tracking-widest text-lg text-slate-800">Teacher Verify</h3>
                 <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">Verify current credentials to update security</p>
             </div>
-            <div class="space-y-3">
-                <input type="email" id="gateEmail" placeholder="Email Address" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
+            <form autocomplete="off" class="space-y-3">
+                <input type="email" id="gateEmail" placeholder="Email Address" 
+                       autocomplete="off" name="prevent_autofill_email"
+                       class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
+                
                 <div class="relative">
-                    <input type="password" id="gatePw" placeholder="Current Password" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
+                    <input type="password" id="gatePw" placeholder="Current Password" 
+                           autocomplete="new-password" name="prevent_autofill_pw"
+                           class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 text-sm font-semibold">
                     <button type="button" onclick="togglePassword('gatePw', 'gateIcon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <i id="gateIcon" class="fa-solid fa-eye"></i>
                     </button>
                 </div>
-                <button id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">Verify & Access</button>
-                <a href="teacher_dashboardbeta3.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel</a>
-            </div>
+                <button type="button" id="verifyBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all mt-2">Verify & Access</button>
+                <a href="teacher_dashboard.html" class="block text-center text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase mt-4">Cancel</a>
+            </form>
         </div>
     </div>
 
     <div id="editArea" class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 hidden">
         <div class="bg-slate-900 p-8 text-center relative">
-            <a href="teacher_dashboardbeta3.html
-                " class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="teacher_dashboard.html" class="absolute left-6 top-6 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
             <div class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-lg" id="profileCircle">T</div>
             <h2 id="teacherName" class="text-white font-bold uppercase tracking-wider text-sm">Teacher Security</h2>
         </div>
 
-        <form id="updatePasswordForm" class="p-8 space-y-5">
+        <form id="updatePasswordForm" autocomplete="off" class="p-8 space-y-5">
             <div class="space-y-1 text-center mb-4">
                 <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Account: <span id="displayEmail" class="text-gray-400">---</span></p>
             </div>
@@ -60,7 +64,9 @@
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-gray-400 uppercase">New Password</label>
                 <div class="relative">
-                    <input type="password" id="newPw" oninput="checkStrength(this.value)" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+                    <input type="password" id="newPw" oninput="checkStrength(this.value)" 
+                           autocomplete="new-password"
+                           class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
                     <button type="button" onclick="togglePassword('newPw', 'newPwIcon')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <i id="newPwIcon" class="fa-solid fa-eye"></i>
                     </button>
@@ -75,7 +81,8 @@
 
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-gray-400 uppercase">Confirm New Password</label>
-                <input type="password" id="confirmPw" class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
+                <input type="password" id="confirmPw" autocomplete="new-password"
+                       class="w-full border-2 border-gray-100 p-3 rounded-xl outline-none focus:border-blue-500 transition text-sm font-semibold" required>
             </div>
 
             <button type="submit" id="saveBtn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-green-600 transition-all uppercase tracking-widest text-xs mt-4">Update Security</button>
@@ -87,7 +94,6 @@
         import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIGURATION
         const firebaseConfig = { 
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
             authDomain: "svls-289ee.firebaseapp.com",
@@ -124,7 +130,6 @@
                 const snap = await getDoc(doc(db, "users", currentUser.uid));
                 if (snap.exists()) {
                     const d = snap.data();
-                    // SECURITY CHECK: Only allow 'teacher' role
                     if(d.role !== 'teacher') throw new Error("This portal is for Teachers only.");
 
                     document.getElementById('teacherName').innerText = `${d.firstname} ${d.lastname}`;
@@ -176,7 +181,7 @@
 
         window.closeNotif = () => {
             document.getElementById('notifModal').style.display = 'none';
-            if(redirectOnClose) window.location.href = "teacher_dashboardbeta3.html";
+            if(redirectOnClose) window.location.href = "teacher_dashboard.html";
         };
 
         window.togglePassword = (id, iconId) => {
