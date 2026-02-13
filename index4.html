@@ -45,17 +45,6 @@
         filter: grayscale(1) brightness(0.2);
     }
 
-    /* --- Z-INDEX 30: Blur Layer (Above Main, Below Menu) --- */
-    #blur-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 30;
-        backdrop-filter: blur(0px);
-        background: rgba(0,0,0,0);
-        pointer-events: none;
-        display: none;
-    }
-
     /* --- Z-INDEX 10: Main Content --- */
     main {
         position: relative;
@@ -110,8 +99,6 @@
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <div id="blur-overlay"></div>
-
     <main class="text-center px-6 max-w-4xl w-full">
         <h1 class="animate-text text-4xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             Central Mindanao <br class="hidden sm:block"> Computer School
@@ -154,7 +141,6 @@
         const logo = document.getElementById('loading-logo');
         const regBtn = document.getElementById('reg-btn');
         const regMenu = document.getElementById('register-menu');
-        const blurOverlay = document.getElementById('blur-overlay');
         const closeMenu = document.getElementById('close-menu');
 
         // Initial Animation Logic
@@ -179,16 +165,8 @@
         // iOS Bounce & Blur Logic
         regBtn.addEventListener('click', () => {
             regMenu.style.display = 'block';
-            blurOverlay.style.display = 'block';
 
-            // 1. Fade in the blur background behind the menu
-            gsap.to(blurOverlay, { 
-                backdropFilter: "blur(12px)", 
-                backgroundColor: "rgba(0,0,0,0.4)", 
-                duration: 0.5 
-            });
-
-            // 2. Expand Menu with iOS Bounce
+            // 1. Expand Menu with iOS Bounce
             gsap.fromTo(regMenu, 
                 { scaleY: 0, opacity: 0, y: 0 },
                 { 
