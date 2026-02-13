@@ -38,24 +38,35 @@
         .logo-container img {
             height: 100%;
             width: auto;
+            max-width:none;
             object-fit: contain;
             filter: grayscale(1) brightness(0.2);
         }
 
         main { position: relative; z-index: 10; }
 
-        .btn-primary { background: white; color: black; }
+        /* --- Unified Button Sizing --- */
+        .btn-size {
+            width: 160px;
+            height: 52px;
+        }
+
+        .btn-primary { 
+            background: white; 
+            color: black; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         /* --- Morphing Register Container --- */
         #reg-container {
             position: relative;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 9999px; /* Start as pill */
+            border-radius: 9999px;
             overflow: hidden;
             transition: background 0.3s ease, border 0.3s ease;
-            width: 160px; /* Fixed initial width */
-            height: 56px; /* Fixed initial height */
             cursor: pointer;
         }
 
@@ -63,7 +74,7 @@
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 24px;
+            border-radius: 28px;
             cursor: default;
         }
 
@@ -81,11 +92,23 @@
             opacity: 0;
             display: none;
             flex-direction: column;
-            padding: 12px;
-            width: 100%;
+            justify-content: center;
+            height: 100%;
+            padding: 10px;
         }
 
         .animate-text { opacity: 0; }
+        
+        footer {
+            position: absolute;
+            bottom: 24px;
+            width: 100%;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.3);
+            z-index: 5;
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen">
@@ -114,28 +137,32 @@
         </p>
 
         <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#" class="btn-primary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto text-center">
+            <a href="#" class="btn-primary btn-size rounded-full font-semibold text-sm text-center">
                 Login
             </a>
             
-            <div id="reg-container">
+            <div id="reg-container" class="btn-size">
                 <span class="reg-label">Register</span>
                 <div class="reg-options" id="reg-options">
-                    <a href="#" class="py-3 px-6 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center">Student</a>
-                    <div class="h-[1px] bg-white/10 w-full my-1"></div>
-                    <a href="#" class="py-3 px-6 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center">Faculty</a>
+                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Student</a>
+                    <div class="h-[1px] bg-white/10 w-3/4 mx-auto my-1"></div>
+                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Faculty</a>
                 </div>
             </div>
         </div>
     </main>
 
+    <footer class="animate-text">
+        &copy; <span id="year"></span> CENTRAL MINDANAO COMPUTER SCHOOL. ALL RIGHTS RESERVED.
+    </footer>
+
     <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
         const logo = document.getElementById('loading-logo');
         const regContainer = document.getElementById('reg-container');
         const regOptions = document.getElementById('reg-options');
         const regLabel = document.querySelector('.reg-label');
 
-        // --- Intro Animation ---
         const startIntro = () => {
             const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
             tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
@@ -143,14 +170,13 @@
               .to("#bg-logo", { opacity: 0.18, duration: 2 }, "-=0.5")
               .to(".animate-text", {
                   opacity: 1, y: 0, duration: 1, stagger: 0.1,
-                  startAt: { y: 40 }, ease: "power3.out"
+                  startAt: { y: 20 }, ease: "power3.out"
               }, "-=1.2");
         };
 
         if (logo.complete) startIntro();
         else logo.addEventListener('load', startIntro);
 
-        // --- Expansion Logic ---
         let isExpanded = false;
 
         const expandMenu = () => {
@@ -158,34 +184,36 @@
             isExpanded = true;
             regContainer.classList.add('expanded');
 
-            gsap.to(regContainer, { width: 200, height: 160, duration: 0.6, ease: "elastic.out(1, 0.8)" });
+            // Expands BOTH width and height for a more "organic" feel
+            gsap.to(regContainer, { 
+                width: 190, 
+                height: 140, 
+                duration: 0.7, 
+                ease: "elastic.out(1, 0.75)" 
+            });
             gsap.to(regLabel, { opacity: 0, y: -10, duration: 0.2 });
             gsap.set(regOptions, { display: 'flex' });
-            gsap.to(regOptions, { opacity: 1, y: 0, duration: 0.4, delay: 0.1, startAt: { y: 10 } });
+            gsap.to(regOptions, { opacity: 1, scale: 1, y: 0, duration: 0.4, delay: 0.1, startAt: { scale: 0.95, y: 5 } });
         };
 
         const collapseMenu = () => {
             if (!isExpanded) return;
             isExpanded = false;
             
-            gsap.to(regOptions, { opacity: 0, y: 10, duration: 0.2, onComplete: () => {
+            gsap.to(regOptions, { opacity: 0, scale: 0.95, duration: 0.2, onComplete: () => {
                 regOptions.style.display = 'none';
                 regContainer.classList.remove('expanded');
             }});
-            gsap.to(regContainer, { width: 160, height: 56, duration: 0.5, ease: "power4.out" });
+            gsap.to(regContainer, { width: 160, height: 52, duration: 0.5, ease: "power4.out" });
             gsap.to(regLabel, { opacity: 1, y: 0, duration: 0.3, delay: 0.2 });
         };
 
-        // Trigger on click
         regContainer.addEventListener('click', (e) => {
             e.stopPropagation();
             expandMenu();
         });
 
-        // Close on Hover Out (Desktop)
         regContainer.addEventListener('mouseleave', collapseMenu);
-
-        // Close on Click Outside (Mobile/General)
         document.addEventListener('click', (e) => {
             if (!regContainer.contains(e.target)) collapseMenu();
         });
