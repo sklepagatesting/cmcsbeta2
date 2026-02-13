@@ -25,15 +25,22 @@
             align-items: center;
         }
 
-        .logo-container {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-        }
+        logo-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Use svh (Small Viewport Height) to prevent jumping on scroll */
+    height: 100svh; 
+    z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    animation: fadeInLogo 4s ease-out 0.5s forwards;
+}
 
         .logo-container img {
             height: 100%;
@@ -153,7 +160,7 @@
     </main>
 
     <footer class="animate-text">
-        &copy; <span id="year"></span> CENTRAL MINDANAO COMPUTER SCHOOL. ALL RIGHTS RESERVED.
+        Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc. All rights reserved.
     </footer>
 
     <script>
