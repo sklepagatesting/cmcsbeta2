@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMCS Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* --- Z-INDEX 100: Top Layer --- */
+        #curtain {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #002366 0%, #000b2e 100%);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Z-INDEX -1: Furthest Back --- */
+        .logo-container {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .logo-container img {
+            height: 100%;
+            width: auto;
+            object-fit: contain;
+            filter: grayscale(1) brightness(0.2);
+        }
+
+        /* --- Z-INDEX 20: The Blur Shield --- */
+        #blur-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            backdrop-filter: blur(0px);
+            background: rgba(0,0,0,0);
+            pointer-events: none;
+            display: none;
+        }
+
+        /* --- Z-INDEX 10: Main Text/UI --- */
+        main {
+            position: relative;
+            z-index: 10;
+        }
+
+        .btn-primary { background: white; color: black; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+
+        .animate-text { opacity: 0; }
+
+        /* --- Z-INDEX 50: Front Selection Menu --- */
+        #register-menu {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            min-width: 280px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 28px;
+            padding: 12px;
+            z-index: 50;
+            transform-origin: bottom;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <div id="curtain">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
+             alt="CMCS Logo" class="w-[150px] opacity-0" id="loading-logo">
+    </div>
+
+    <div class="logo-container" id="bg-logo">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+    </div>
+
+    <div id="blur-overlay"></div>
+
+    <main class="text-center px-6 max-w-4xl w-full">
+        <h1 class="animate-text text-4xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
+            Central Mindanao <br class="hidden sm:block"> Computer School
+        </h1>
+
+        <div class="animate-text inline-flex items-center px-4 py-2 mb-8 rounded-full border border-white/10 bg-white/5 text-[10px] md:text-xs font-medium text-gray-400">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></span>
+            2nd Floor Villasor Building, Burgos Street, Mlang, Cotabato
+        </div>
+
+        <p class="animate-text text-gray-400 text-base md:text-xl mb-10 max-w-2xl mx-auto">
+            Access academic resources and manage your profile through our unified portal.
+        </p>
+
+        <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4 relative">
+            <a href="#" class="btn-primary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto">
+                Login
+            </a>
+            
+            <div class="relative w-full sm:w-auto">
+                <button id="reg-btn" class="btn-secondary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto text-white">
+                    Register
+                </button>
+
+                <div id="register-menu">
+                    <div class="flex flex-col gap-1">
+                        <a href="#" class="py-4 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center">Student</a>
+                        <div class="h-[1px] bg-white/20 w-full"></div>
+                        <a href="#" class="py-4 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center">Faculty</a>
+                        <button id="close-menu" class="text-[10px] text-gray-400 mt-2 uppercase tracking-tighter hover:text-white py-2">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('current-year')?.textContent && (document.getElementById('current-year').textContent = new Date().getFullYear());
+
+        const logo = document.getElementById('loading-logo');
+        const regBtn = document.getElementById('reg-btn');
+        const regMenu = document.getElementById('register-menu');
+        const blurOverlay = document.getElementById('blur-overlay');
+        const closeMenu = document.getElementById('close-menu');
+
+        // Initial Animation Logic
+        const startIntro = () => {
+            const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+            tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
+              .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.4 })
+              .to("#bg-logo", { opacity: 0.18, duration: 2 }, "-=0.5")
+              .to(".animate-text", {
+                  opacity: 1,
+                  y: 0,
+                  duration: 1,
+                  stagger: 0.1,
+                  startAt: { y: 40 },
+                  ease: "power3.out"
+              }, "-=1.2");
+        };
+
+        if (logo.complete) startIntro();
+        else logo.addEventListener('load', startIntro);
+
+        // iOS Bounce & Blur Logic
+        regBtn.addEventListener('click', () => {
+            regMenu.style.display = 'block';
+            blurOverlay.style.display = 'block';
+
+            // 1. Fade in the blur background behind the menu
+            gsap.to(blurOverlay, { 
+                backdropFilter: "blur(12px)", 
+                backgroundColor: "rgba(0,0,0,0.4)", 
+                duration: 0.5 
+            });
+
+            // 2. Expand Menu with iOS Bounce
+            gsap.fromTo(regMenu, 
+                { scaleY: 0, opacity: 0, y: 0 },
+                { 
+                    scaleY: 1, 
+                    opacity: 1, 
+                    y: -10, 
+                    duration: 0.8, 
+                    ease: "elastic.out(1, 0.7)" 
+                }
+            );
+        });
+
+        closeMenu.addEventListener('click', () => {
+            gsap.to(regMenu, { scaleY: 0, opacity: 0, duration: 0.3, onComplete: () => regMenu.style.display = 'none' });
+            gsap.to(blurOverlay, { 
+                backdropFilter: "blur(0px)", 
+                backgroundColor: "rgba(0,0,0,0)", 
+                duration: 0.4, 
+                onComplete: () => blurOverlay.style.display = 'none' 
+            });
+        });
+    </script>
+</body>
+</html>
