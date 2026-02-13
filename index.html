@@ -16,31 +16,33 @@
             overflow-y: auto;
         }
 
-        /* Full Screen Background Logo Logic */
-        .logo-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100dvh;
-            z-index: -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            overflow: hidden; /* Prevents wide logos from causing horizontal scroll */
-            animation: fadeInLogo 4s ease-out 0.5s forwards;
-        }
+/* Updated Logo Logic to prevent jumping */
+.logo-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Use svh (Small Viewport Height) to prevent jumping on scroll */
+    height: 100svh; 
+    z-index: -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    animation: fadeInLogo 4s ease-out 0.5s forwards;
+}
 
-        .logo-container img {
-            /* Mobile Priority: Fill height regardless of width */
-            height: 100dvh;
-            width: auto;
-            max-width: none; /* Overrides default browser/framework constraints */
-            object-fit: contain;
-            filter: grayscale(1) brightness(0.3);
-        }
+.logo-container img {
+    /* Changed from 100dvh to 100% to follow the stable container height */
+    height: 100%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    filter: grayscale(1) brightness(0.3);
+}
+
 
         @media (min-width: 768px) {
             .logo-container img {
