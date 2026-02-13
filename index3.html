@@ -15,13 +15,9 @@
             overflow: hidden;
         }
 
-        /* --- Royal Blue Curtain Styles --- */
         #curtain {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: linear-gradient(135deg, #002366 0%, #000b2e 100%);
             z-index: 100;
             display: flex;
@@ -29,25 +25,14 @@
             align-items: center;
         }
 
-        .curtain-logo {
-            width: 150px;
-            height: auto;
-            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
-            opacity: 0;
-        }
-
         .logo-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100svh; 
+            inset: 0;
             z-index: -1;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
-            pointer-events: none;
         }
 
         .logo-container img {
@@ -57,157 +42,159 @@
             filter: grayscale(1) brightness(0.2);
         }
 
-        @media (min-width: 768px) {
-            .logo-container img { height: auto; width: 800px; }
+        main { position: relative; z-index: 10; }
+
+        /* --- Unified Button Sizing --- */
+        .btn-size {
+            width: 160px;
+            height: 52px;
         }
 
-        .btn-primary {
-            background: white;
-            color: black;
-            transition: all 0.3s ease;
+        .btn-primary { 
+            background: white; 
+            color: black; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-secondary {
+        /* --- Morphing Register Container --- */
+        #reg-container {
+            position: relative;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+            transition: background 0.3s ease, border 0.3s ease;
+            cursor: pointer;
         }
 
-        .address-bar {
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(5px);
+        #reg-container.expanded {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            cursor: default;
+        }
+
+        .reg-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        .reg-options {
+            opacity: 0;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            padding: 8px; /* Balanced internal padding */
         }
 
         .animate-text { opacity: 0; }
-
-        /* Registration Menu Styles */
-        #register-menu {
-            display: none;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 24px;
-            padding: 8px;
-            z-index: 50;
-            transform-origin: bottom;
-        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen">
 
     <div id="curtain">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
-             alt="CMCS Logo" class="curtain-logo" id="loading-logo">
+             alt="CMCS Logo" class="w-[150px] opacity-0" id="loading-logo">
     </div>
 
     <div class="logo-container" id="bg-logo">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <main id="main-content" class="relative z-10 text-center px-6 max-w-4xl w-full transition-all duration-500">
+    <main class="text-center px-6 max-w-4xl w-full">
         <h1 class="animate-text text-4xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             Central Mindanao <br class="hidden sm:block"> Computer School
         </h1>
 
-        <div class="animate-text inline-flex items-center px-4 py-2 mb-8 rounded-full address-bar text-[10px] md:text-xs font-medium text-gray-400">
-            <span class="shrink-0 w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></span>
+        <div class="animate-text inline-flex items-center px-4 py-2 mb-8 rounded-full border border-white/10 bg-white/5 text-[10px] md:text-xs font-medium text-gray-400">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></span>
             2nd Floor Villasor Building, Burgos Street, Mlang, Cotabato
         </div>
 
         <p class="animate-text text-gray-400 text-base md:text-xl mb-10 max-w-2xl mx-auto">
-            Access academic resources and stay connected with the CMCS student community.
+            Access academic resources and manage your profile through our unified portal.
         </p>
 
-        <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4 relative">
-            <a href="#" class="btn-primary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto">
+        <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="#" class="btn-primary btn-size rounded-full font-semibold text-sm text-center">
                 Login
             </a>
             
-            <div class="relative w-full sm:w-auto">
-                <button id="reg-btn" class="btn-secondary px-10 py-4 rounded-full font-semibold text-sm w-full sm:w-auto text-white">
-                    Register
-                </button>
-
-                <div id="register-menu">
-                    <div class="flex flex-col gap-1">
-                        <a href="#" class="py-4 text-white hover:bg-white/10 rounded-xl transition-colors font-medium">Student</a>
-                        <div class="h-[1px] bg-white/10 w-full"></div>
-                        <a href="#" class="py-4 text-white hover:bg-white/10 rounded-xl transition-colors font-medium">Faculty</a>
-                        <button id="close-menu" class="text-[10px] text-gray-500 mt-2 uppercase tracking-widest hover:text-white">Cancel</button>
-                    </div>
+            <div id="reg-container" class="btn-size">
+                <span class="reg-label">Register</span>
+                <div class="reg-options" id="reg-options">
+                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center text-sm">Student</a>
+                    <div class="h-[1px] bg-white/10 w-4/5 mx-auto"></div>
+                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center text-sm">Faculty</a>
                 </div>
             </div>
-        </div>
-
-        <div class="animate-text flex flex-col items-center mt-12 text-[10px] text-gray-600">
-            <span>Copyright &copy; <span id="current-year"></span> Central Mindanao Computer School Inc.</span>
         </div>
     </main>
 
     <script>
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
         const logo = document.getElementById('loading-logo');
-        const regBtn = document.getElementById('reg-btn');
-        const regMenu = document.getElementById('register-menu');
-        const mainContent = document.getElementById('main-content');
-        const closeMenu = document.getElementById('close-menu');
+        const regContainer = document.getElementById('reg-container');
+        const regOptions = document.getElementById('reg-options');
+        const regLabel = document.querySelector('.reg-label');
 
-        // --- STEP 1: Wait for logo to be fully loaded ---
         const startIntro = () => {
             const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-
-            tl.to(".curtain-logo", { opacity: 1, scale: 1, duration: 0.8 })
-              .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.5 })
-              .to("#bg-logo", { opacity: 0.15, duration: 2 }, "-=0.5")
+            tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
+              .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.4 })
+              .to("#bg-logo", { opacity: 0.18, duration: 2 }, "-=0.5")
               .to(".animate-text", {
-                  opacity: 1,
-                  y: 0,
-                  duration: 1,
-                  stagger: 0.1,
-                  startAt: { y: 30 },
-                  ease: "power3.out",
-                  onComplete: () => { document.body.style.overflow = "auto"; }
-              }, "-=1");
+                  opacity: 1, y: 0, duration: 1, stagger: 0.1,
+                  startAt: { y: 40 }, ease: "power3.out"
+              }, "-=1.2");
         };
 
-        if (logo.complete) {
-            startIntro();
-        } else {
-            logo.addEventListener('load', startIntro);
-        }
+        if (logo.complete) startIntro();
+        else logo.addEventListener('load', startIntro);
 
-        // --- STEP 2: Register Button iOS Expansion ---
-        regBtn.addEventListener('click', () => {
-            regMenu.style.display = 'block';
+        let isExpanded = false;
+
+        const expandMenu = () => {
+            if (isExpanded) return;
+            isExpanded = true;
+            regContainer.classList.add('expanded');
+
+            // Expands to a clean rectangle while keeping horizontal alignment
+            gsap.to(regContainer, { width: 160, height: 130, duration: 0.6, ease: "elastic.out(1, 0.8)" });
+            gsap.to(regLabel, { opacity: 0, y: -10, duration: 0.2 });
+            gsap.set(regOptions, { display: 'flex' });
+            gsap.to(regOptions, { opacity: 1, y: 0, duration: 0.4, delay: 0.1, startAt: { y: 10 } });
+        };
+
+        const collapseMenu = () => {
+            if (!isExpanded) return;
+            isExpanded = false;
             
-            // Blur effect on background
-            gsap.to(mainContent, { filter: "blur(15px)", scale: 0.95, duration: 0.6, ease: "power2.out" });
-            
-            // iOS Spring Bounce Animation
-            gsap.fromTo(regMenu, 
-                { scaleY: 0, opacity: 0 },
-                { 
-                    scaleY: 1, 
-                    opacity: 1, 
-                    duration: 0.7, 
-                    ease: "elastic.out(1, 0.75)" 
-                }
-            );
+            gsap.to(regOptions, { opacity: 0, y: 10, duration: 0.2, onComplete: () => {
+                regOptions.style.display = 'none';
+                regContainer.classList.remove('expanded');
+            }});
+            gsap.to(regContainer, { width: 160, height: 52, duration: 0.5, ease: "power4.out" });
+            gsap.to(regLabel, { opacity: 1, y: 0, duration: 0.3, delay: 0.2 });
+        };
+
+        regContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            expandMenu();
         });
 
-        // Close Menu Logic
-        closeMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-            gsap.to(regMenu, { scaleY: 0, opacity: 0, duration: 0.3, onComplete: () => { regMenu.style.display = 'none'; } });
-            gsap.to(mainContent, { filter: "blur(0px)", scale: 1, duration: 0.5 });
+        // Close logic
+        regContainer.addEventListener('mouseleave', collapseMenu);
+        document.addEventListener('click', (e) => {
+            if (!regContainer.contains(e.target)) collapseMenu();
         });
     </script>
 </body>
