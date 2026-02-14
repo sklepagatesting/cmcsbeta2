@@ -49,7 +49,7 @@
 
         .btn-size {
             width: 160px;
-            height: 52px;
+            height: 42px;
         }
 
         .btn-primary { 
@@ -90,7 +90,7 @@
 
         .reg-label {
             position: absolute;
-            top: 26px; /* Centered in the 52px height */
+            top: 26px; /* Centered in the 42px height */
             left: 50%;
             transform: translate(-50%, -50%);
             font-weight: 600;
@@ -184,7 +184,7 @@
               // Slow Background Growth
               .fromTo("#bg-logo", 
                 { opacity: 0, scale: 0.8 }, 
-                { opacity: 0.15, scale: 1.1, duration: 20, ease: "linear" }, // Very slow 20s growth
+                { opacity: 0.15, scale: 1.1, duration: 3, ease: "linear" }, // Very slow 20s growth
                 "-=0.5"
               )
               .to(".animate-text", {
