@@ -55,12 +55,12 @@
             justify-content: center;
         }
 
-        /* --- Registration Layout Logic --- */
         .reg-wrapper {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Wrapper handles the "Pushing" logic on Desktop */
         }
 
         #reg-container {
@@ -75,7 +75,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transform-origin: center center;
         }
 
         #reg-container.expanded {
@@ -200,55 +199,43 @@
             isExpanded = true;
             regContainer.classList.add('expanded');
 
-            // Apply expansion animation to BOTH mobile and desktop
+            // --- The Shared Expansion Animation ---
             gsap.to(regContainer, {
                 width: 200,
                 height: 140,
-                y: -44, // Centered expansion offset
+                y: -44, 
                 duration: 0.7,
                 ease: "elastic.out(1, 0.75)"
             });
 
-            // On Desktop: Also expand the wrapper to push the Login button aside
+            // --- Layout Logic: Push on Desktop ONLY ---
             if (window.innerWidth >= 640) {
                 gsap.to(".reg-wrapper", { width: 200, duration: 0.7, ease: "elastic.out(1, 0.75)" });
             }
+            // Mobile: .reg-wrapper remains 160px wide, so Login button stays put.
 
-            gsap.to(regLabel, { opacity: 0, scale: 0.9, duration: 0.2 });
+            gsap.to(regLabel, { opacity: 0, y: -10, duration: 0.2 });
             gsap.set(regOptions, { display: 'flex' });
-            gsap.to(regOptions, { 
-                opacity: 1, 
-                scale: 1, 
-                y: 0, 
-                duration: 0.4, 
-                delay: 0.1, 
-                startAt: { scale: 0.95, y: 5 } 
-            });
+            gsap.to(regOptions, { opacity: 1, scale: 1, y: 0, duration: 0.4, delay: 0.1, startAt: { scale: 0.95, y: 5 } });
         };
 
         const collapseMenu = () => {
             if (!isExpanded) return;
             isExpanded = false;
             
-            gsap.to(regOptions, { 
-                opacity: 0, 
-                scale: 0.95, 
-                duration: 0.2, 
-                onComplete: () => {
-                    regOptions.style.display = 'none';
-                    regContainer.classList.remove('expanded');
-                }
-            });
+            gsap.to(regOptions, { opacity: 0, scale: 0.95, duration: 0.2, onComplete: () => {
+                regOptions.style.display = 'none';
+                regContainer.classList.remove('expanded');
+            }});
 
-            // Reset container for both
+            // --- Reset Animations ---
             gsap.to(regContainer, { width: 160, height: 52, y: 0, duration: 0.5, ease: "power4.out" });
             
-            // Reset wrapper for desktop shift
             if (window.innerWidth >= 640) {
                 gsap.to(".reg-wrapper", { width: 160, duration: 0.5, ease: "power4.out" });
             }
 
-            gsap.to(regLabel, { opacity: 1, scale: 1, y: 0, duration: 0.3, delay: 0.2 });
+            gsap.to(regLabel, { opacity: 1, y: 0, duration: 0.3, delay: 0.2 });
         };
 
         regContainer.addEventListener('click', (e) => {
@@ -256,7 +243,6 @@
             expandMenu();
         });
 
-        // Use mouseleave for desktop, but globally click-away for both
         regContainer.addEventListener('mouseleave', () => {
             if(window.innerWidth >= 640) collapseMenu();
         });
