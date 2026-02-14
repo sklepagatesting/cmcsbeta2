@@ -13,9 +13,6 @@
             background-color: #050505;
             color: white;
             overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
 
         #curtain {
@@ -36,29 +33,21 @@
             justify-content: center;
             align-items: center;
             opacity: 0;
+            pointer-events: none;
         }
 
         .logo-container img {
-            height: 70%;
+            height: 90%;
             width: auto;
+            object-fit: contain;
             filter: grayscale(1) brightness(0.2);
-            transform: scale(0.9);
         }
 
-        main { position: relative; z-index: 10; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        main { position: relative; z-index: 10; }
 
         .btn-size {
             width: 160px;
             height: 52px;
-        }
-
-        /* Container that allows buttons to "give way" */
-        .button-group {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            min-height: 120px; /* Reserves space for expansion */
         }
 
         .btn-primary { 
@@ -67,66 +56,71 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         #reg-container {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 999px;
+            border-radius: 9999px;
+            overflow: hidden;
+            transition: background 0.3s ease, border 0.3s ease;
             cursor: pointer;
-            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: background 0.3s ease;
         }
 
         #reg-container.expanded {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            cursor: default;
         }
 
         .reg-label {
-            position: absolute;
-            width: 100%;
-            text-align: center;
             font-weight: 600;
             font-size: 0.875rem;
+            white-space: nowrap;
+            text-align: center;
         }
 
         .reg-options {
-            display: none;
             opacity: 0;
-            width: 100%;
-            padding: 8px; /* Tightened padding */
+            display: none;
+            flex-direction: column;
+            padding: 4px; /* Tight padding */
         }
 
-        .animate-text { opacity: 0; transform: translateY(30px); }
+        .animate-text { opacity: 0; }
         
         footer {
-            padding-bottom: 24px;
+            position: fixed;
+            bottom: 24px;
+            width: 100%;
             text-align: center;
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
             letter-spacing: 0.02em;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: lowercase;
+            z-index: 5;
         }
     </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center min-h-screen">
 
     <div id="curtain">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
-             alt="CMCS Logo" class="w-[120px] opacity-0" id="loading-logo">
+             alt="CMCS Logo" class="w-[150px] opacity-0" id="loading-logo">
     </div>
 
     <div class="logo-container" id="bg-logo">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo" id="bg-img">
     </div>
 
-    <main class="text-center px-6">
-        <h1 class="animate-text text-4xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+    <main class="text-center px-6 max-w-4xl w-full">
+        <h1 class="animate-text text-4xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             Central Mindanao <br class="hidden sm:block"> Computer School
         </h1>
 
@@ -139,52 +133,48 @@
             Access academic resources and manage your profile through our unified portal.
         </p>
 
-        <div class="button-group animate-text">
-            <a href="#" class="btn-primary btn-size rounded-full text-sm">
+        <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4 relative">
+            <a href="#" id="login-btn" class="btn-primary btn-size rounded-full font-semibold text-sm text-center">
                 Login
             </a>
             
             <div id="reg-container" class="btn-size">
-                <span class="reg-label">Register</span>
+                <span class="reg-label" id="reg-label">Register</span>
                 <div class="reg-options" id="reg-options">
-                    <a href="#" class="block py-2 hover:bg-white/10 rounded-lg font-bold text-sm mb-1">Student</a>
-                    <a href="#" class="block py-2 hover:bg-white/10 rounded-lg font-bold text-sm">Faculty</a>
+                    <a href="#" class="py-2.5 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center text-sm">Student</a>
+                    <div class="h-[1px] bg-white/10 w-4/5 mx-auto"></div>
+                    <a href="#" class="py-2.5 text-white hover:bg-white/10 rounded-xl transition-all font-bold text-center text-sm">Faculty</a>
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        &copy; <span id="year"></span> Central Mindanao Computer School. All rights reserved.
+       Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc. All rights reserved.
     </footer>
 
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
         const logo = document.getElementById('loading-logo');
-        const bgImg = document.getElementById('bg-img');
+        const loginBtn = document.getElementById('login-btn');
         const regContainer = document.getElementById('reg-container');
         const regOptions = document.getElementById('reg-options');
-        const regLabel = document.querySelector('.reg-label');
+        const regLabel = document.getElementById('reg-label');
 
         const startIntro = () => {
-            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+            const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
             
             tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
-              .to("#curtain", { yPercent: -100, duration: 1, ease: "power4.inOut" }, "+=0.2")
-              .to(".logo-container", { opacity: 1, duration: 2 }, "-=0.5")
-              .to("#bg-img", { 
-                  scale: 1.1, 
-                  duration: 15, 
-                  repeat: -1, 
-                  yoyo: true, 
-                  ease: "sine.inOut" 
-              }, "-=1.5")
+              .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.4 })
+              .fromTo("#bg-logo", 
+                { opacity: 0, scale: 0.85 }, 
+                { opacity: 0.15, scale: 1.05, duration: 4, ease: "power2.out" }, // 4-second growth
+                "-=0.5"
+              )
               .to(".animate-text", {
-                  opacity: 1, 
-                  y: 0, 
-                  duration: 1, 
-                  stagger: 0.15 
-              }, "-=14.5");
+                  opacity: 1, y: 0, duration: 0.8, stagger: 0.1,
+                  startAt: { y: 20 }, ease: "power3.out"
+              }, "-=3.8");
         };
 
         if (logo.complete) startIntro();
@@ -197,16 +187,23 @@
             isExpanded = true;
             regContainer.classList.add('expanded');
 
+            // Determine if we are side-by-side (sm:flex-row)
+            const isDesktop = window.innerWidth >= 640;
+
             gsap.to(regContainer, { 
                 width: 180, 
-                height: 100, 
-                borderRadius: "20px",
-                duration: 0.4, 
-                ease: "back.out(1.5)" 
+                height: 110, 
+                duration: 0.6, 
+                ease: "elastic.out(1, 0.8)" 
             });
-            gsap.to(regLabel, { opacity: 0, duration: 0.2 });
-            gsap.set(regOptions, { display: 'block' });
-            gsap.to(regOptions, { opacity: 1, duration: 0.3, delay: 0.1 });
+
+            if (isDesktop) {
+                gsap.to(loginBtn, { x: -10, duration: 0.6, ease: "elastic.out(1, 0.8)" });
+            }
+
+            gsap.to(regLabel, { display: 'none', opacity: 0, duration: 0.1 });
+            gsap.set(regOptions, { display: 'flex' });
+            gsap.to(regOptions, { opacity: 1, y: 0, duration: 0.4, startAt: { y: 5 } });
         };
 
         const collapseMenu = () => {
@@ -215,20 +212,25 @@
             
             gsap.to(regOptions, { opacity: 0, duration: 0.2, onComplete: () => {
                 regOptions.style.display = 'none';
+                regLabel.style.display = 'block';
                 regContainer.classList.remove('expanded');
             }});
-            gsap.to(regContainer, { 
-                width: 160, 
-                height: 52, 
-                borderRadius: "999px",
-                duration: 0.4, 
-                ease: "power2.inOut" 
-            });
-            gsap.to(regLabel, { opacity: 1, duration: 0.3, delay: 0.1 });
+            
+            gsap.to(regContainer, { width: 160, height: 52, duration: 0.5, ease: "power4.out" });
+            gsap.to(loginBtn, { x: 0, duration: 0.5, ease: "power4.out" });
+            gsap.to(regLabel, { opacity: 1, duration: 0.3 });
         };
 
-        regContainer.addEventListener('mouseenter', expandMenu);
+        regContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            expandMenu();
+        });
+
         regContainer.addEventListener('mouseleave', collapseMenu);
+        document.addEventListener('click', (e) => {
+            if (!regContainer.contains(e.target)) collapseMenu();
+        });
     </script>
 </body>
-</html>
+    </html>
+            
