@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,6 @@
             color: white;
             overflow: hidden;
         }
-
         #curtain {
             position: fixed;
             inset: 0;
@@ -25,7 +23,6 @@
             justify-content: center;
             align-items: center;
         }
-
         /* --- Slow Growing Background Logo --- */
         .logo-container {
             position: fixed;
@@ -37,48 +34,55 @@
             opacity: 0;
             pointer-events: none;
         }
-
         .logo-container img {
-            height: 90%; /* Start slightly smaller for the growth effect */
+            height: 90%;
             width: auto;
-            max-width:none;
+            max-width: none;
             object-fit: contain;
             filter: grayscale(1) brightness(0.5);
         }
-
         main { position: relative; z-index: 10; }
-
         .btn-size {
             width: 160px;
             height: 52px;
         }
-
-        .btn-primary { 
-            background: white; 
-            color: black; 
-            display: flex;
+        .btn-primary {
+             background: white;
+             color: black;
+             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        /* --- Non-disruptive Expansion --- */
+        /* --- Responsive Shift Logic --- */
         .reg-wrapper {
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Transition width to shift the Login button smoothly on desktop */
+            transition: width 0.7s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         #reg-container {
-            position: absolute; /* Key: keeps the layout static */
-            top: 0;
+            position: absolute; /* Default: Overlay for Mobile */
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 9999px;
             overflow: hidden;
-            transition: background 0.3s ease, border 0.3s ease;
             cursor: pointer;
             z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Desktop: Change to relative so it occupies space in the flex row */
+        @media (min-width: 640px) {
+            #reg-container {
+                position: relative;
+            }
         }
 
         #reg-container.expanded {
@@ -91,25 +95,19 @@
 
         .reg-label {
             position: absolute;
-            top: 26px; /* Centered in the 52px height */
-            left: 50%;
-            transform: translate(-50%, -50%);
             font-weight: 600;
             font-size: 0.875rem;
             white-space: nowrap;
         }
-
         .reg-options {
             opacity: 0;
             display: none;
             flex-direction: column;
             justify-content: center;
-            height: 100%;
+            width: 100%;
             padding: 10px;
         }
-
         .animate-text { opacity: 0; }
-        
         footer {
             position: absolute;
             bottom: 24px;
@@ -148,7 +146,7 @@
         </p>
 
         <div class="animate-text flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#" class="btn-primary btn-size rounded-full font-semibold text-sm text-center">
+            <a href="login.html" class="btn-primary btn-size rounded-full font-semibold text-sm text-center">
                 Login
             </a>
             
@@ -156,9 +154,9 @@
                 <div id="reg-container" class="btn-size">
                     <span class="reg-label">Register</span>
                     <div class="reg-options" id="reg-options">
-                        <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Student</a>
+                        <a href="enrollbeta2.html" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Student</a>
                         <div class="h-[1px] bg-white/10 w-3/4 mx-auto my-1"></div>
-                        <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Faculty</a>
+                        <a href="enroll_teacherbeta2.html" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Faculty</a>
                     </div>
                 </div>
             </div>
@@ -166,47 +164,36 @@
     </main>
 
     <footer class="animate-text">
-        &copy; <span id="year"></span> CENTRAL MINDANAO COMPUTER SCHOOL. ALL RIGHTS RESERVED.
+        Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc. All rights reserved.
     </footer>
 
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
         const logo = document.getElementById('loading-logo');
-        const bgImg = document.getElementById('bg-img');
         const regContainer = document.getElementById('reg-container');
         const regOptions = document.getElementById('reg-options');
         const regLabel = document.querySelector('.reg-label');
 
-const startIntro = () => {
+        const startIntro = () => {
             const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-            
-            // 1. Initial logo fade in on the curtain
+
             tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
-              
-              // 2. Lift the curtain
               .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.4 })
-              
-              // 3. Background Logo: Slow, graceful growth (10 seconds)
+              // Slow Background Growth: 10s duration, subtle ease
               .fromTo("#bg-logo", 
-                  { opacity: 0, scale: 0.85 }, 
-                  { 
-                      opacity: 0.12, 
-                      scale: 1, 
-                      duration: 10, 
-                      ease: "power1.out" // Provides a smoother, slower deceleration
-                  }, 
-                  "-=0.8" // Starts slightly before curtain finishes
+                 { opacity: 0, scale: 0.85 }, 
+                 { opacity: 0.15, scale: 1, duration: 10, ease: "power1.out" }, 
+                 "-=0.5"
               )
-              
-              // 4. Content Elements: Animation UP into view
+              // Elements animation IN: Restored 'y' movement for up animation
               .to(".animate-text", {
                   opacity: 1,
                   y: 0,
                   duration: 1.2,
                   stagger: 0.15,
-                  startAt: { y: 40 }, // Forces elements to start 40px below their position
+                  startAt: { y: 40 },
                   ease: "power3.out"
-              }, "-=9.5"); // Triggers shortly after the background starts moving
+              }, "-=9.5"); 
         };
 
         if (logo.complete) startIntro();
@@ -219,13 +206,20 @@ const startIntro = () => {
             isExpanded = true;
             regContainer.classList.add('expanded');
 
-            gsap.to(regContainer, { 
-                width: 200, 
-                height: 140, 
-                top: -44, // Shifts up so it expands from center
-                duration: 0.7, 
-                ease: "elastic.out(1, 0.75)" 
+            // Animate the container growth
+            gsap.to(regContainer, {
+                width: 200,
+                height: 140,
+                y: -44, // Shifts up so it expands from center
+                duration: 0.7,
+                ease: "elastic.out(1, 0.75)"
             });
+
+            // If Desktop, expand the wrapper to push the Login button
+            if (window.innerWidth >= 640) {
+                gsap.to(".reg-wrapper", { width: 200, duration: 0.7, ease: "elastic.out(1, 0.75)" });
+            }
+
             gsap.to(regLabel, { opacity: 0, y: -10, duration: 0.2 });
             gsap.set(regOptions, { display: 'flex' });
             gsap.to(regOptions, { opacity: 1, scale: 1, y: 0, duration: 0.4, delay: 0.1, startAt: { scale: 0.95, y: 5 } });
@@ -239,7 +233,14 @@ const startIntro = () => {
                 regOptions.style.display = 'none';
                 regContainer.classList.remove('expanded');
             }});
-            gsap.to(regContainer, { width: 160, height: 52, top: 0, duration: 0.5, ease: "power4.out" });
+
+            gsap.to(regContainer, { width: 160, height: 52, y: 0, duration: 0.5, ease: "power4.out" });
+            
+            // If Desktop, shrink wrapper back to standard button width
+            if (window.innerWidth >= 640) {
+                gsap.to(".reg-wrapper", { width: 160, duration: 0.5, ease: "power4.out" });
+            }
+
             gsap.to(regLabel, { opacity: 1, y: 0, duration: 0.3, delay: 0.2 });
         };
 
