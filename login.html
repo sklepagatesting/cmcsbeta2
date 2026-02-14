@@ -3,68 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SVLS Terminal | Login</title>
+    <title>CMCS Portal | Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .input-focus { transition: all 0.2s ease-in-out; }
-        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-        .loader { border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #050505;
+            color: white;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* --- Persistent Background (Final State) --- */
+        .logo-container {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Matches the final state of the landing page exactly */
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        .logo-container img {
+            height: 90%;
+            width: auto;
+            max-width: none;
+            object-fit: contain;
+            filter: grayscale(1) brightness(0.5);
+            /* Scale is locked to 1 to match landing page final state */
+            transform: scale(1); 
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2.5rem;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .loader { 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-top: 2px solid #fff; 
+            border-radius: 50%; 
+            width: 18px; height: 18px; 
+            animation: spin 0.8s linear infinite; 
+            display: inline-block; 
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Strict Autofill Neutralization */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: white !important;
+            -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
     </style>
 </head>
-<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="logo-container">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+    </div>
 
     <div id="notif" class="fixed top-6 right-6 translate-x-[120%] transition-transform duration-500 z-[100]">
-        <div id="notifContent" class="bg-white border-l-4 border-rose-500 p-4 shadow-2xl rounded-r-xl flex items-center gap-4 min-w-[300px]">
+        <div id="notifContent" class="bg-[#111] border-l-4 border-rose-500 p-4 shadow-2xl rounded-r-xl flex items-center gap-4 min-w-[300px] border border-white/5">
             <i id="notifIcon" class="fa-solid fa-circle-exclamation text-rose-500"></i>
-            <p id="notifMsg" class="text-xs font-bold uppercase tracking-tight text-slate-700"></p>
+            <p id="notifMsg" class="text-xs font-bold uppercase tracking-tight text-gray-300"></p>
         </div>
     </div>
 
-    <div class="max-w-md w-full">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-slate-200">
-                <i class="fa-solid fa-terminal text-white text-2xl"></i>
-            </div>
-            <h1 class="text-2xl font-black tracking-tighter uppercase">SVLS Terminal</h1>
-            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Virtual Learning System</p>
+    <div class="max-w-md w-full relative z-10">
+        <div class="text-center mb-10">
+            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
+                 alt="CMCS Logo" class="w-16 mx-auto mb-6 brightness-125">
+            <h1 class="text-2xl font-bold tracking-tighter uppercase text-white">
+                System Entry
+            </h1>
+            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Central Mindanao Computer School</p>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200 border border-slate-100">
-            <form id="loginForm" class="space-y-6">
+        <div class="glass-card p-10">
+            <form id="loginForm" class="space-y-6" autocomplete="off">
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Account Email</label>
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Academic Email</label>
                     <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
-                        <input type="email" id="email" placeholder="name@gmail.com" class="w-full bg-slate-50 border border-slate-100 p-4 pl-10 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
+                        <input type="email" id="email" 
+                               class="w-full input-field p-4 pl-10 rounded-2xl outline-none font-medium text-sm text-white" 
+                               required autocomplete="new-password">
                     </div>
                 </div>
 
                 <div class="space-y-2">
                     <div class="flex justify-between items-center px-1">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Secret Password</label>
-                        <a href="#" class="text-[10px] font-bold text-blue-600 uppercase tracking-tighter hover:underline">Forgot?</a>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Access Key</label>
+                        <a href="#" class="text-[10px] font-bold text-gray-600 uppercase tracking-tighter hover:text-white transition-colors">Forgot?</a>
                     </div>
                     <div class="relative">
-                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
-                        <input type="password" id="pw" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 p-4 pl-10 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                        <i class="fa-solid fa-shield-halved absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
+                        <input type="password" id="pw" 
+                               class="w-full input-field p-4 pl-10 rounded-2xl outline-none font-medium text-sm text-white" 
+                               required autocomplete="new-password">
                     </div>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-200 transition-all active:scale-[0.98]">
-                    System Entry
+                <button type="submit" id="submitBtn" class="w-full bg-white text-black py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-[0.98] mt-4">
+                    Authenticate
                 </button>
             </form>
 
-            <div class="mt-8 pt-8 border-t border-slate-50 text-center">
-                <p class="text-xs text-slate-400 font-medium">No system access yet?</p>
-                <div class="flex justify-center gap-4 mt-3">
-                    <a href="enroll.html" class="text-[10px] font-black uppercase text-blue-600 hover:text-blue-700 tracking-widest">Student Enrollment</a>
-                    <span class="text-slate-200">|</span>
-                    <a href="teacher_enroll.html" class="text-[10px] font-black uppercase text-slate-600 hover:text-slate-900 tracking-widest">Faculty Hiring</a>
+            <div class="mt-8 pt-8 border-t border-white/5 text-center">
+                <p class="text-xs text-gray-600 font-medium mb-4">No credential assigned?</p>
+                <div class="flex justify-center gap-6">
+                    <a href="enrollbeta2.html" class="text-[10px] font-black uppercase text-white hover:text-gray-400 tracking-widest transition-colors">Student</a>
+                    <span class="text-white/10">/</span>
+                    <a href="enroll_teacherbeta2.html" class="text-[10px] font-black uppercase text-gray-500 hover:text-white tracking-widest transition-colors">Faculty</a>
                 </div>
             </div>
         </div>
@@ -112,34 +182,31 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
-                // Validate access via Firestore
                 const docSnap = await getDoc(doc(db, "users", user.uid));
 
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
                     
                     if(userData.status !== "approved") {
-                        showMsg("Account pending administrator review.");
+                        showMsg("Account pending review.");
                         btn.disabled = false;
-                        btn.innerHTML = "System Entry";
+                        btn.innerHTML = "Authenticate";
                         return;
                     }
 
-                    // Role-Based Routing
                     if(userData.role === 'admin') window.location.href = "admin_dashboard.html";
                     else if(userData.role === 'teacher') window.location.href = "teacher_dashboard.html";
                     else if(userData.role === 'student') window.location.href = "student_dashboard.html";
-                    else showMsg("System Error: No role assigned.");
+                    else showMsg("Error: No role assigned.");
 
                 } else {
-                    showMsg("Account data not found in system.");
+                    showMsg("User record not found.");
                 }
             } catch (error) {
                 console.error(error);
                 showMsg("Access Denied: Invalid Credentials.");
                 btn.disabled = false;
-                btn.innerHTML = "System Entry";
+                btn.innerHTML = "Authenticate";
             }
         });
     </script>
