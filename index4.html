@@ -25,20 +25,20 @@
             align-items: center;
         }
 
-        logo-container {
-     .logo-container {
+        /* --- Slow Growing Background Logo --- */
+        .logo-container {
             position: fixed;
             inset: 0;
-            width:100%;
             z-index: -1;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
-     }
+            pointer-events: none;
+        }
 
         .logo-container img {
-            height: 100%;
+            height: 90%; /* Start slightly smaller for the growth effect */
             width: auto;
             max-width:none;
             object-fit: contain;
@@ -47,7 +47,6 @@
 
         main { position: relative; z-index: 10; }
 
-        /* --- Unified Button Sizing --- */
         .btn-size {
             width: 160px;
             height: 52px;
@@ -61,20 +60,29 @@
             justify-content: center;
         }
 
-        /* --- Morphing Register Container --- */
-        #reg-container {
+        /* --- Non-disruptive Expansion --- */
+        .reg-wrapper {
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #reg-container {
+            position: absolute; /* Key: keeps the layout static */
+            top: 0;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 9999px;
             overflow: hidden;
             transition: background 0.3s ease, border 0.3s ease;
             cursor: pointer;
+            z-index: 50;
         }
 
         #reg-container.expanded {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 28px;
             cursor: default;
@@ -82,7 +90,7 @@
 
         .reg-label {
             position: absolute;
-            top: 50%;
+            top: 26px; /* Centered in the 52px height */
             left: 50%;
             transform: translate(-50%, -50%);
             font-weight: 600;
@@ -106,8 +114,8 @@
             bottom: 24px;
             width: 100%;
             text-align: center;
-            font-size: 11px;
-            letter-spacing: 0.05em;
+            font-size: 10px;
+            letter-spacing: 0.1em;
             color: rgba(255, 255, 255, 0.3);
             z-index: 5;
         }
@@ -121,7 +129,7 @@
     </div>
 
     <div class="logo-container" id="bg-logo">
-        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo" id="bg-img">
     </div>
 
     <main class="text-center px-6 max-w-4xl w-full">
@@ -143,37 +151,46 @@
                 Login
             </a>
             
-            <div id="reg-container" class="btn-size">
-                <span class="reg-label">Register</span>
-                <div class="reg-options" id="reg-options">
-                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Student</a>
-                    <div class="h-[1px] bg-white/10 w-3/4 mx-auto my-1"></div>
-                    <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Faculty</a>
+            <div class="reg-wrapper btn-size">
+                <div id="reg-container" class="btn-size">
+                    <span class="reg-label">Register</span>
+                    <div class="reg-options" id="reg-options">
+                        <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Student</a>
+                        <div class="h-[1px] bg-white/10 w-3/4 mx-auto my-1"></div>
+                        <a href="#" class="py-3 text-white hover:bg-white/10 rounded-2xl transition-all font-bold text-center text-sm">Faculty</a>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <footer class="animate-text">
-        Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc. All rights reserved.
+        &copy; <span id="year"></span> CENTRAL MINDANAO COMPUTER SCHOOL. ALL RIGHTS RESERVED.
     </footer>
 
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
         const logo = document.getElementById('loading-logo');
+        const bgImg = document.getElementById('bg-img');
         const regContainer = document.getElementById('reg-container');
         const regOptions = document.getElementById('reg-options');
         const regLabel = document.querySelector('.reg-label');
 
         const startIntro = () => {
             const tl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+            
             tl.to(logo, { opacity: 1, scale: 1.1, duration: 0.8 })
               .to("#curtain", { yPercent: -100, duration: 1.2, delay: 0.4 })
-              .to("#bg-logo", { opacity: 0.18, duration: 2 }, "-=0.5")
+              // Slow Background Growth
+              .fromTo("#bg-logo", 
+                { opacity: 0, scale: 0.8 }, 
+                { opacity: 0.15, scale: 1.1, duration: 20, ease: "linear" }, // Very slow 20s growth
+                "-=0.5"
+              )
               .to(".animate-text", {
                   opacity: 1, y: 0, duration: 1, stagger: 0.1,
                   startAt: { y: 20 }, ease: "power3.out"
-              }, "-=1.2");
+              }, "-=19.5");
         };
 
         if (logo.complete) startIntro();
@@ -186,10 +203,10 @@
             isExpanded = true;
             regContainer.classList.add('expanded');
 
-            // Expands BOTH width and height for a more "organic" feel
             gsap.to(regContainer, { 
-                width: 190, 
+                width: 200, 
                 height: 140, 
+                top: -44, // Shifts up so it expands from center
                 duration: 0.7, 
                 ease: "elastic.out(1, 0.75)" 
             });
@@ -206,7 +223,7 @@
                 regOptions.style.display = 'none';
                 regContainer.classList.remove('expanded');
             }});
-            gsap.to(regContainer, { width: 160, height: 52, duration: 0.5, ease: "power4.out" });
+            gsap.to(regContainer, { width: 160, height: 52, top: 0, duration: 0.5, ease: "power4.out" });
             gsap.to(regLabel, { opacity: 1, y: 0, duration: 0.3, delay: 0.2 });
         };
 
