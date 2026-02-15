@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMCS Portal | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #050505;
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .logo-container {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+        .logo-container img {
+            height: 80%;
+            width: auto;
+            object-fit: contain;
+            filter: grayscale(1) brightness(0.4);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2rem;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* iOS-style Button Morphing */
+        #submitBtn {
+            position: relative;
+            transform-origin: center;
+            transition: background 0.3s ease;
+        }
+
+        input:-webkit-autofill {
+            -webkit-text-fill-color: white !important;
+            -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
+        }
+
+        .eye-toggle {
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+        .eye-toggle:hover { opacity: 1; }
+    </style>
+</head>
+<body class="flex items-center justify-center p-6">
+
+    <div class="logo-container">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+    </div>
+
+    <div id="notif" class="fixed top-6 right-6 translate-x-[120%] transition-transform duration-500 z-[100]">
+        <div class="bg-[#111] border border-white/10 p-4 shadow-2xl rounded-2xl flex items-center gap-3">
+            <div id="notifCircle" class="w-2 h-2 rounded-full bg-rose-500"></div>
+            <p id="notifMsg" class="text-[10px] font-bold uppercase tracking-widest text-gray-300"></p>
+        </div>
+    </div>
+
+    <div class="max-w-sm w-full relative z-10">
+        <div class="text-center mb-8">
+            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
+                 alt="CMCS Logo" class="w-12 mx-auto mb-4 brightness-125">
+            <h1 class="text-xl font-black tracking-tighter uppercase">System Entry</h1>
+            <p class="text-gray-500 text-[9px] font-bold uppercase tracking-[0.4em] mt-1">CMCS Portal</p>
+        </div>
+
+        <div class="glass-card p-8">
+            <form id="loginForm" class="space-y-4" autocomplete="off">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Academic Email</label>
+                    <input type="email" id="email" 
+                           class="w-full input-field p-3.5 rounded-xl outline-none font-medium text-sm text-white" 
+                           required autocomplete="off">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-1">Access Key</label>
+                    <div class="relative">
+                        <input type="password" id="pw" 
+                               class="w-full input-field p-3.5 pr-12 rounded-xl outline-none font-medium text-sm text-white" 
+                               required>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                            <i id="togglePw" class="fa-solid fa-eye eye-toggle text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="submitBtn" class="w-full bg-white text-black py-4 rounded-xl font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.97]">
+                        Authenticate
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-white/5 flex justify-center gap-4">
+                <a href="enrollbeta2.html" class="text-[9px] font-bold uppercase text-gray-400 hover:text-white transition-colors">Student Registry</a>
+                <span class="text-white/10">•</span>
+                <a href="enroll_teacherbeta2.html" class="text-[9px] font-bold uppercase text-gray-400 hover:text-white transition-colors">Faculty</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const btn = document.getElementById('submitBtn');
+        const pwInput = document.getElementById('pw');
+        const togglePw = document.getElementById('togglePw');
+
+        // Toggle Password Visiblity
+        togglePw.addEventListener('click', () => {
+            const type = pwInput.type === 'password' ? 'text' : 'password';
+            pwInput.type = type;
+            togglePw.classList.toggle('fa-eye');
+            togglePw.classList.toggle('fa-eye-slash');
+        });
+
+        const showMsg = (msg, isError = true) => {
+            const notif = document.getElementById('notif');
+            const msgEl = document.getElementById('notifMsg');
+            const circle = document.getElementById('notifCircle');
+            
+            msgEl.innerText = msg;
+            circle.style.backgroundColor = isError ? '#f43f5e' : '#10b981';
+            notif.style.transform = 'translateX(0)';
+            
+            setTimeout(() => { notif.style.transform = 'translateX(120%)'; }, 4000);
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = pwInput.value;
+
+            // --- GSAP ANIMATION: RISE AND MORPH ---
+            const tl = gsap.timeline();
+            
+            tl.to(btn, {
+                y: -180,
+                scale: 1.05,
+                duration: 0.6,
+                ease: "back.out(1.7)",
+                backgroundColor: "#fff",
+                borderRadius: "30px",
+                onStart: () => {
+                    btn.innerText = "Authenticating...";
+                    btn.disabled = true;
+                }
+            });
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    
+                    if(userData.status !== "approved") {
+                        btn.innerText = "Pending Review";
+                        throw new Error("Pending");
+                    }
+
+                    btn.innerText = "Access Granted";
+                    gsap.to(btn, { scale: 1.2, opacity: 0, duration: 0.4 });
+                    
+                    setTimeout(() => {
+                        if(userData.role === 'admin') window.location.href = "admin_dashboard.html";
+                        else if(userData.role === 'teacher') window.location.href = "teacher_dashboard.html";
+                        else window.location.href = "student_dashboard.html";
+                    }, 500);
+
+                } else {
+                    btn.innerText = "No Record";
+                    throw new Error("Missing");
+                }
+            } catch (error) {
+                console.error(error);
+                btn.innerText = "Access Denied";
+                
+                // Bounce back down if failed
+                tl.to(btn, {
+                    y: 0,
+                    scale: 1,
+                    duration: 0.8,
+                    delay: 1,
+                    ease: "elastic.out(1, 0.75)",
+                    onComplete: () => {
+                        btn.disabled = false;
+                        btn.innerText = "Authenticate";
+                        showMsg(error.message === "Pending" ? "Account pending review." : "Invalid Credentials.");
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
