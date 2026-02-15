@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,17 +7,16 @@
     <title>CMCS Portal | Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #050505;
             color: white;
-            overflow: hidden;
             margin: 0;
+            overflow: hidden; 
         }
-
-        /* --- Persistent Background (Final State) --- */
         .logo-container {
             position: fixed;
             inset: 0;
@@ -24,8 +24,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Matches the final state of the landing page exactly */
-            opacity: 0.15;
+            opacity: 0.12;
             pointer-events: none;
         }
         .logo-container img {
@@ -33,117 +32,130 @@
             width: auto;
             max-width: none;
             object-fit: contain;
-            filter: grayscale(1) brightness(0.5);
-            /* Scale is locked to 1 to match landing page final state */
-            transform: scale(1); 
+            filter: grayscale(1) brightness(0.4);
         }
-
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2.5rem;
+            border-radius: 2.2rem;
         }
-
         .input-field {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            padding: 0.75rem 1.1rem !important;
+            transition: border 0.4s ease;
         }
-        .input-field:focus {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-        }
-
-        .loader { 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-top: 2px solid #fff; 
-            border-radius: 50%; 
-            width: 18px; height: 18px; 
-            animation: spin 0.8s linear infinite; 
-            display: inline-block; 
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Strict Autofill Neutralization */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus {
+        input:-webkit-autofill {
             -webkit-text-fill-color: white !important;
             -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
-            transition: background-color 5000s ease-in-out 0s;
+        }
+        .btn-anchor {
+            width: 100%;
+            height: 52px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 1.5rem;
+            position: relative;
+        }
+        #submitBtn {
+            width: 100%;
+            height: 52px;
+            background: white;
+            color: black;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        footer {
+            position: absolute;
+            bottom: 24px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.3);
+            z-index: 5;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
     <div class="logo-container">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <div id="notif" class="fixed top-6 right-6 translate-x-[120%] transition-transform duration-500 z-[100]">
-        <div id="notifContent" class="bg-[#111] border-l-4 border-rose-500 p-4 shadow-2xl rounded-r-xl flex items-center gap-4 min-w-[300px] border border-white/5">
-            <i id="notifIcon" class="fa-solid fa-circle-exclamation text-rose-500"></i>
-            <p id="notifMsg" class="text-xs font-bold uppercase tracking-tight text-gray-300"></p>
-        </div>
-    </div>
-
-    <div class="max-w-md w-full relative z-10">
+    <div class="max-w-[400px] w-full relative z-10">
         <div class="text-center mb-10">
             <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
                  alt="CMCS Logo" class="w-16 mx-auto mb-6 brightness-125">
-            <h1 class="text-2xl font-bold tracking-tighter uppercase text-white">
-                System Entry
+            
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 leading-tight">
+                Central Mindanao <br> Computer School
             </h1>
-            <p class="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Central Mindanao Computer School</p>
+
+            <div class="inline-flex items-center px-4 py-2 mb-6 rounded-full border border-white/10 bg-white/5 text-[10px] font-medium text-gray-400">
+                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse mr-2"></span>
+                2nd Floor Villasor Building, Burgos Street, Mlang, Cotabato
+            </div>
+
+            <p id="para-text" class="text-gray-400 text-sm md:text-base max-w-xs mx-auto">
+                Access academic resources and manage your profile through our unified portal.
+            </p>
         </div>
 
-        <div class="glass-card p-10">
-            <form id="loginForm" class="space-y-6" autocomplete="off">
+        <div class="glass-card p-8">
+            <form id="loginForm" class="space-y-5">
                 <div class="space-y-2">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Academic Email</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
-                        <input type="email" id="email" 
-                               class="w-full input-field p-4 pl-10 rounded-2xl outline-none font-medium text-sm text-white" 
-                               required autocomplete="new-password">
-                    </div>
+                    <label class="field-label text-gray-400 text-sm md:text-base ml-1">Academic email</label>
+                    <input type="email" id="email" name="email" autocomplete="username"
+                            class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white" required>
                 </div>
 
                 <div class="space-y-2">
-                    <div class="flex justify-between items-center px-1">
-                        <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Access Key</label>
-                        <a href="#" class="text-[10px] font-bold text-gray-600 uppercase tracking-tighter hover:text-white transition-colors">Forgot?</a>
-                    </div>
+                    <label class="field-label text-gray-400 text-sm md:text-base ml-1">Access key</label>
                     <div class="relative">
-                        <i class="fa-solid fa-shield-halved absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
-                        <input type="password" id="pw" 
-                               class="w-full input-field p-4 pl-10 rounded-2xl outline-none font-medium text-sm text-white" 
-                               required autocomplete="new-password">
+                        <input type="password" id="pw" name="password" autocomplete="current-password"
+                                class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white pr-12" required>
+                        <i id="togglePw" class="fa-solid fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-30 cursor-pointer"></i>
                     </div>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-white text-black py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-[0.98] mt-4">
-                    Authenticate
-                </button>
+                <div class="btn-anchor">
+                    <button type="submit" id="submitBtn">Authenticate</button>
+                </div>
             </form>
 
-            <div class="mt-8 pt-8 border-t border-white/5 text-center">
-                <p class="text-xs text-gray-600 font-medium mb-4">No credential assigned?</p>
-                <div class="flex justify-center gap-6">
-                    <a href="enrollbeta2.html" class="text-[10px] font-black uppercase text-white hover:text-gray-400 tracking-widest transition-colors">Student</a>
-                    <span class="text-white/10">/</span>
-                    <a href="enroll_teacherbeta2.html" class="text-[10px] font-black uppercase text-gray-500 hover:text-white tracking-widest transition-colors">Faculty</a>
+            <div class="mt-8 text-center border-t border-white/5 pt-6">
+                <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4">No account yet?</p>
+                <div class="flex justify-center items-center gap-6">
+                    <a href="enrollbeta2.html" class="text-xs font-semibold text-white/50 hover:text-white transition-all">Register student</a>
+                    <span class="text-white/10 w-[1px] h-3 bg-white/10"></span>
+                    <a href="enroll_teacherbeta2.html" class="text-xs font-semibold text-white/50 hover:text-white transition-all">Register faculty</a>
                 </div>
             </div>
         </div>
     </div>
 
+    <footer>
+        Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc.<br>All rights reserved.
+    </footer>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        document.getElementById('year').textContent = new Date().getFullYear();
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
@@ -158,55 +170,61 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const showMsg = (msg, isError = true) => {
-            const notif = document.getElementById('notif');
-            const content = document.getElementById('notifContent');
-            const msgEl = document.getElementById('notifMsg');
-            
-            msgEl.innerText = msg;
-            content.style.borderColor = isError ? '#f43f5e' : '#10b981';
-            notif.style.transform = 'translateX(0)';
-            
-            setTimeout(() => { notif.style.transform = 'translateX(120%)'; }, 4000);
-        };
+        const btn = document.getElementById('submitBtn');
+        const pwInput = document.getElementById('pw');
+        let activeTl;
+
+        document.getElementById('togglePw').addEventListener('click', () => {
+            pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+        });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pw').value;
+            if(activeTl) activeTl.kill();
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span>';
+            activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+            
+            activeTl.to(btn, {
+                width: "140px",
+                height: "38px",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                color: "#ffffff",
+                fontSize: "12px",
+                duration: 1.2,
+                innerText: "Checking",
+                opacity: 0.6
+            });
 
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                const docSnap = await getDoc(doc(db, "users", user.uid));
+                const userCredential = await signInWithEmailAndPassword(auth, document.getElementById('email').value.trim(), pwInput.value);
+                const docSnap = await getDoc(doc(db, "users", userCredential.user.uid));
 
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    
-                    if(userData.status !== "approved") {
-                        showMsg("Account pending review.");
-                        btn.disabled = false;
-                        btn.innerHTML = "Authenticate";
-                        return;
-                    }
+                if (docSnap.exists() && docSnap.data().status === "approved") {
+                    activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+                    activeTl.to(btn, {
+                        width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
+                        fontSize: "14px", innerText: "Verified", opacity: 1,
+                        duration: 1.0
+                    });
+                    setTimeout(() => window.location.href = `${docSnap.data().role}_dashboard.html`, 1400);
+                } else { throw new Error("pending"); }
 
-                    if(userData.role === 'admin') window.location.href = "admin_dashboard.html";
-                    else if(userData.role === 'teacher') window.location.href = "teacher_dashboard.html";
-                    else if(userData.role === 'student') window.location.href = "student_dashboard.html";
-                    else showMsg("Error: No role assigned.");
-
-                } else {
-                    showMsg("User record not found.");
-                }
-            } catch (error) {
-                console.error(error);
-                showMsg("Access Denied: Invalid Credentials.");
-                btn.disabled = false;
-                btn.innerHTML = "Authenticate";
+            } catch (err) {
+                if(activeTl) activeTl.kill();
+                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+                
+                activeTl.to(btn, { 
+                    backgroundColor: "rgba(255, 59, 48, 0.2)", 
+                    innerText: err.message === "pending" ? "Pending" : "Denied",
+                    color: "#ff3b30",
+                    duration: 0.4 
+                })
+                .to(btn, { x: -4, duration: 0.1, repeat: 3, yoyo: true, ease: "linear" }, 0)
+                .to(btn, {
+                    width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
+                    fontSize: "14px", innerText: "Authenticate", x: 0, opacity: 1,
+                    duration: 1.2, delay: 1.2
+                });
             }
         });
     </script>
