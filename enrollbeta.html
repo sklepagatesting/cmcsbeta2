@@ -227,6 +227,22 @@
         getAuth, createUserWithEmailAndPassword, signOut 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+ // --- NEW: Disable Autofill on Load logic ---
+    const inputs = document.querySelectorAll('.input-field');
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'readonly');
+        input.style.cursor = 'text';
+        
+        const stopReadOnly = () => {
+            input.removeAttribute('readonly');
+            input.removeEventListener('focus', stopReadOnly);
+            input.removeEventListener('mousedown', stopReadOnly);
+        };
+
+        input.addEventListener('focus', stopReadOnly);
+        input.addEventListener('mousedown', stopReadOnly);
+    });
+    
     const firebaseConfig = { 
         apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
         authDomain: "svls-289ee.firebaseapp.com",
