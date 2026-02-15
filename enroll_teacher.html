@@ -5,58 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Enrollment | SVLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 text-black min-h-screen flex items-center justify-center p-6">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .input-focus { transition: all 0.2s ease-in-out; }
+        .input-focus:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        
+        /* White calendar icon for date inputs */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.5); /* Greyish to fit the light theme, or invert(1) for pure white */
+            cursor: pointer;
+        }
 
-    <div id="msgModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white border-4 border-black p-8 max-w-sm w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center">
-            <h3 id="modalTitle" class="font-black text-2xl mb-2 uppercase tracking-tighter">Notice</h3>
-            <p id="modalMsg" class="font-medium text-gray-700 mb-6"></p>
-            <button onclick="closeModal()" class="w-full bg-black text-white py-3 font-bold hover:bg-gray-800 transition uppercase tracking-widest">Understood</button>
+        .loader { 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-top: 2px solid white; 
+            border-radius: 50%; 
+            width: 18px; height: 18px; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="msgModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center transform transition-all">
+            <div id="modalIcon" class="text-5xl mb-4"></div>
+            <h3 id="modalTitle" class="text-xl font-bold mb-2 tracking-tight">Notice</h3>
+            <p id="modalMsg" class="text-slate-500 text-sm font-medium leading-relaxed mb-8"></p>
+            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                Continue
+            </button>
         </div>
     </div>
 
-    <div class="max-w-lg w-full bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div class="mb-8">
-            <h2 class="text-3xl font-black uppercase tracking-tighter">Teacher Enrollment</h2>
-            <p class="text-sm text-gray-500 italic">Apply for a teaching account.</p>
+    <div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-[2.5rem] shadow-2xl bg-white">
+        <div class="hidden lg:flex lg:col-span-4 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+                </div>
+                <h2 class="text-white text-3xl font-extrabold leading-tight tracking-tight">Join our <br>Academic <br>Faculty.</h2>
+                <p class="text-slate-400 mt-6 text-sm leading-relaxed">Submit credentials for verification. Once approved, you will gain access to the terminal.</p>
+            </div>
+            <div class="relative z-10 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                CMCS Faculty Portal
+            </div>
         </div>
-        
-        <form id="teacherForm" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" id="ln" placeholder="Lastname" class="border-2 border-black p-3 outline-none" required>
-                <input type="text" id="fn" placeholder="Firstname" class="border-2 border-black p-3 outline-none" required>
-            </div>
-            
-            <select id="gender" class="w-full border-2 border-black p-3 outline-none bg-white" required>
-                <option value="" disabled selected>Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
 
-            <select id="designation" class="w-full border-2 border-black p-3 outline-none bg-white" required>
-                <option value="" disabled selected>Select Designation</option>
-                <option value="Subject Teacher">Subject Teacher</option>
-                <option value="Substitute">Substitute</option>
-            </select>
-
-            <input type="email" id="email" placeholder="Gmail Address" class="w-full border-2 border-black p-3 outline-none" required>
-            <input type="password" id="pw" placeholder="Password" class="w-full border-2 border-black p-3 outline-none" required>
-            
-            <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase">License Number (7 Digits)</label>
-                <input type="text" id="license" pattern="[0-9]{7}" placeholder="0000000" class="w-full border-2 border-black p-3 outline-none" required>
+        <div class="lg:col-span-8 p-8 md:p-12">
+            <div class="mb-10">
+                <h3 class="text-2xl font-bold text-slate-800 tracking-tight">Teacher Enrollment</h3>
+                <p class="text-slate-400 text-sm mt-1">Academic Year 2026-2027</p>
             </div>
 
-            <button type="submit" id="submitBtn" class="w-full bg-black text-white py-4 font-black hover:invert transition-all">SUBMIT FOR APPROVAL</button>
-        </form>
+            <form id="teacherForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Legal Last Name</label>
+                        <input type="text" id="ln" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Legal First Name</label>
+                        <input type="text" id="fn" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Gender</label>
+                        <select id="gender" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Date of Birth</label>
+                        <input type="date" id="bday" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Residential Address</label>
+                    <input type="text" id="address" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Designation</label>
+                        <select id="designation" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm uppercase appearance-none" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="SUBJECT TEACHER">Subject Teacher</option>
+                            <option value="ADVISER">Adviser</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">PRC License Number</label>
+                        <input type="text" id="license" maxlength="7" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                </div>
+
+                <div class="pt-6 mt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Gmail Account</label>
+                        <input type="email" id="email" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                    </div>
+                    <div class="space-y-2 relative">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Create Password</label>
+                        <div class="relative">
+                            <input type="password" id="pw" class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none input-focus font-semibold text-sm" required>
+                            <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
+                                <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white py-5 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-200 transition-all duration-300 transform active:scale-[0.98] mt-4">
+                    Send Application
+                </button>
+            </form>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
@@ -69,45 +150,127 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
+        const secondaryApp = initializeApp(firebaseConfig, "TeacherSecondary");
+        const secondaryAuth = getAuth(secondaryApp);
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        const btn = document.getElementById('submitBtn');
+        const licenseInput = document.getElementById('license');
         let redirectOnClose = false;
 
-        window.showModal = (title, msg, redirect = false) => {
+        // Restriction: Only numbers for license
+        licenseInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        window.togglePassword = () => {
+            const pw = document.getElementById('pw');
+            const icon = document.getElementById('eyeIcon');
+            pw.type = pw.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        };
+
+        window.showModal = (title, msg, type = 'success', redirect = false) => {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalMsg').innerText = msg;
-            document.getElementById('msgModal').classList.remove('hidden');
+            const icon = document.getElementById('modalIcon');
+            icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+            document.getElementById('msgModal').classList.replace('hidden', 'flex');
             redirectOnClose = redirect;
-        }
+        };
 
         window.closeModal = () => {
-            document.getElementById('msgModal').classList.add('hidden');
-            if(redirectOnClose) window.location.href = "login.html";
+            document.getElementById('msgModal').classList.replace('flex', 'hidden');
+            if(redirectOnClose) window.close(); 
+        };
+
+        async function checkEditMode() {
+            if (!editId) return;
+            document.querySelector('h3').innerText = "Edit Faculty Profile";
+            btn.innerText = "Update Profile";
+            document.getElementById('pw').required = false;
+            document.getElementById('pw').closest('.space-y-2').parentElement.classList.add('hidden');
+            document.getElementById('email').readOnly = true;
+
+            const snap = await getDoc(doc(db, "users", editId));
+            if (snap.exists()) {
+                const d = snap.data();
+                document.getElementById('ln').value = d.lastname;
+                document.getElementById('fn').value = d.firstname;
+                document.getElementById('gender').value = d.gender;
+                document.getElementById('bday').value = d.birthdate;
+                document.getElementById('address').value = d.address;
+                document.getElementById('designation').value = d.designation;
+                document.getElementById('license').value = d.license;
+                document.getElementById('email').value = d.email;
+            }
         }
 
         document.getElementById('teacherForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('pw').value;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> VERIFYING...';
+
+            const firstName = document.getElementById('fn').value.toUpperCase().trim();
+            const lastName = document.getElementById('ln').value.toUpperCase().trim();
+            const license = licenseInput.value;
+            const email = document.getElementById('email').value.trim().toLowerCase();
 
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await setDoc(doc(db, "users", userCredential.user.uid), {
-                    lastname: document.getElementById('ln').value,
-                    firstname: document.getElementById('fn').value,
-                    gender: document.getElementById('gender').value, // Saved to DB
-                    designation: document.getElementById('designation').value,
-                    email: email,
-                    license: document.getElementById('license').value,
-                    role: "teacher",
-                    status: "pending",
-                    createdAt: new Date()
-                });
-                showModal("Success", "Teacher enrollment submitted. Waiting for admin approval.", true);
+                if (!editId) {
+                    // Duplication Check: License Number
+                    const qLicense = query(collection(db, "users"), where("license", "==", license));
+                    const snapLicense = await getDocs(qLicense);
+                    if (!snapLicense.empty) throw new Error("License number is already registered.");
+
+                    // Duplication Check: Full Name
+                    const qName = query(collection(db, "users"), 
+                        where("firstname", "==", firstName), 
+                        where("lastname", "==", lastName)
+                    );
+                    const snapName = await getDocs(qName);
+                    if (!snapName.empty) throw new Error("A teacher with this name already exists in our records.");
+                }
+
+                const userData = {
+                    lastname: lastName,
+                    firstname: firstName,
+                    gender: document.getElementById('gender').value.toUpperCase(),
+                    birthdate: document.getElementById('bday').value,
+                    address: document.getElementById('address').value.toUpperCase(),
+                    designation: document.getElementById('designation').value.toUpperCase(),
+                    license: license,
+                };
+
+                if (editId) {
+                    await updateDoc(doc(db, "users", editId), userData);
+                    showModal("Profile Updated", "Teacher information has been successfully saved.", "success", true);
+                } else {
+                    const password = document.getElementById('pw').value;
+                    const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                    await setDoc(doc(db, "users", cred.user.uid), { 
+                        ...userData, 
+                        uid: cred.user.uid, 
+                        email, 
+                        role: "teacher", 
+                        status: "pending", 
+                        createdAt: new Date() 
+                    });
+                    await signOut(secondaryAuth);
+                    showModal("Application Sent", "Your faculty application is now pending verification.", "success", true);
+                }
             } catch (error) {
-                showModal("Error", error.message);
+                let msg = error.message;
+                if (error.code === 'auth/email-already-in-use') msg = "This email is already linked to an account.";
+                showModal("Registration Denied", msg, "error");
+                btn.disabled = false;
+                btn.innerText = editId ? "Update Profile" : "Send Application";
             }
         });
+
+        checkEditMode();
     </script>
 </body>
 </html>
