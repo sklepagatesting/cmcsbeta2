@@ -10,6 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
+        /* Force text to remain white even during browser autofill events */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus {
+        -webkit-text-fill-color: white !important;
+        -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #050505;
@@ -150,83 +158,100 @@
         Copyright &copy; <span id="year"></span> Central Mindanao Computer School Inc.<br>All rights reserved.
     </footer>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        document.getElementById('year').textContent = new Date().getFullYear();
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    // --- NEW: Disable Autofill on Load logic ---
+    const inputs = document.querySelectorAll('.input-field');
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'readonly');
+        input.style.cursor = 'text';
+        
+        const stopReadOnly = () => {
+            input.removeAttribute('readonly');
+            input.removeEventListener('focus', stopReadOnly);
+            input.removeEventListener('mousedown', stopReadOnly);
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+        input.addEventListener('focus', stopReadOnly);
+        input.addEventListener('mousedown', stopReadOnly);
+    });
+    // ------------------------------------------
 
-        const btn = document.getElementById('submitBtn');
-        const pwInput = document.getElementById('pw');
-        let activeTl;
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-        document.getElementById('togglePw').addEventListener('click', () => {
-            pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+    const firebaseConfig = {
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const btn = document.getElementById('submitBtn');
+    const pwInput = document.getElementById('pw');
+    let activeTl;
+
+    document.getElementById('togglePw').addEventListener('click', () => {
+        pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if(activeTl) activeTl.kill();
+
+        activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+        
+        activeTl.to(btn, {
+            width: "140px",
+            height: "38px",
+            backgroundColor: "rgba(255, 255, 255, 0.1)",
+            color: "#ffffff",
+            fontSize: "12px",
+            duration: 1.2,
+            innerText: "Checking",
+            opacity: 0.6
         });
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if(activeTl) activeTl.kill();
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, document.getElementById('email').value.trim(), pwInput.value);
+            const docSnap = await getDoc(doc(db, "users", userCredential.user.uid));
 
+            if (docSnap.exists() && docSnap.data().status === "approved") {
+                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+                activeTl.to(btn, {
+                    width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
+                    fontSize: "14px", innerText: "Verified", opacity: 1,
+                    duration: 1.0
+                });
+                setTimeout(() => window.location.href = `${docSnap.data().role}_dashboard.html`, 1400);
+            } else { throw new Error("pending"); }
+
+        } catch (err) {
+            if(activeTl) activeTl.kill();
             activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
             
-            activeTl.to(btn, {
-                width: "140px",
-                height: "38px",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                color: "#ffffff",
-                fontSize: "12px",
-                duration: 1.2,
-                innerText: "Checking",
-                opacity: 0.6
+            activeTl.to(btn, { 
+                backgroundColor: "rgba(255, 59, 48, 0.2)", 
+                innerText: err.message === "pending" ? "Pending" : "Denied",
+                color: "#ff3b30",
+                duration: 0.4 
+            })
+            .to(btn, { x: -4, duration: 0.1, repeat: 3, yoyo: true, ease: "linear" }, 0)
+            .to(btn, {
+                width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
+                fontSize: "14px", innerText: "Authenticate", x: 0, opacity: 1,
+                duration: 1.2, delay: 1.2
             });
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, document.getElementById('email').value.trim(), pwInput.value);
-                const docSnap = await getDoc(doc(db, "users", userCredential.user.uid));
-
-                if (docSnap.exists() && docSnap.data().status === "approved") {
-                    activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-                    activeTl.to(btn, {
-                        width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
-                        fontSize: "14px", innerText: "Verified", opacity: 1,
-                        duration: 1.0
-                    });
-                    setTimeout(() => window.location.href = `${docSnap.data().role}_dashboard.html`, 1400);
-                } else { throw new Error("pending"); }
-
-            } catch (err) {
-                if(activeTl) activeTl.kill();
-                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-                
-                activeTl.to(btn, { 
-                    backgroundColor: "rgba(255, 59, 48, 0.2)", 
-                    innerText: err.message === "pending" ? "Pending" : "Denied",
-                    color: "#ff3b30",
-                    duration: 0.4 
-                })
-                .to(btn, { x: -4, duration: 0.1, repeat: 3, yoyo: true, ease: "linear" }, 0)
-                .to(btn, {
-                    width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
-                    fontSize: "14px", innerText: "Authenticate", x: 0, opacity: 1,
-                    duration: 1.2, delay: 1.2
-                });
-            }
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>
