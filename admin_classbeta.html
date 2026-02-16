@@ -206,6 +206,7 @@
     let currentStudentUid = null;
     let fetchedStudents = [];
 
+    // --- UTILITIES ---
     window.showNotif = (msg) => {
         document.getElementById('notifMessage').innerText = msg;
         document.getElementById('notifModal').style.display = 'flex';
@@ -213,49 +214,60 @@
 
     window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
 
- onAuthStateChanged(auth, async user => {
-            if (user) {
+    // --- AUTH & SECURITY ---
+    onAuthStateChanged(auth, async user => {
+        if (user) {
+            try {
                 const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = data.firstname.charAt(0).toUpperCase();
                     await loadCourses();
-                    syncData();
+                } else {
+                    alert("ACCESS DENIED: ADMIN PRIVILEGES REQUIRED.");
+                    window.location.href = "login.html";
                 }
-            } else { window.location.href = "login.html"; }
-        });
+            } catch (err) {
+                console.error("Auth Error:", err);
+                window.location.href = "login.html";
+            }
+        } else { 
+            window.location.href = "login.html"; 
+        }
+    });
 
-
+    // --- DATA LOADING ---
     async function loadCourses() {
         const snap = await getDocs(collection(db, "courses"));
         const sel = document.getElementById('filterCourse');
-        sel.innerHTML = '<option value="" disabled selected>SELECT COURSE</option>';
+        let options = '<option value="" disabled selected>SELECT COURSE</option>';
         snap.forEach(d => {
             const name = d.data().name.toUpperCase();
-            sel.innerHTML += `<option value="${name}">${name}</option>`;
+            options += `<option value="${name}">${name}</option>`;
         });
+        sel.innerHTML = options;
     }
 
     function renderTable(students) {
         const tbody = document.getElementById('studentTableBody');
-        tbody.innerHTML = '';
         if (students.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-red-400 font-bold uppercase tracking-widest text-xs">No records found matching criteria</td></tr>';
             return;
         }
 
-        students.forEach((s, idx) => {
+        tbody.innerHTML = students.map((s, idx) => {
             const subjects = s.assignedPrograms && s.assignedPrograms.length > 0 
                 ? s.assignedPrograms.map(p => `<span class="inline-block bg-blue-50 text-blue-600 border border-blue-100 text-[9px] px-2 py-0.5 rounded-full font-bold mr-1 mb-1 uppercase tracking-tighter">${p}</span>`).join('') 
                 : '<span class="text-gray-300 text-[9px] font-bold uppercase italic tracking-tighter">No Load Assigned</span>';
-            
-            tbody.innerHTML += `
-                <tr class="hover:bg-gray-50 transition-colors">
+
+            return `
+                <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
                     <td class="px-6 py-4 text-xs font-bold text-gray-300">${idx + 1}</td>
                     <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
                     <td class="px-6 py-4 font-bold text-gray-800 uppercase">${s.lastname}, ${s.firstname}</td>
                     <td class="px-6 py-4 text-[10px] font-bold">
-                        <span class="text-gray-500">${s.course}</span><br>
+                        <span class="text-gray-500 uppercase">${s.course}</span><br>
                         <span class="text-primary">Y${s.year} • ${s.semester || 'NO SEMESTER'}</span>
                     </td>
                     <td class="px-6 py-4"><div class="flex flex-wrap max-w-[200px]">${subjects}</div></td>
@@ -265,9 +277,10 @@
                         </button>
                     </td>
                 </tr>`;
-        });
+        }).join('');
     }
 
+    // --- INTERACTIVE LOGIC ---
     document.getElementById('searchField').oninput = (e) => {
         const q = e.target.value.toUpperCase();
         const filtered = fetchedStudents.filter(s => 
@@ -284,7 +297,7 @@
         const year = document.getElementById('filterYear').value;
         const sem = document.getElementById('filterSem').value;
 
-        document.getElementById('targetStudentName').innerText = name;
+        document.getElementById('targetStudentName').innerText = name.toUpperCase();
         document.getElementById('targetStudentSubInfo').innerText = `${course} - YEAR ${year} - ${sem}`;
         
         const listDiv = document.getElementById('programList');
@@ -304,36 +317,29 @@
             ]);
 
             const enrolled = userSnap.data().assignedPrograms || [];
-            listDiv.innerHTML = '';
-
+            
             if(progSnap.empty) {
                 listDiv.innerHTML = '<div class="p-10 text-center"><i class="fa-solid fa-ban text-gray-200 text-3xl mb-2"></i><p class="text-[10px] text-gray-400 font-bold uppercase">No subjects found for this program.</p></div>';
                 return;
             }
 
-            progSnap.forEach(p => {
+            listDiv.innerHTML = progSnap.docs.map(p => {
                 const d = p.data();
                 const code = (d.code || "").toUpperCase();
                 const pName = (d.name || "").toUpperCase();
                 const checked = enrolled.includes(code) ? 'checked' : '';
-                
-                // Check if status is INACTIVE
                 const isInactive = (d.status === "INACTIVE");
-                const bgClass = isInactive ? 'bg-red-50' : 'hover:bg-primary/5';
-                const borderClass = isInactive ? 'border-red-200' : 'border-gray-50';
-                const textClass = isInactive ? 'text-red-600' : 'text-gray-800';
-                const subTextClass = isInactive ? 'text-red-400' : 'text-gray-400';
-
-                listDiv.innerHTML += `
-                    <label class="grid grid-cols-[45px_100px_1fr] gap-4 items-center px-5 py-4 border-b ${borderClass} ${bgClass} transition-colors cursor-pointer group">
+                
+                return `
+                    <label class="grid grid-cols-[45px_100px_1fr] gap-4 items-center px-5 py-4 border-b ${isInactive ? 'bg-red-50 border-red-200' : 'border-gray-50 hover:bg-primary/5'} transition-colors cursor-pointer group">
                         <input type="checkbox" value="${code}" ${checked} class="prog-checkbox w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
-                        <span class="text-[10px] font-black ${textClass} border-r border-gray-100 pr-2 group-hover:text-primary transition-colors">${code}</span>
+                        <span class="text-[10px] font-black ${isInactive ? 'text-red-600' : 'text-gray-800'} border-r border-gray-100 pr-2 group-hover:text-primary transition-colors">${code}</span>
                         <div class="flex flex-col">
-                            <span class="text-[11px] font-bold ${textClass}">${pName} ${isInactive ? '<span class="text-[8px] italic ml-2">[INACTIVE]</span>' : ''}</span>
-                            <span class="text-[9px] ${subTextClass} font-bold uppercase tracking-tighter">${d.schedule || 'Schedule TBA'}</span>
+                            <span class="text-[11px] font-bold ${isInactive ? 'text-red-600' : 'text-gray-800'} uppercase">${pName} ${isInactive ? '<span class="text-[8px] italic ml-2">[INACTIVE]</span>' : ''}</span>
+                            <span class="text-[9px] ${isInactive ? 'text-red-400' : 'text-gray-400'} font-bold uppercase tracking-tighter">${d.schedule || 'Schedule TBA'}</span>
                         </div>
                     </label>`;
-            });
+            }).join('');
         } catch (err) { 
             listDiv.innerHTML = '<div class="p-6 text-red-500 text-[10px] font-bold text-center">FAILED TO LOAD SUBJECTS</div>'; 
         }
@@ -361,14 +367,10 @@
             );
 
             const snap = await getDocs(q);
-            fetchedStudents = [];
-            snap.forEach(u => {
-                fetchedStudents.push({ uid: u.id, ...u.data() });
-            });
+            fetchedStudents = snap.docs.map(u => ({ uid: u.id, ...u.data() }));
             renderTable(fetchedStudents);
             document.getElementById('searchField').value = '';
         } catch (e) { 
-            console.error(e);
             showNotif("Database connection error."); 
         } finally { 
             btn.innerHTML = '<i class="fa-solid fa-sync-alt"></i> Fetch Students'; 
@@ -379,12 +381,10 @@
         const selected = Array.from(document.querySelectorAll('.prog-checkbox:checked')).map(cb => cb.value);
         const btn = document.getElementById('saveClassesBtn');
         btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span> Saving...';
+        btn.innerHTML = 'Saving...';
 
         try {
-            await updateDoc(doc(db, "users", currentStudentUid), { 
-                assignedPrograms: selected 
-            });
+            await updateDoc(doc(db, "users", currentStudentUid), { assignedPrograms: selected });
             closeModal('classModal');
             showNotif("Enrollment updated successfully!");
             document.getElementById('fetchBtn').click();
@@ -396,6 +396,12 @@
     };
 
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+
+    // --- CLOCK (At bottom) ---
+    setInterval(() => {
+        const clock = document.getElementById('clock');
+        if(clock) clock.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }, 1000);
 </script>
 </body>
 </html>
