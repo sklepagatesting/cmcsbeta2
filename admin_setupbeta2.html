@@ -299,9 +299,9 @@
         </div>
     </div>
 
-  <script type="module">
+ <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, where, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = { 
@@ -317,262 +317,201 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    let masterCourses = [];
-    let masterSubjects = [];
+    let masterData = [];
+    let courseSYMap = {};
 
     // --- UTILITIES ---
-    const formatTime = (t) => {
+    const formatYear = y => {
+        const v = String(y).toUpperCase();
+        return v.includes("1") ? "1" : v.includes("2") ? "2" : v.includes("3") ? "3" : v.includes("4") ? "4" : v;
+    };
+    const formatSem = s => String(s).toUpperCase().includes("1ST") ? "1ST SEMESTER" : "2ND SEMESTER";
+    const formatTime = t => {
         if(!t) return "";
         const [h, m] = t.split(':');
         const hh = parseInt(h);
-        const suffix = hh >= 12 ? "PM" : "AM";
-        let hour = ((hh + 11) % 12 + 1);
-        return `${hour.toString().padStart(2, '0')}:${m} ${suffix}`;
-    };
-
-    window.showNotif = (msg, isConfirm = false, onYes = null) => {
-        document.getElementById('notifMessage').innerText = msg;
-        const confirmDiv = document.getElementById('confirmActions');
-        const alertDiv = document.getElementById('alertActions');
-        if (isConfirm) {
-            confirmDiv.classList.replace('hidden', 'flex');
-            alertDiv.classList.add('hidden');
-            document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
-        } else {
-            confirmDiv.classList.replace('flex', 'hidden');
-            alertDiv.classList.remove('hidden');
-        }
-        document.getElementById('notifModal').classList.replace('hidden', 'flex');
-    };
-
-    window.closeModal = (id) => {
-        document.getElementById(id).classList.replace('flex', 'hidden');
+        return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${hh >= 12 ? "PM" : "AM"}`;
     };
 
     // --- AUTH & SECURITY ---
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, async user => {
         if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists() && snap.data().role === 'admin') {
-                const data = snap.data();
-                document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                
-                initRealtimeListeners();
-            } else {
-                alert("ACCESS DENIED: ADMINS ONLY.");
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = data.firstname.charAt(0).toUpperCase();
+                    
+                    // Load metadata first, then listen for students
+                    await loadCourses();
+                    initStudentListener();
+                } else {
+                    alert("ACCESS DENIED: ADMIN PRIVILEGES REQUIRED.");
+                    window.location.href = "login.html";
+                }
+            } catch (err) {
+                console.error("Auth Error:", err);
                 window.location.href = "login.html";
             }
-        } else {
-            window.location.href = "login.html";
+        } else { 
+            window.location.href = "login.html"; 
         }
     });
 
-    // --- DATA LISTENERS ---
-    function initRealtimeListeners() {
-        // Courses Listener
-        onSnapshot(collection(db, "courses"), (snap) => {
-            masterCourses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderCourses();
-            updateCourseDropdown();
-        });
-
-        // Programs/Subjects Listener
-        onSnapshot(collection(db, "programs"), (snap) => {
-            masterSubjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderSubjects();
-        });
-
-        // Faculty Dropdown Listener
-        onSnapshot(query(collection(db, "users"), where("role", "==", "teacher"), where("status", "==", "approved")), (snap) => {
-            const sel = document.getElementById('progTeacher');
-            let options = '<option value="" disabled selected>SELECT FACULTY</option>';
-            snap.forEach(d => {
-                const name = `${d.data().lastname}, ${d.data().firstname}`.toUpperCase();
-                options += `<option value="${name}">${name}</option>`;
-            });
-            sel.innerHTML = options;
-        });
-    }
-
-    // --- RENDER FUNCTIONS ---
-    function renderCourses() {
-        const search = document.getElementById('courseSearch').value.toUpperCase();
-        const body = document.getElementById('courseTableBody');
-        const filtered = masterCourses.filter(c => c.name.toUpperCase().includes(search) || c.schoolYear.includes(search));
+    // --- DATA LOADING ---
+    async function loadCourses() {
+        const snap = await getDocs(collection(db, "courses"));
+        const sel = document.getElementById('filterCourse');
+        let options = '<option value="ALL">ALL COURSES</option>';
         
-        body.innerHTML = filtered.length ? filtered.map(r => `
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 font-semibold text-gray-900">${r.schoolYear}</td>
-                <td class="px-6 py-4 font-bold text-primary uppercase">${r.name}</td>
-                <td class="px-6 py-4 uppercase">${r.duration} YEARS</td>
-                <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate uppercase">${r.desc}</td>
-                <td class="px-6 py-4 text-right space-x-2">
-                    <button onclick="editCourse('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button onclick="handleDelete('courses', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                </td>
-            </tr>`).join('') : '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">NO COURSES MATCHING SEARCH.</td></tr>';
+        snap.forEach(d => {
+            const name = d.data().name.toUpperCase();
+            courseSYMap[name] = d.data().schoolYear || "N/A";
+            options += `<option value="${name}">${name}</option>`;
+        });
+        sel.innerHTML = options;
     }
 
-    function renderSubjects() {
-        const search = document.getElementById('subjectSearch').value.toUpperCase();
-        const body = document.getElementById('programTableBody');
-        const filtered = masterSubjects.filter(s => 
-            s.name.toUpperCase().includes(search) || s.code.toUpperCase().includes(search) || s.teacher.toUpperCase().includes(search)
+    function initStudentListener() {
+        const q = query(collection(db, "users"), where("role", "==", "student"), where("status", "==", "approved"));
+        onSnapshot(q, snap => {
+            masterData = snap.docs.map(d => ({ 
+                uid: d.id, ...d.data(), 
+                year: formatYear(d.data().year), 
+                semester: formatSem(d.data().semester) 
+            }));
+            applyFilters();
+        });
+    }
+
+    // --- UI LOGIC ---
+    window.applyFilters = () => {
+        const course = document.getElementById('filterCourse').value;
+        const year = document.getElementById('filterYear').value;
+        const sem = document.getElementById('filterSem').value;
+        const search = document.getElementById('searchField').value.toUpperCase();
+
+        // Update UI Labels
+        document.getElementById('lblCourse').innerText = course;
+        document.getElementById('lblYear').innerText = year;
+        document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1' : '2');
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
+
+        const filtered = masterData.filter(s => 
+            (course === 'ALL' || s.course?.toUpperCase() === course) &&
+            (year === 'ALL' || s.year === year) &&
+            (sem === 'ALL' || s.semester === sem) &&
+            (!search || s.lastname?.toUpperCase().includes(search) || s.studentId?.includes(search))
         );
 
-        body.innerHTML = filtered.length ? filtered.map(r => {
-            const statusColor = r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600';
+        const tbody = document.getElementById('masterTableBody');
+        tbody.innerHTML = filtered.map((s, i) => `
+            <tr class="hover:bg-blue-50/40 border-b border-gray-100 transition-colors">
+                <td class="px-6 py-4 font-mono text-xs">${i + 1}</td>
+                <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
+                <td class="px-6 py-4 uppercase font-bold text-gray-700">${s.lastname}, ${s.firstname}</td>
+                <td class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">
+                    ${courseSYMap[s.course?.toUpperCase()] || 'N/A'} / ${s.course} / Y${s.year}
+                </td>
+                <td class="px-6 py-4 font-bold uppercase text-xs">${(s.assignedPrograms || []).length} Subjects</td>
+                <td class="px-6 py-4 text-right no-print">
+                    <button onclick="viewProfile('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
+                        VIEW PROFILE
+                    </button>
+                </td>
+            </tr>`).join('');
+    };
+
+    window.viewProfile = async uid => {
+        const s = masterData.find(x => x.uid === uid);
+        if(!s) return;
+
+        // Fill Modal Data
+        document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+        document.getElementById('mCourse').innerText = s.course || 'N/A';
+        document.getElementById('mId').innerText = s.studentId || 'N/A';
+        document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+        document.getElementById('mEmail').innerText = (s.email || 'N/A').toLowerCase();
+
+        // Fetch Program details for table
+        const progSnap = await getDocs(collection(db, "programs"));
+        const progMap = {};
+        progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
+
+        const tableHTML = (s.assignedPrograms || []).map(code => {
+            const info = progMap[code] || { name: 'N/A', teacher: '---' };
             return `
-                <tr class="hover:bg-gray-50 transition-colors uppercase">
-                    <td class="px-6 py-4">
-                        <div class="font-bold text-gray-900">${r.code}</div>
-                        <div class="text-[10px] text-gray-500">${r.name}</div>
-                    </td>
-                    <td class="px-6 py-4 text-xs font-medium">
-                        <span class="bg-gray-100 px-2 py-1 rounded">${r.course}</span>
-                        <span class="ml-1 text-gray-400">Y${r.year} ${r.semester}</span>
-                    </td>
-                    <td class="px-6 py-4 text-xs">
-                        <div class="font-bold text-primary">${r.schedule}</div>
-                        <div class="text-gray-500">${formatTime(r.startTime)} - ${formatTime(r.endTime)}</div>
-                    </td>
-                    <td class="px-6 py-4 text-xs font-medium">${r.teacher}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusColor}">${r.status || 'ACTIVE'}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right space-x-2">
-                        <button onclick="editSubject('${r.id}')" class="text-blue-600 hover:text-blue-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="handleDelete('programs', '${r.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
+                <tr>
+                    <td class="p-2 border font-bold text-xs uppercase">${code}</td>
+                    <td class="p-2 border text-xs uppercase">${info.name}</td>
+                    <td class="p-2 border text-xs uppercase">${info.teacher}</td>
+                    <td class="p-2 border text-[10px] uppercase">${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td>
                 </tr>`;
-        }).join('') : '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 uppercase">No subjects matching search.</td></tr>';
-    }
+        }).join('');
 
-    function updateCourseDropdown() {
-        const sel = document.getElementById('progCourse');
-        const current = sel.value;
-        let options = '<option value="" disabled selected>SELECT COURSE</option>';
-        masterCourses.forEach(c => options += `<option value="${c.name}">${c.name.toUpperCase()}</option>`);
-        sel.innerHTML = options;
-        sel.value = current;
-    }
+        document.getElementById('mSubjectTable').innerHTML = tableHTML || '<tr><td colspan="4" class="p-4 text-center text-gray-400">NO SUBJECTS ASSIGNED</td></tr>';
 
-    // --- FORM SUBMISSIONS ---
-    document.getElementById('courseForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editCourseId').value;
-        const name = document.getElementById('courseName').value.toUpperCase();
-
-        if (masterCourses.some(c => c.name.toUpperCase() === name && c.id !== id)) {
-            return showNotif("ERROR: COURSE NAME ALREADY EXISTS.");
-        }
-
-        const btn = document.getElementById('courseSaveBtn');
-        btn.innerHTML = 'SAVING...';
-        
-        const data = {
-            schoolYear: document.getElementById('courseSY').value.toUpperCase(),
-            name: name,
-            duration: document.getElementById('courseDuration').value,
-            desc: document.getElementById('courseDesc').value.toUpperCase()
+        // Set up Print functionality
+        document.getElementById('modalPrintBtn').onclick = () => {
+            document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+            document.getElementById('pId').innerText = s.studentId || 'N/A';
+            document.getElementById('pGender').innerText = s.gender || 'N/A';
+            document.getElementById('pCourse').innerText = s.course || 'N/A';
+            document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+            document.getElementById('pSY').innerText = courseSYMap[s.course?.toUpperCase()] || 'N/A';
+            document.getElementById('pEmail').innerText = (s.email || 'N/A').toLowerCase();
+            document.getElementById('pSubjectTable').innerHTML = document.getElementById('mSubjectTable').innerHTML;
+            preparePrint('individual');
         };
 
-        try {
-            id ? await updateDoc(doc(db, "courses", id), data) : await addDoc(collection(db, "courses"), data);
-            closeModal('courseModal');
-        } catch (err) { showNotif("ERROR SAVING COURSE."); }
-        btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Record';
+        document.getElementById('viewModal').classList.replace('hidden', 'flex');
     };
 
-    document.getElementById('programForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('editSubjectId').value;
-        const code = document.getElementById('progCode').value.toUpperCase();
+    window.preparePrint = mode => {
+        document.body.classList.remove('print-list', 'print-individual');
+        document.body.classList.add(`print-${mode}`);
+        window.print();
+    };
 
-        if (masterSubjects.some(s => s.code.toUpperCase() === code && s.id !== id)) {
-            return showNotif("ERROR: SUBJECT CODE ALREADY EXISTS.");
-        }
+    window.closeModal = id => { 
+        document.getElementById(id).classList.replace('flex', 'hidden'); 
+    };
 
-        const btn = document.getElementById('subjectSaveBtn');
-        btn.innerHTML = 'SAVING...';
+    window.exportCSV = () => {
+        const courseF = document.getElementById('filterCourse').value;
+        const rows = [["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]];
         
-        const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value).join('-');
-        const data = {
-            code,
-            name: document.getElementById('progName').value.toUpperCase(),
-            course: document.getElementById('progCourse').value.toUpperCase(),
-            year: document.getElementById('progYear').value,
-            semester: document.getElementById('progSem').value.toUpperCase(),
-            schedule: selectedDays.toUpperCase(),
-            startTime: document.getElementById('progStart').value,
-            endTime: document.getElementById('progEnd').value,
-            teacher: document.getElementById('progTeacher').value,
-            status: document.getElementById('progStatus').value
-        };
-
-        try {
-            id ? await updateDoc(doc(db, "programs", id), data) : await addDoc(collection(db, "programs"), data);
-            closeModal('subjectModal');
-        } catch (err) { showNotif("ERROR SAVING SUBJECT."); }
-        btn.innerHTML = '<i class="fa-solid fa-save"></i> Save Program';
-    };
-
-    // --- GLOBAL WINDOW ASSIGNMENTS ---
-    window.prepareAddCourse = () => {
-        document.getElementById('courseForm').reset();
-        document.getElementById('editCourseId').value = "";
-        document.getElementById('courseModalTitle').innerText = "ADD NEW COURSE";
-        document.getElementById('courseModal').classList.replace('hidden', 'flex');
-    };
-
-    window.editCourse = async (id) => {
-        const d = (await getDoc(doc(db, "courses", id))).data();
-        document.getElementById('editCourseId').value = id;
-        document.getElementById('courseSY').value = d.schoolYear;
-        document.getElementById('courseName').value = d.name;
-        document.getElementById('courseDuration').value = d.duration;
-        document.getElementById('courseDesc').value = d.desc;
-        document.getElementById('courseModalTitle').innerText = "EDIT COURSE DETAILS";
-        document.getElementById('courseModal').classList.replace('hidden', 'flex');
-    };
-
-    window.prepareAddSubject = () => {
-        document.getElementById('programForm').reset();
-        document.getElementById('editSubjectId').value = "";
-        document.getElementById('subjectModalTitle').innerText = "ADD SUBJECT TO PROGRAM";
-        document.getElementById('subjectModal').classList.replace('hidden', 'flex');
-    };
-
-    window.editSubject = async (id) => {
-        const d = (await getDoc(doc(db, "programs", id))).data();
-        document.getElementById('editSubjectId').value = id;
-        document.getElementById('progCode').value = d.code;
-        document.getElementById('progName').value = d.name;
-        document.getElementById('progCourse').value = d.course || "";
-        document.getElementById('progYear').value = d.year;
-        document.getElementById('progSem').value = d.semester;
-        document.getElementById('progStart').value = d.startTime;
-        document.getElementById('progEnd').value = d.endTime;
-        document.getElementById('progTeacher').value = d.teacher;
-        document.getElementById('progStatus').value = d.status || "ACTIVE";
-        const savedDays = d.schedule ? d.schedule.split('-') : [];
-        document.querySelectorAll('input[name="days"]').forEach(cb => cb.checked = savedDays.includes(cb.value));
-        document.getElementById('subjectModal').classList.replace('hidden', 'flex');
-    };
-
-    window.handleDelete = (coll, id) => { 
-        showNotif("DELETE THIS RECORD PERMANENTLY?", true, async () => {
-            await deleteDoc(doc(db, coll, id));
+        masterData.filter(s => (courseF === 'ALL' || s.course?.toUpperCase() === courseF)).forEach((s, i) => {
+            rows.push([
+                i+1, 
+                s.studentId, 
+                `${s.lastname}, ${s.firstname}`, 
+                s.course, 
+                s.year, 
+                s.semester, 
+                courseSYMap[s.course?.toUpperCase()], 
+                (s.assignedPrograms || []).length
+            ]);
         });
+        
+        const blob = new Blob([rows.map(e => e.join(",")).join("\n")], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `MasterRecord_${courseF}_${new Date().toISOString().split('T')[0]}.csv`; 
+        a.click();
     };
 
+    // --- EVENT LISTENERS ---
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     
-    document.getElementById('courseSearch').oninput = renderCourses;
-    document.getElementById('subjectSearch').oninput = renderSubjects;
+    document.querySelectorAll('select, input').forEach(el => {
+        el.addEventListener('change', applyFilters);
+    });
+    
+    document.getElementById('searchField').addEventListener('input', applyFilters);
 
-    // --- CLOCK ---
+    // Clock (At bottom)
     setInterval(() => {
         const clock = document.getElementById('clock');
         if(clock) clock.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
