@@ -186,10 +186,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
                 
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }, 1000);
-
         let courseChart, yearChart;
 
         onAuthStateChanged(auth, async user => {
@@ -202,7 +198,10 @@
                 }
             } else { window.location.href = "login.html"; }
         });
-
+        
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }, 1000);
         async function initDashboard() {
             document.getElementById('currentDateTime').innerText = new Date().toLocaleString();
             
