@@ -184,7 +184,6 @@
     const auth = getAuth(app);
 
     let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null, searchTerm = "";
-    let unsubscribeRoster = null; // To clean up listeners when switching subjects
 
     // --- MODAL SYSTEM ---
     window.showAlert = (title, message, type = 'success', onConfirm = null) => {
@@ -193,7 +192,7 @@
         const btnContainer = document.getElementById('modalButtons');
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalBody').innerText = message;
-        
+                
         btnContainer.innerHTML = '';
         if(onConfirm) {
             const cBtn = document.createElement('button');
@@ -202,7 +201,7 @@
             cBtn.onclick = () => { onConfirm(); closeModal(); };
             btnContainer.appendChild(cBtn);
         }
-        
+                
         const closeBtn = document.createElement('button');
         closeBtn.className = "px-6 py-2 bg-gray-100 text-gray-600 rounded-lg font-bold text-xs uppercase";
         closeBtn.innerText = onConfirm ? "Cancel" : "Close";
@@ -211,54 +210,64 @@
 
         icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-success"></i>' : '<i class="fa-solid fa-triangle-exclamation text-danger"></i>';
         icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl ${type === 'success' ? 'bg-emerald-50' : 'bg-red-50'}`;
-        overlay.classList.replace('hidden', 'flex');
+        overlay.classList.remove('hidden');
     };
 
-    window.closeModal = () => document.getElementById('modalOverlay').classList.replace('flex', 'hidden');
+    window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
 
-    // --- AUTH & SECURITY ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists() && snap.data().role === 'teacher') {
-                const data = snap.data();
-                currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                document.getElementById('adminName').innerText = currentTeacherName;
-                document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
-                loadSubjects();
-            } else {
-                alert("ACCESS DENIED: FACULTY ONLY.");
-                window.location.href = "login.html";
-            }
-        } else { window.location.href = "login.html"; }
+    // --- SEARCH LOGIC ---
+    document.getElementById('masterSearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderTable();
     });
 
-    // --- SUBJECT LOADING ---
+    // --- AUTHENTICATION & TEACHER ROLE CHECK ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const userData = snap.data();
+                    
+                    // Strictly allow only users with the 'teacher' role
+                    if (userData.role === 'teacher') {
+                        currentTeacherName = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
+                        document.getElementById('adminName').innerText = currentTeacherName;
+                        document.getElementById('adminInitial').innerText = (userData.firstname[0] + userData.lastname[0]).toUpperCase();
+                        loadSubjects();
+                    } else {
+                        alert("ACCESS DENIED: Faculty privileges required.");
+                        window.location.href = "login.html";
+                    }
+                } else {
+                    window.location.href = "login.html";
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                window.location.href = "login.html";
+            }
+        } else { 
+            window.location.href = "login.html"; 
+        }
+    });
+
+    // --- SUBJECT & ROSTER MANAGEMENT ---
     async function loadSubjects() {
         const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
         const snap = await getDocs(q);
         const nav = document.getElementById('subjectNav');
-        
-        let navHtml = '<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Subject Handle</p>';
+        nav.innerHTML = '<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Subject Handle</p>';
         snap.forEach(d => {
             const s = d.data();
-            navHtml += `
-                <a class="subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1" 
-                   data-code="${s.code}" id="btn_${s.code}">
-                    <i class="fa-solid fa-book-bookmark text-sm"></i> 
-                    <span class="font-bold text-xs uppercase">${s.code}</span>
-                </a>`;
-        });
-        nav.innerHTML = navHtml;
-
-        // Attach listeners to newly created elements
-        snap.forEach(d => {
-            const s = d.data();
-            document.getElementById(`btn_${s.code}`).onclick = () => {
+            const a = document.createElement('a');
+            a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1";
+            a.onclick = () => {
                 document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
-                document.getElementById(`btn_${s.code}`).classList.add('active-nav');
+                a.classList.add('active-nav');
                 selectSubject(s);
             };
+            a.innerHTML = `<i class="fa-solid fa-book-bookmark text-sm"></i> <span class="font-bold text-xs uppercase">${s.code}</span>`;
+            nav.appendChild(a);
         });
     }
 
@@ -267,18 +276,17 @@
         activeSubj = s.code;
 
         document.getElementById('activeSubjectTitle').innerText = s.name;
-        document.getElementById('subjectSubDetails').innerText = `${s.course} ${s.year} | ${s.schedule} | ${s.startTime}-${s.endTime} | ${s.semester}`;
+        document.getElementById('subjectSubDetails').innerText =
+            `${s.course} ${s.year} | ${s.schedule} | ${s.startTime}-${s.endTime} | ${s.semester}`;
 
         document.getElementById('placeholder').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('viewToggles').classList.remove('hidden');
         document.getElementById('saveBtn').classList.remove('hidden');
 
-        // Clean up previous listener
-        if (unsubscribeRoster) unsubscribeRoster();
-
-        unsubscribeRoster = onSnapshot(
-            query(collection(db, "users"), where("assignedPrograms", "array-contains", activeSubj)),
+        onSnapshot(
+            query(collection(db, "users"),
+            where("assignedPrograms", "array-contains", activeSubj)),
             snap => {
                 roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderTable();
@@ -286,44 +294,52 @@
         );
     }
 
-    // --- VIEW SWITCHING ---
     window.switchView = (v) => {
         currentView = v;
         ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
             const btn = document.getElementById(id);
-            const isActive = id.toLowerCase().includes(v.substring(0,3));
-            btn.classList.toggle('active-nav', isActive);
-            btn.classList.toggle('text-gray-500', !isActive);
+            btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
+            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
         });
 
-        document.getElementById('searchExportActions').classList.toggle('hidden', v === 'materials');
+        const searchExportActions = document.getElementById('searchExportActions');
+        if (v === 'materials') {
+            searchExportActions.classList.add('hidden');
+        } else {
+            searchExportActions.classList.remove('hidden');
+        }
+
         document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
         renderTable();
     };
 
-    window.handleDateChange = () => renderTable();
+    window.handleDateChange = () => {
+        const body = document.getElementById('tableBody');
+        body.innerHTML = '<tr><td colspan="3" class="p-12 text-center"><div class="loader"></div><p class="text-[10px] font-bold mt-2 uppercase tracking-widest text-gray-400">Loading Data...</p></td></tr>';
+        setTimeout(() => renderTable(), 400);
+    };
 
-    // --- TABLE RENDERING ---
     function renderTable() {
         const body = document.getElementById('tableBody');
         const head = document.getElementById('tableHead');
         const hInfo = document.getElementById('tableHeader');
-        
+        body.innerHTML = '';
+
         if (currentView === 'materials') {
             hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400 tracking-widest">Resources</h2>`;
             head.innerHTML = `<tr><th class="px-6 py-4">Title</th><th class="px-6 py-4">Link</th><th class="px-6 py-4 text-right">Action</th></tr>`;
-            
             onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
-                body.innerHTML = snap.docs.map(dSnap => {
+                body.innerHTML = '';
+                snap.forEach(dSnap => {
                     const m = dSnap.data();
-                    return `<tr>
+                    body.innerHTML += `<tr>
                         <td class="px-6 py-4 font-bold uppercase text-xs">${m.name}<div class="text-[9px] text-gray-400 lowercase font-normal">${m.schedule}</div></td>
                         <td class="px-6 py-4"><a href="${m.link}" target="_blank" class="text-primary font-bold text-xs"><i class="fa-solid fa-link mr-1"></i> Resource</a></td>
                         <td class="px-6 py-4 text-right">
                             <button onclick="editMat('${dSnap.id}')" class="text-blue-500 mx-2"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="deleteMatConfirm('${dSnap.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
                         </td></tr>`;
-                }).join('');
+                });
             });
             return;
         }
@@ -337,11 +353,10 @@
         if (currentView === 'attendance') {
             const dateVal = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
             hInfo.innerHTML = `<div class="flex items-center gap-2"><input type="date" id="attDate" value="${dateVal}" onchange="handleDateChange()" class="text-xs bg-white rounded px-2 py-1 border border-gray-200 font-bold outline-none"> <span class="text-[10px] text-gray-400 font-bold uppercase">Record Sheet</span></div>`;
-            head.innerHTML = `<tr><th class="px-6 py-4">Student ID</th><th class="px-6 py-4 text-left">Name</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-            
-            body.innerHTML = filtered.map(s => {
+            head.innerHTML = `<tr><th class="px-6 py-4">Student ID</th><th class="px-6 py-4">Name</th><th class="px-6 py-4 text-center">Status</th></tr>`;
+            filtered.forEach(s => {
                 const status = s.attendance?.[activeSubj]?.[dateVal] || "P";
-                return `<tr>
+                body.innerHTML += `<tr>
                     <td class="px-6 py-4 font-mono text-xs">${s.studentId || '-'}</td>
                     <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
                     <td class="px-6 py-4 text-center">
@@ -350,46 +365,92 @@
                             <label><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''}> L</label>
                             <label><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''}> A</label>
                         </div>
+                        <span class="print-val">${status}</span>
                     </td></tr>`;
-            }).join('');
+            });
         } else if (currentView === 'grades') {
             hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400 tracking-widest">Master Gradebook</h2>`;
-            head.innerHTML = `<tr><th class="px-6 py-4">Student ID</th><th class="px-6 py-4 text-left">Name</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">PT</th></tr>`;
-            
-            body.innerHTML = filtered.map(s => {
+            head.innerHTML = `<tr><th class="px-6 py-4">Student ID</th><th class="px-6 py-4">Name</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">PT</th></tr>`;
+            filtered.forEach(s => {
                 const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '', point: '5.0' };
-                return `<tr>
+                body.innerHTML += `<tr>
                     <td class="px-6 py-4 font-mono text-xs">${s.studentId || '-'}</td>
                     <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-12 border text-center rounded text-xs font-bold" value="${g.prelim}"></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-12 border text-center rounded text-xs font-bold" value="${g.midterm}"></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-12 border text-center rounded text-xs font-bold" value="${g.final}"></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 border text-center rounded text-xs font-bold no-print" value="${g.prelim}"><span class="print-val">${g.prelim || '-'}</span></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 border text-center rounded text-xs font-bold no-print" value="${g.midterm}"><span class="print-val">${g.midterm || '-'}</span></td>
+                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="input-box w-12 border text-center rounded text-xs font-bold no-print" value="${g.final}"><span class="print-val">${g.final || '-'}</span></td>
                     <td class="px-6 py-4 text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-danger':'text-primary'}" id="pt_${s.id}">${g.point}</td>
                 </tr>`;
-            }).join('');
+            });
         }
     }
 
-    // --- MATERIALS & GRADES UTILS ---
+    // --- MATERIALS LOGIC ---
+    document.getElementById('materialForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const mid = document.getElementById('editMatId').value;
+        const payload = {
+            subjectCode: activeSubj,
+            name: document.getElementById('matName').value.toUpperCase(),
+            link: document.getElementById('matLink').value,
+            desc: document.getElementById('matDesc').value,
+            schedule: document.getElementById('matSchedule').value.replace('T', ' '),
+            updatedAt: serverTimestamp()
+        };
+        try {
+            if(mid) await updateDoc(doc(db, "materials", mid), payload);
+            else { payload.createdAt = serverTimestamp(); await setDoc(doc(collection(db, "materials")), payload); }
+            resetMatForm();
+            showAlert("Success", "Learning Resource uploaded.");
+        } catch (e) { showAlert("Error", "Action failed.", "danger"); }
+    };
+
+    window.editMat = async (id) => {
+        const snap = await getDoc(doc(db, "materials", id));
+        if(snap.exists()) {
+            const d = snap.data();
+            document.getElementById('editMatId').value = id;
+            document.getElementById('matName').value = d.name;
+            document.getElementById('matLink').value = d.link;
+            document.getElementById('matDesc').value = d.desc;
+            document.getElementById('matFormTitle').innerText = "Update Material Resource";
+            document.getElementById('matSubmitBtn').innerText = "Sync Update";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+    };
+
+    window.resetMatForm = () => {
+        document.getElementById('materialForm').reset();
+        document.getElementById('editMatId').value = "";
+        document.getElementById('matFormTitle').innerText = "Post Learning Material";
+        document.getElementById('matSubmitBtn').innerText = "Upload";
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    };
+
+    window.deleteMatConfirm = (id) => {
+        showAlert("Delete Resource", "Are you sure you want to remove this learning material permanently?", "danger", async () => {
+            await deleteDoc(doc(db, "materials", id));
+        });
+    };
+
+    // --- GRADING CALCULATIONS ---
     window.calcPt = (id) => {
         const p = parseFloat(document.getElementById(`pre_${id}`).value || 0);
         const m = parseFloat(document.getElementById(`mid_${id}`).value || 0);
         const f = parseFloat(document.getElementById(`fin_${id}`).value || 0);
         const avg = (p+m+f)/3;
         let pt = avg >= 75 ? (avg >= 97 ? "1.0" : avg >= 94 ? "1.25" : avg >= 91 ? "1.5" : avg >= 88 ? "1.75" : avg >= 85 ? "2.0" : avg >= 82 ? "2.25" : avg >= 79 ? "2.5" : avg >= 76 ? "2.75" : "3.0") : "5.0";
-        const el = document.getElementById(`pt_${id}`);
-        el.innerText = pt;
-        el.className = parseFloat(pt) > 3.0 ? "px-6 py-4 text-right font-black text-xs text-danger" : "px-6 py-4 text-right font-black text-xs text-primary";
+        document.getElementById(`pt_${id}`).innerText = pt;
+        document.getElementById(`pt_${id}`).className = parseFloat(pt) > 3.0 ? "px-6 py-4 text-right font-black text-xs text-danger" : "px-6 py-4 text-right font-black text-xs text-primary";
     };
 
+    // --- CLOUD SYNC & EXPORTS ---
     window.saveCurrentWork = async () => {
         const btn = document.getElementById('saveBtn');
         const date = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-        btn.disabled = true; 
-        btn.innerHTML = 'Saving...';
-        
+        btn.disabled = true; btn.innerHTML = '<span class="loader mr-2"></span> Saving...';
         try {
-            const updates = roster.map(s => {
+            const ps = roster.map(s => {
                 const ref = doc(db, "users", s.id);
                 let p = {};
                 if(currentView === 'attendance') {
@@ -404,17 +465,11 @@
                 }
                 return updateDoc(ref, p);
             });
-            await Promise.all(updates);
+            await Promise.all(ps);
             showAlert("Sync Successful", "Data saved to cloud.");
         } catch (e) { showAlert("Error", "Sync failed.", "danger"); }
         btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Sync';
     };
-
-    // --- SEARCH & EXPORT ---
-    document.getElementById('masterSearch').addEventListener('input', (e) => {
-        searchTerm = e.target.value.toLowerCase();
-        renderTable();
-    });
 
     window.exportCSV = () => {
         let csv = "Student ID,Name,";
@@ -436,13 +491,21 @@
         a.click();
     };
 
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    window.exportPDF = () => {
+        document.getElementById('lblReportType').innerText = currentView.toUpperCase() + " MASTER STUDENT RECORD";
+        document.getElementById('lblCourse').innerText = subjContext.course;
+        document.getElementById('lblYear').innerText = `${subjContext.year} / ${subjContext.semester}`;
+        document.getElementById('lblSubj').innerText = subjContext.name;
+        document.getElementById('lblFaculty').innerText = currentTeacherName;
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
+        document.getElementById('printHeader').classList.remove('hidden');
+        document.getElementById('printHeader').classList.add('flex');
+        window.print();
+        document.getElementById('printHeader').classList.add('hidden');
+        document.getElementById('printHeader').classList.remove('flex');
+    };
 
-    // --- CLOCK ---
-    setInterval(() => {
-        const clock = document.getElementById('clock');
-        if(clock) clock.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }, 1000);
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
 </script>
 </body>
 </html>
