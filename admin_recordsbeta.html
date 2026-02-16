@@ -247,164 +247,223 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, where, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let masterData = [];
-        let courseSYMap = {};
+    let masterData = [];
+    let courseSYMap = {};
 
-        const formatYear = y => {
-            const v = String(y).toUpperCase();
-            return v.includes("1") ? "1" : v.includes("2") ? "2" : v.includes("3") ? "3" : v.includes("4") ? "4" : v;
-        };
-        const formatSem = s => String(s).toUpperCase().includes("1ST") ? "1ST SEMESTER" : "2ND SEMESTER";
-        const formatTime = t => {
-            if(!t) return "";
-            const [h, m] = t.split(':');
-            const hh = parseInt(h);
-            return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${hh >= 12 ? "PM" : "AM"}`;
-        };
+    // --- UTILITIES ---
+    const formatYear = y => {
+        const v = String(y).toUpperCase();
+        return v.includes("1") ? "1" : v.includes("2") ? "2" : v.includes("3") ? "3" : v.includes("4") ? "4" : v;
+    };
+    const formatSem = s => String(s).toUpperCase().includes("1ST") ? "1ST SEMESTER" : "2ND SEMESTER";
+    const formatTime = t => {
+        if(!t) return "";
+        const [h, m] = t.split(':');
+        const hh = parseInt(h);
+        return `${((hh + 11) % 12 + 1).toString().padStart(2, '0')}:${m} ${hh >= 12 ? "PM" : "AM"}`;
+    };
 
-        onAuthStateChanged(auth, async user => {
-            if (user) {
+    // --- AUTH & SECURITY ---
+    onAuthStateChanged(auth, async user => {
+        if (user) {
+            try {
                 const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`;
-                    document.getElementById('adminInitial').innerText = snap.data().firstname.charAt(0);
+                if (snap.exists() && snap.data().role === 'admin') {
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = data.firstname.charAt(0).toUpperCase();
+                    
+                    // Load metadata first, then listen for students
                     await loadCourses();
-                    syncData();
+                    initStudentListener();
+                } else {
+                    alert("ACCESS DENIED: ADMIN PRIVILEGES REQUIRED.");
+                    window.location.href = "login.html";
                 }
-            } else { window.location.href = "login.html"; }
+            } catch (err) {
+                console.error("Auth Error:", err);
+                window.location.href = "login.html";
+            }
+        } else { 
+            window.location.href = "login.html"; 
+        }
+    });
+
+    // --- DATA LOADING ---
+    async function loadCourses() {
+        const snap = await getDocs(collection(db, "courses"));
+        const sel = document.getElementById('filterCourse');
+        let options = '<option value="ALL">ALL COURSES</option>';
+        
+        snap.forEach(d => {
+            const name = d.data().name.toUpperCase();
+            courseSYMap[name] = d.data().schoolYear || "N/A";
+            options += `<option value="${name}">${name}</option>`;
         });
+        sel.innerHTML = options;
+    }
 
-        async function loadCourses() {
-            const snap = await getDocs(collection(db, "courses"));
-            const sel = document.getElementById('filterCourse');
-            sel.innerHTML = '<option value="ALL">ALL COURSES</option>';
-            snap.forEach(d => {
-                const name = d.data().name.toUpperCase();
-                courseSYMap[name] = d.data().schoolYear || "N/A";
-                sel.innerHTML += `<option value="${name}">${name}</option>`;
-            });
-        }
+    function initStudentListener() {
+        const q = query(collection(db, "users"), where("role", "==", "student"), where("status", "==", "approved"));
+        onSnapshot(q, snap => {
+            masterData = snap.docs.map(d => ({ 
+                uid: d.id, ...d.data(), 
+                year: formatYear(d.data().year), 
+                semester: formatSem(d.data().semester) 
+            }));
+            applyFilters();
+        });
+    }
 
-        function syncData() {
-            onSnapshot(query(collection(db, "users"), where("role", "==", "student"), where("status", "==", "approved")), snap => {
-                masterData = snap.docs.map(d => ({ 
-                    uid: d.id, ...d.data(), 
-                    year: formatYear(d.data().year), 
-                    semester: formatSem(d.data().semester) 
-                }));
-                applyFilters();
-            });
-        }
+    // --- UI LOGIC ---
+    window.applyFilters = () => {
+        const course = document.getElementById('filterCourse').value;
+        const year = document.getElementById('filterYear').value;
+        const sem = document.getElementById('filterSem').value;
+        const search = document.getElementById('searchField').value.toUpperCase();
 
-        function applyFilters() {
-            const course = document.getElementById('filterCourse').value;
-            const year = document.getElementById('filterYear').value;
-            const sem = document.getElementById('filterSem').value;
-            const search = document.getElementById('searchField').value.toUpperCase();
+        // Update UI Labels
+        document.getElementById('lblCourse').innerText = course;
+        document.getElementById('lblYear').innerText = year;
+        document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1' : '2');
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
 
-            document.getElementById('lblCourse').innerText = course;
-            document.getElementById('lblYear').innerText = year;
-            document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1' : '2');
-            document.getElementById('lblTime').innerText = new Date().toLocaleString();
+        const filtered = masterData.filter(s => 
+            (course === 'ALL' || s.course?.toUpperCase() === course) &&
+            (year === 'ALL' || s.year === year) &&
+            (sem === 'ALL' || s.semester === sem) &&
+            (!search || s.lastname?.toUpperCase().includes(search) || s.studentId?.includes(search))
+        );
 
-            const filtered = masterData.filter(s => 
-                (course === 'ALL' || s.course?.toUpperCase() === course) &&
-                (year === 'ALL' || s.year === year) &&
-                (sem === 'ALL' || s.semester === sem) &&
-                (!search || s.lastname?.toUpperCase().includes(search) || s.studentId?.includes(search))
-            );
+        const tbody = document.getElementById('masterTableBody');
+        tbody.innerHTML = filtered.map((s, i) => `
+            <tr class="hover:bg-blue-50/40 border-b border-gray-100 transition-colors">
+                <td class="px-6 py-4 font-mono text-xs">${i + 1}</td>
+                <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
+                <td class="px-6 py-4 uppercase font-bold text-gray-700">${s.lastname}, ${s.firstname}</td>
+                <td class="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">
+                    ${courseSYMap[s.course?.toUpperCase()] || 'N/A'} / ${s.course} / Y${s.year}
+                </td>
+                <td class="px-6 py-4 font-bold uppercase text-xs">${(s.assignedPrograms || []).length} Subjects</td>
+                <td class="px-6 py-4 text-right no-print">
+                    <button onclick="viewProfile('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
+                        VIEW PROFILE
+                    </button>
+                </td>
+            </tr>`).join('');
+    };
 
-            const tbody = document.getElementById('masterTableBody');
-            tbody.innerHTML = filtered.map((s, i) => `
-                <tr class="hover:bg-blue-50/40">
-                    <td class="px-6 py-4 font-mono">${i + 1}</td>
-                    <td class="px-6 py-4 font-bold text-primary">${s.studentId || 'N/A'}</td>
-                    <td class="px-6 py-4 uppercase font-bold">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-[10px] font-bold text-gray-600 uppercase">
-                        ${courseSYMap[s.course?.toUpperCase()] || 'N/A'} / ${s.course} / Y${s.year}
-                    </td>
-                    <td class="px-6 py-4 font-bold uppercase">${(s.assignedPrograms || []).length} Subjects</td>
-                    <td class="px-6 py-4 text-right no-print">
-                        <button onclick="viewProfile('${s.uid}')" class="bg-gray-100 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all uppercase">
-                            VIEW PROFILE
-                        </button>
-                    </td>
-                </tr>`).join('');
-        }
+    window.viewProfile = async uid => {
+        const s = masterData.find(x => x.uid === uid);
+        if(!s) return;
 
-        window.viewProfile = async uid => {
-            const s = masterData.find(x => x.uid === uid);
-            if(!s) return;
+        // Fill Modal Data
+        document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+        document.getElementById('mCourse').innerText = s.course || 'N/A';
+        document.getElementById('mId').innerText = s.studentId || 'N/A';
+        document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+        document.getElementById('mEmail').innerText = (s.email || 'N/A').toLowerCase();
 
-            document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`;
-            document.getElementById('mCourse').innerText = s.course || 'N/A';
-            document.getElementById('mId').innerText = s.studentId || 'N/A';
-            document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
-            document.getElementById('mEmail').innerText = (s.email || 'N/A').toLowerCase();
+        // Fetch Program details for table
+        const progSnap = await getDocs(collection(db, "programs"));
+        const progMap = {};
+        progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
 
-            const progSnap = await getDocs(collection(db, "programs"));
-            const progMap = {};
-            progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
+        const tableHTML = (s.assignedPrograms || []).map(code => {
+            const info = progMap[code] || { name: 'N/A', teacher: '---' };
+            return `
+                <tr>
+                    <td class="p-2 border font-bold text-xs uppercase">${code}</td>
+                    <td class="p-2 border text-xs uppercase">${info.name}</td>
+                    <td class="p-2 border text-xs uppercase">${info.teacher}</td>
+                    <td class="p-2 border text-[10px] uppercase">${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td>
+                </tr>`;
+        }).join('');
 
-            document.getElementById('mSubjectTable').innerHTML = (s.assignedPrograms || []).map(code => {
-                const info = progMap[code] || { name: 'N/A', teacher: '---' };
-                return `<tr><td class="p-2 border font-bold">${code}</td><td class="p-2 border">${info.name}</td><td class="p-2 border">${info.teacher}</td><td class="p-2 border">${info.schedule || ''} ${formatTime(info.startTime)}-${formatTime(info.endTime)}</td></tr>`;
-            }).join('');
+        document.getElementById('mSubjectTable').innerHTML = tableHTML || '<tr><td colspan="4" class="p-4 text-center text-gray-400">NO SUBJECTS ASSIGNED</td></tr>';
 
-            document.getElementById('modalPrintBtn').onclick = () => {
-                document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`;
-                document.getElementById('pId').innerText = s.studentId || 'N/A';
-                document.getElementById('pGender').innerText = s.gender || 'N/A';
-                document.getElementById('pCourse').innerText = s.course || 'N/A';
-                document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
-                document.getElementById('pSY').innerText = courseSYMap[s.course.toUpperCase()] || 'N/A';
-                document.getElementById('pEmail').innerText = (s.email || 'N/A').toLowerCase();
-                document.getElementById('pSubjectTable').innerHTML = document.getElementById('mSubjectTable').innerHTML;
-                preparePrint('individual');
-            };
-
-            document.getElementById('viewModal').classList.remove('hidden');
-            document.getElementById('viewModal').classList.add('flex');
+        // Set up Print functionality
+        document.getElementById('modalPrintBtn').onclick = () => {
+            document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
+            document.getElementById('pId').innerText = s.studentId || 'N/A';
+            document.getElementById('pGender').innerText = s.gender || 'N/A';
+            document.getElementById('pCourse').innerText = s.course || 'N/A';
+            document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
+            document.getElementById('pSY').innerText = courseSYMap[s.course?.toUpperCase()] || 'N/A';
+            document.getElementById('pEmail').innerText = (s.email || 'N/A').toLowerCase();
+            document.getElementById('pSubjectTable').innerHTML = document.getElementById('mSubjectTable').innerHTML;
+            preparePrint('individual');
         };
 
-        window.preparePrint = mode => {
-            document.body.classList.remove('print-list', 'print-individual');
-            document.body.classList.add(`print-${mode}`);
-            window.print();
-        };
+        document.getElementById('viewModal').classList.replace('hidden', 'flex');
+    };
 
-        window.closeModal = id => { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); };
-        window.exportCSV = () => {
-            const courseF = document.getElementById('filterCourse').value;
-            const rows = [["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]];
-            masterData.filter(s => (courseF === 'ALL' || s.course?.toUpperCase() === courseF)).forEach((s, i) => rows.push([i+1, s.studentId, `${s.lastname}, ${s.firstname}`, s.course, s.year, s.semester, courseSYMap[s.course?.toUpperCase()], (s.assignedPrograms || []).length]));
-            const blob = new Blob([rows.map(e => e.join(",")).join("\n")], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `MasterRecord_${courseF}.csv`; a.click();
-        };
+    window.preparePrint = mode => {
+        document.body.classList.remove('print-list', 'print-individual');
+        document.body.classList.add(`print-${mode}`);
+        window.print();
+    };
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-        document.querySelectorAll('select, input').forEach(el => el.addEventListener('change', applyFilters));
-        document.getElementById('searchField').addEventListener('input', applyFilters);
-    </script>
+    window.closeModal = id => { 
+        document.getElementById(id).classList.replace('flex', 'hidden'); 
+    };
+
+    window.exportCSV = () => {
+        const courseF = document.getElementById('filterCourse').value;
+        const rows = [["No.", "Student ID", "Full Name", "Course", "Year", "Semester", "SY", "Subjects"]];
+        
+        masterData.filter(s => (courseF === 'ALL' || s.course?.toUpperCase() === courseF)).forEach((s, i) => {
+            rows.push([
+                i+1, 
+                s.studentId, 
+                `${s.lastname}, ${s.firstname}`, 
+                s.course, 
+                s.year, 
+                s.semester, 
+                courseSYMap[s.course?.toUpperCase()], 
+                (s.assignedPrograms || []).length
+            ]);
+        });
+        
+        const blob = new Blob([rows.map(e => e.join(",")).join("\n")], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `MasterRecord_${courseF}_${new Date().toISOString().split('T')[0]}.csv`; 
+        a.click();
+    };
+
+    // --- EVENT LISTENERS ---
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    
+    document.querySelectorAll('select, input').forEach(el => {
+        el.addEventListener('change', applyFilters);
+    });
+    
+    document.getElementById('searchField').addEventListener('input', applyFilters);
+
+    // Clock (At bottom)
+    setInterval(() => {
+        const clock = document.getElementById('clock');
+        if(clock) clock.innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }, 1000);
+</script>
 </body>
 </html>
