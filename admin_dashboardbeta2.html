@@ -169,50 +169,63 @@
     </main>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let courseChart, yearChart;
+    let courseChart, yearChart;
 
-        onAuthStateChanged(auth, async user => {
-            if (user) {
+    // --- 1. AUTH WATCHER ---
+    onAuthStateChanged(auth, async user => {
+        if (user) {
+            try {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    document.getElementById('adminName').innerText = `${snap.data().lastname}, ${snap.data().firstname}`.toUpperCase();
-                    document.getElementById('adminInitial').innerText = snap.data().firstname[0];
+                    const data = snap.data();
+                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
+                    document.getElementById('adminInitial').innerText = data.firstname[0].toUpperCase();
                     initDashboard();
                 }
-            } else { window.location.href = "login.html"; }
-        });
+            } catch (error) {
+                console.error("Error loading user profile:", error);
+            }
+        } else {
+            window.location.href = "login.html";
+        }
+    });
 
-        async function initDashboard() {
-            document.getElementById('currentDateTime').innerText = new Date().toLocaleString();
-            
-            // 1. Fetch Users
-            const userSnap = await getDocs(collection(db, "users"));
+    // --- 2. DATA INITIALIZATION ---
+    async function initDashboard() {
+        // Fix: Changed 'currentDateTime' to 'currentDate' to match your HTML ID
+        const dateEl = document.getElementById('currentDate');
+        if(dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+        try {
+            // Speed Boost: Fetch both collections at the same time
+            const [userSnap, progSnap] = await Promise.all([
+                getDocs(collection(db, "users")),
+                getDocs(collection(db, "programs"))
+            ]);
+
             const users = userSnap.docs.map(d => d.data());
-            
+            const programs = progSnap.docs.map(d => d.data());
+
             const students = users.filter(u => u.role === 'student' && u.status === 'approved');
             const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
             const pending = users.filter(u => u.status === 'pending');
-
-            // 2. Fetch Subjects (Programs)
-            const progSnap = await getDocs(collection(db, "programs"));
-            const programs = progSnap.docs.map(d => d.data());
 
             // Update Stats
             document.getElementById('statStudents').innerText = students.length;
@@ -220,94 +233,90 @@
             document.getElementById('statSubjects').innerText = programs.length;
             document.getElementById('statPending').innerText = pending.length;
 
-            // 3. Process Chart Data: Students per Course
+            // Chart 1: Course Distribution
             const courseCounts = {};
             students.forEach(s => {
                 const c = s.course || "Unassigned";
                 courseCounts[c] = (courseCounts[c] || 0) + 1;
             });
-
             renderCourseChart(Object.keys(courseCounts), Object.values(courseCounts));
 
-            // 4. Process Chart Data: Year Level Distribution
+            // Chart 2: Year Level
             const yearCounts = { "1st Year": 0, "2nd Year": 0, "3rd Year": 0, "4th Year": 0 };
             students.forEach(s => {
-                if(s.year == '1') yearCounts["1st Year"]++;
-                else if(s.year == '2') yearCounts["2nd Year"]++;
-                else if(s.year == '3') yearCounts["3rd Year"]++;
-                else if(s.year == '4') yearCounts["4th Year"]++;
+                if(yearCounts[`${s.year}${getOrdinal(s.year)} Year`] !== undefined) {
+                   yearCounts[`${s.year}${getOrdinal(s.year)} Year`]++;
+                }
             });
-
             renderYearChart(Object.keys(yearCounts), Object.values(yearCounts));
 
-            // 5. Faculty Workload Table
-            const workloadTable = document.getElementById('workloadTable');
-            workloadTable.innerHTML = '';
-            
-            faculty.forEach(f => {
-                const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
-                const handled = programs.filter(p => p.teacher === fullName);
-                // Count students enrolled in those subjects
-                const studentCount = students.filter(s => 
-                    s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
-                ).length;
+            // Table: Faculty Workload
+            renderWorkloadTable(faculty, programs, students);
 
-                workloadTable.innerHTML += `
-                    <tr class="hover:bg-gray-50/50">
-                        <td class="px-6 py-4 font-bold text-gray-800">${fullName}</td>
-                        <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">${handled.length} SUBJECTS</span></td>
-                        <td class="px-6 py-4 font-mono">${studentCount} Students</td>
-                    </tr>
-                `;
-            });
+        } catch (error) {
+            console.error("Dashboard Load Error:", error);
         }
+    }
 
-        function renderCourseChart(labels, data) {
-            const ctx = document.getElementById('courseChart').getContext('2d');
-            courseChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Students',
-                        data: data,
-                        backgroundColor: '#2563eb',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
-                }
-            });
-        }
+    // --- 3. UI RENDERING HELPERS ---
+    function renderWorkloadTable(faculty, programs, students) {
+        const workloadTable = document.getElementById('workloadTable');
+        workloadTable.innerHTML = faculty.map(f => {
+            const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
+            const handled = programs.filter(p => p.teacher === fullName);
+            const studentCount = students.filter(s => 
+                s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
+            ).length;
 
-        function renderYearChart(labels, data) {
-            const ctx = document.getElementById('yearLevelChart').getContext('2d');
-            yearChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    cutout: '70%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, weight: 'bold' } } } }
-                }
-            });
-        }
+            return `
+                <tr class="hover:bg-gray-50/50 border-b border-gray-50">
+                    <td class="px-6 py-4 font-bold text-gray-800">${fullName}</td>
+                    <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">${handled.length} SUBJECTS</span></td>
+                    <td class="px-6 py-4 font-mono">${studentCount} Students</td>
+                </tr>
+            `;
+        }).join('');
+    }
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    function renderCourseChart(labels, data) {
+        const ctx = document.getElementById('courseChart');
+        if (courseChart) courseChart.destroy();
+        courseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Students', data: data, backgroundColor: '#2563eb', borderRadius: 8 }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    }
 
-           setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }, 1000);
-    </script>
+    function renderYearChart(labels, data) {
+        const ctx = document.getElementById('yearLevelChart');
+        if (yearChart) yearChart.destroy();
+        yearChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{ data: data, backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
+            },
+            options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    function getOrdinal(n) {
+        let s = ["th", "st", "nd", "rd"], v = n % 100;
+        return s[(v - 20) % 10] || s[v] || s[0];
+    }
+
+    // --- 4. GLOBAL ASSIGNMENTS ---
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+
+    // --- 5. THE CLOCK (At the bottom) ---
+    setInterval(() => {
+        const clock = document.getElementById('clock');
+        if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }, 1000);
+</script>
 </body>
 </html>
