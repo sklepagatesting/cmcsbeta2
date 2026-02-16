@@ -185,7 +185,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-                
+
         let courseChart, yearChart;
 
         onAuthStateChanged(auth, async user => {
@@ -198,7 +198,7 @@
                 }
             } else { window.location.href = "login.html"; }
         });
-        
+
         async function initDashboard() {
             document.getElementById('currentDateTime').innerText = new Date().toLocaleString();
             
