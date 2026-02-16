@@ -168,7 +168,7 @@
         </div>
     </main>
 
-    <script type="module">
+   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -188,33 +188,43 @@
 
     let courseChart, yearChart;
 
-    // --- 1. AUTH WATCHER ---
+    // --- 1. AUTHENTICATION & ROLE CHECK ---
     onAuthStateChanged(auth, async user => {
         if (user) {
             try {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
-                    const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminInitial').innerText = data.firstname[0].toUpperCase();
-                    initDashboard();
+                    const userData = snap.data();
+                    
+                    // SECURITY: Strict Admin Role Check
+                    if (userData.role === 'admin') {
+                        document.getElementById('adminName').innerText = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
+                        document.getElementById('adminInitial').innerText = userData.firstname[0].toUpperCase();
+                        initDashboard();
+                    } else {
+                        alert("Access Denied: Admin privileges required.");
+                        window.location.href = "login.html";
+                    }
+                } else {
+                    window.location.href = "login.html";
                 }
             } catch (error) {
-                console.error("Error loading user profile:", error);
+                console.error("Auth error:", error);
+                window.location.href = "login.html";
             }
         } else {
             window.location.href = "login.html";
         }
     });
 
-    // --- 2. DATA INITIALIZATION ---
+    // --- 2. CORE DASHBOARD LOGIC ---
     async function initDashboard() {
-        // Fix: Changed 'currentDateTime' to 'currentDate' to match your HTML ID
+        // Fix: Update date display
         const dateEl = document.getElementById('currentDate');
-        if(dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        if (dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
         try {
-            // Speed Boost: Fetch both collections at the same time
+            // Speed Boost: Fetch users and programs at the same time
             const [userSnap, progSnap] = await Promise.all([
                 getDocs(collection(db, "users")),
                 getDocs(collection(db, "programs"))
@@ -223,43 +233,31 @@
             const users = userSnap.docs.map(d => d.data());
             const programs = progSnap.docs.map(d => d.data());
 
+            // Data Filters
             const students = users.filter(u => u.role === 'student' && u.status === 'approved');
             const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
             const pending = users.filter(u => u.status === 'pending');
 
-            // Update Stats
+            // Update Numeric Stats
             document.getElementById('statStudents').innerText = students.length;
             document.getElementById('statFaculty').innerText = faculty.length;
             document.getElementById('statSubjects').innerText = programs.length;
             document.getElementById('statPending').innerText = pending.length;
 
-            // Chart 1: Course Distribution
-            const courseCounts = {};
-            students.forEach(s => {
-                const c = s.course || "Unassigned";
-                courseCounts[c] = (courseCounts[c] || 0) + 1;
-            });
-            renderCourseChart(Object.keys(courseCounts), Object.values(courseCounts));
+            // Process & Render Charts
+            updateCourseChart(students);
+            updateYearChart(students);
 
-            // Chart 2: Year Level
-            const yearCounts = { "1st Year": 0, "2nd Year": 0, "3rd Year": 0, "4th Year": 0 };
-            students.forEach(s => {
-                if(yearCounts[`${s.year}${getOrdinal(s.year)} Year`] !== undefined) {
-                   yearCounts[`${s.year}${getOrdinal(s.year)} Year`]++;
-                }
-            });
-            renderYearChart(Object.keys(yearCounts), Object.values(yearCounts));
-
-            // Table: Faculty Workload
-            renderWorkloadTable(faculty, programs, students);
+            // Render Table
+            updateWorkloadTable(faculty, programs, students);
 
         } catch (error) {
-            console.error("Dashboard Load Error:", error);
+            console.error("Data fetch error:", error);
         }
     }
 
     // --- 3. UI RENDERING HELPERS ---
-    function renderWorkloadTable(faculty, programs, students) {
+    function updateWorkloadTable(faculty, programs, students) {
         const workloadTable = document.getElementById('workloadTable');
         workloadTable.innerHTML = faculty.map(f => {
             const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
@@ -278,41 +276,49 @@
         }).join('');
     }
 
-    function renderCourseChart(labels, data) {
+    function updateCourseChart(students) {
+        const counts = {};
+        students.forEach(s => {
+            const c = s.course || "Unassigned";
+            counts[c] = (counts[c] || 0) + 1;
+        });
+
         const ctx = document.getElementById('courseChart');
         if (courseChart) courseChart.destroy();
         courseChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
-                datasets: [{ label: 'Students', data: data, backgroundColor: '#2563eb', borderRadius: 8 }]
+                labels: Object.keys(counts),
+                datasets: [{ label: 'Students', data: Object.values(counts), backgroundColor: '#2563eb', borderRadius: 8 }]
             },
             options: { responsive: true, plugins: { legend: { display: false } } }
         });
     }
 
-    function renderYearChart(labels, data) {
+    function updateYearChart(students) {
+        const yearCounts = { "1st Year": 0, "2nd Year": 0, "3rd Year": 0, "4th Year": 0 };
+        students.forEach(s => {
+            if(s.year == '1') yearCounts["1st Year"]++;
+            else if(s.year == '2') yearCounts["2nd Year"]++;
+            else if(s.year == '3') yearCounts["3rd Year"]++;
+            else if(s.year == '4') yearCounts["4th Year"]++;
+        });
+
         const ctx = document.getElementById('yearLevelChart');
         if (yearChart) yearChart.destroy();
         yearChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: labels,
-                datasets: [{ data: data, backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
+                labels: Object.keys(yearCounts),
+                datasets: [{ data: Object.values(yearCounts), backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
             },
             options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
         });
     }
 
-    function getOrdinal(n) {
-        let s = ["th", "st", "nd", "rd"], v = n % 100;
-        return s[(v - 20) % 10] || s[v] || s[0];
-    }
-
-    // --- 4. GLOBAL ASSIGNMENTS ---
+    // --- 4. UTILITIES & CLOCK ---
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
 
-    // --- 5. THE CLOCK (At the bottom) ---
     setInterval(() => {
         const clock = document.getElementById('clock');
         if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
