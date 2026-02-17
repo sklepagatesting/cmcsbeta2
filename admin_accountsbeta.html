@@ -281,8 +281,13 @@
     };
 
     window.handleDelete = (uid) => {
-        showNotif("Destroy this account permanently? This record will be purged from the database.", true, async () => {
-            await deleteDoc(doc(db, "users", uid));
+        showNotif("Destroy this account permanently? This will purge the record. The Auth credentials will self-destruct upon their next login attempt.", true, async () => {
+            try {
+                await deleteDoc(doc(db, "users", uid));
+                showNotif("Record successfully purged from database.");
+            } catch (err) {
+                showNotif("Error deleting record: " + err.message);
+            }
         });
     };
 
