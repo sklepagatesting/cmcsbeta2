@@ -8,214 +8,182 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+        /* BASE UI STYLE */
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; margin: 0; padding: 0; }
+        .screen-container { height: 100vh; display: flex; overflow: hidden; }
+        
         .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.05; pointer-events: none; }
         .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
         
-        /* Universal Dropdown Fix */
-        select { 
-            appearance: none; 
-            background: rgba(255, 255, 255, 0.05) !important; 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-            cursor: pointer;
-        }
-        select option { background-color: #121212 !important; color: white !important; }
-        input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; }
-        input::placeholder { color: rgba(255, 255, 255, 0.3); }
-
-        .nav-link.active { background: white; color: black !important; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
         .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
 
-        /* Print Header Hide (Screen Only) */
+        /* UNIVERSAL DROPDOWN FIX */
+        select { appearance: none; background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; cursor: pointer; }
+        select option { background-color: #121212 !important; color: white !important; }
+        input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; }
+
+        /* PRINT LOGIC - PRESERVING ORIGINAL LAYOUTS */
         #printHeader, #individualPrint { display: none; }
 
         @media print {
-            @page { margin: 0.8cm; size: portrait; }
+            @page { margin: 0.5cm; size: portrait; }
             .no-print { display: none !important; }
-            body { background: white !important; color: black !important; overflow: visible !important; }
-            .glass-card { background: none !important; border: none !important; backdrop-filter: none !important; }
-            table { border: 1px solid black !important; width: 100% !important; }
-            th { background: #eee !important; color: black !important; border: 1px solid black !important; }
-            td { border: 1px solid black !important; color: black !important; }
-            #printHeader, #individualPrint { display: block !important; }
+            body { background: white !important; color: black !important; overflow: visible !important; height: auto !important; width: 100% !important; }
+            .screen-container { display: block !important; height: auto !important; overflow: visible !important; }
+            main { overflow: visible !important; display: block !important; position: static !important; }
+            
+            /* Watermark for Print */
+            .print-watermark {
+                display: flex !important;
+                position: fixed;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 80px; font-weight: 900; color: rgba(0,0,0,0.03);
+                z-index: -1; text-transform: uppercase; white-space: nowrap;
+                pointer-events: none;
+            }
+
+            /* Table for Master List Print */
+            body.print-list #printHeader { display: block !important; }
+            body.print-list .master-table-container { display: block !important; margin-top: 20px; }
+            table { border-collapse: collapse !important; width: 100% !important; border: 1.5px solid #000 !important; }
+            th { background-color: #f3f4f6 !important; border: 1px solid #000 !important; color: black !important; padding: 6px !important; font-size: 10px !important; text-transform: uppercase; font-weight: 800; text-align: left; }
+            td { border: 1px solid #000 !important; color: black !important; padding: 4px 8px !important; font-size: 10px !important; text-align: left; }
+
+            /* Individual Record Print */
+            body.print-individual #individualPrint { display: block !important; }
+            body.print-individual .master-table-container, body.print-individual #printHeader { display: none !important; }
         }
     </style>
 </head>
-<body class="h-screen flex">
+<body>
 
-    <div class="logo-watermark">
+    <div class="logo-watermark no-print">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <aside class="w-72 sidebar flex flex-col z-20 no-print">
-        <div class="h-20 flex items-center px-8 border-b border-white/5">
-            <div class="flex items-center gap-3">
-                <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-8 brightness-125">
-                <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
-            </div>
-        </div>
-        <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
-            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Main Menu</p>
-            <a href="admin_approvalbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
-                <i class="fa-solid fa-check-to-slot"></i> Approvals
-            </a>
-            <a href="admin_setupbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
-                <i class="fa-solid fa-school"></i> Academic Setup
-            </a>
-            <a href="admin_classbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
-                <i class="fa-solid fa-chalkboard-user"></i> Class Assignment
-            </a>
-            <a href="admin_recordsbeta.html" class="active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold">
-                <i class="fa-solid fa-folder-open"></i> Master Record
-            </a>
-            <a href="admin_accountsbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
-                <i class="fa-solid fa-users-gear"></i> Accounts
-            </a>
-        </nav>
-        <div class="p-6 border-t border-white/5">
-            <div class="glass-card p-4 flex items-center gap-3 mb-4">
-                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">AD</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Administrator</p>
+    <div class="print-watermark" style="display:none;">CMCS OFFICIAL RECORD</div>
+
+    <div class="screen-container">
+        <aside class="w-72 sidebar flex flex-col z-20 no-print">
+            <div class="h-20 flex items-center px-8 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-8 brightness-125">
+                    <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
                 </div>
             </div>
-            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Sign Out</button>
-        </div>
-    </aside>
-
-    <main class="flex-1 flex flex-col overflow-hidden relative">
-        <header class="h-20 flex items-center justify-between px-10 border-b border-white/5 no-print">
-            <h1 class="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Master <span class="text-white">Records</span></h1>
-            <div class="flex items-center gap-4">
-                <button onclick="exportCSV()" class="bg-white/5 border border-white/10 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all">Export CSV</button>
-                <button onclick="preparePrint('list')" class="bg-white text-black px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Print List</button>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-10 space-y-8">
-            <div id="printHeader" class="text-black mb-6 text-center">
-                <h2 class="text-2xl font-black uppercase">Central Mindanao Computer School</h2>
-                <p class="text-sm font-bold uppercase tracking-widest">Student Academic Master List</p>
-                <div class="flex justify-center gap-6 mt-4 text-[10px] font-bold uppercase">
-                    <span>Course: <span id="lblCourse"></span></span>
-                    <span>Year: <span id="lblYear"></span></span>
-                    <span>Sem: <span id="lblSem"></span></span>
+            <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
+                <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Main Menu</p>
+                <a href="admin_approvalbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all"><i class="fa-solid fa-check-to-slot"></i> Approvals</a>
+                <a href="admin_setupbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all"><i class="fa-solid fa-school"></i> Academic Setup</a>
+                <a href="admin_classbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all"><i class="fa-solid fa-chalkboard-user"></i> Class Assignment</a>
+                <a href="admin_recordsbeta.html" class="bg-white text-black flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold"><i class="fa-solid fa-folder-open"></i> Master Record</a>
+                <a href="admin_accountsbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all"><i class="fa-solid fa-users-gear"></i> Accounts</a>
+            </nav>
+            <div class="p-6 border-t border-white/5">
+                <div class="glass-card p-4 flex items-center gap-3 mb-4">
+                    <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">AD</div>
+                    <div class="flex-1 min-w-0"><p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p></div>
                 </div>
-                <div class="border-b-2 border-black mt-4"></div>
+                <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Sign Out</button>
             </div>
+        </aside>
 
-            <div id="individualPrint" class="text-black">
-                <div class="flex justify-between items-start mb-10">
-                    <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-16">
-                    <div class="text-right">
-                        <h2 class="text-xl font-black uppercase">Official Academic Record</h2>
-                        <p class="text-xs font-bold uppercase tracking-widest">CMCS Virtual Learning System</p>
-                    </div>
+        <main class="flex-1 flex flex-col overflow-hidden relative">
+            <header class="h-20 flex items-center justify-between px-10 border-b border-white/5 no-print">
+                <h1 class="text-sm font-black uppercase tracking-widest text-gray-400">Master <span class="text-white">Records</span></h1>
+                <div class="flex items-center gap-4">
+                    <button onclick="exportCSV()" class="bg-white/5 border border-white/10 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black">CSV</button>
+                    <button onclick="preparePrint('list')" class="bg-white text-black px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">Print List</button>
                 </div>
-                <div class="grid grid-cols-2 gap-8 text-xs font-bold uppercase mb-10 border-t border-b border-black py-6">
-                    <div>NAME: <span id="pName" class="font-normal ml-2"></span></div>
-                    <div>COURSE: <span id="pCourse" class="font-normal ml-2"></span></div>
-                    <div>STUDENT ID: <span id="pId" class="font-normal ml-2"></span></div>
-                    <div>LEVEL: <span id="pLevel" class="font-normal ml-2"></span></div>
-                    <div>SCHOOL YEAR: <span id="pSY" class="font-normal ml-2"></span></div>
-                    <div>GENDER: <span id="pGender" class="font-normal ml-2"></span></div>
-                </div>
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="bg-gray-100 text-[10px] font-black uppercase">
-                            <th class="p-3">Code</th>
-                            <th class="p-3">Subject Description</th>
-                            <th class="p-3">Instructor</th>
-                            <th class="p-3 text-right">Schedule</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pSubjectTable" class="text-[10px]"></tbody>
-                </table>
-            </div>
+            </header>
 
-            <div class="glass-card p-8 no-print">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
-                    <div>
-                        <label class="block text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Academic Course</label>
-                        <select id="filterCourse" class="w-full rounded-xl px-4 py-3 text-xs font-black uppercase outline-none"></select>
+            <div class="flex-1 overflow-y-auto p-10 space-y-6">
+                <div id="printHeader" class="text-black">
+                    <div class="flex flex-col items-center">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-16 h-16 mb-2">
+                        <h2 class="text-xl font-black uppercase text-black text-center">Central Mindanao Computer School</h2>
+                        <p class="text-[11px] font-bold uppercase tracking-tight">Master Student Academic Enrollment List</p>
+                        <div class="mt-2 text-[10px] font-bold uppercase">
+                            COURSE: <span id="lblCourse">ALL</span> | YEAR: <span id="lblYear">ALL</span> | SEM: <span id="lblSem">ALL</span>
+                        </div>
+                        <p class="text-[9px] italic text-gray-600 uppercase mt-1">Generated: <span id="lblTime"></span></p>
                     </div>
-                    <div>
-                        <label class="block text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Classification</label>
-                        <select id="filterYear" class="w-full rounded-xl px-4 py-3 text-xs font-black uppercase outline-none">
-                            <option value="ALL">ALL YEARS</option>
-                            <option value="1">1ST YEAR</option>
-                            <option value="2">2ND YEAR</option>
-                            <option value="3">3RD YEAR</option>
-                            <option value="4">4TH YEAR</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Term</label>
-                        <select id="filterSem" class="w-full rounded-xl px-4 py-3 text-xs font-black uppercase outline-none">
-                            <option value="ALL">ALL TERMS</option>
-                            <option value="1ST SEMESTER">1ST SEMESTER</option>
-                            <option value="2ND SEMESTER">2ND SEMESTER</option>
-                        </select>
-                    </div>
-                    <div>
-                        <div class="relative">
-                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                            <input type="text" id="searchField" class="w-full pl-10 pr-4 py-3 rounded-xl text-xs font-black uppercase outline-none" placeholder="SEARCH IDENTITY...">
+                    <div class="border-b-2 border-black mt-4"></div>
+                </div>
+
+                <div id="individualPrint" class="text-black">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-14 h-14">
+                        <div class="text-left">
+                            <h2 class="text-lg font-black uppercase">Central Mindanao Computer School</h2>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">Official Student Academic Record</p>
                         </div>
                     </div>
+                    <div class="border-b-2 border-black mb-6"></div>
+                    <div class="grid grid-cols-2 gap-y-2 gap-x-12 text-[10px] font-bold uppercase mb-6">
+                        <div>NAME: <span id="pName" class="font-normal"></span></div>
+                        <div>COURSE: <span id="pCourse" class="font-normal"></span></div>
+                        <div>ID NUMBER: <span id="pId" class="font-normal"></span></div>
+                        <div>YEAR / SEM: <span id="pLevel" class="font-normal"></span></div>
+                        <div>GENDER: <span id="pGender" class="font-normal"></span></div>
+                        <div>SCHOOL YEAR: <span id="pSY" class="font-normal"></span></div>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr><th class="w-20">Code</th><th>Subject Name</th><th>Instructor</th><th>Schedule</th></tr>
+                        </thead>
+                        <tbody id="pSubjectTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="glass-card p-6 no-print">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <select id="filterCourse" class="rounded-xl px-4 py-3 text-xs font-black uppercase outline-none"></select>
+                        <select id="filterYear" class="rounded-xl px-4 py-3 text-xs font-black uppercase outline-none">
+                            <option value="ALL">ALL YEARS</option><option value="1">1ST YEAR</option><option value="2">2ND YEAR</option><option value="3">3RD YEAR</option><option value="4">4TH YEAR</option>
+                        </select>
+                        <select id="filterSem" class="rounded-xl px-4 py-3 text-xs font-black uppercase outline-none">
+                            <option value="ALL">ALL TERMS</option><option value="1ST SEMESTER">1ST SEMESTER</option><option value="2ND SEMESTER">2ND SEMESTER</option>
+                        </select>
+                        <input type="text" id="searchField" class="rounded-xl px-4 py-3 text-xs font-black uppercase outline-none" placeholder="SEARCH...">
+                    </div>
+                </div>
+
+                <div class="glass-card overflow-hidden master-table-container">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5 text-[9px] font-black text-gray-500 uppercase tracking-widest no-print">
+                            <tr><th class="px-8 py-5">#</th><th class="px-8 py-5">ID Number</th><th class="px-8 py-5">Full Name</th><th class="px-8 py-5">Classification</th><th class="px-8 py-5">Units</th><th class="px-8 py-5 text-right no-print">Action</th></tr>
+                        </thead>
+                        <tbody id="masterTableBody" class="divide-y divide-white/5 text-xs"></tbody>
+                    </table>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <div class="glass-card overflow-hidden no-print">
-                <table class="w-full text-left">
-                    <thead class="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                        <tr>
-                            <th class="px-8 py-5">Rank</th>
-                            <th class="px-8 py-5">ID Number</th>
-                            <th class="px-8 py-5">Full Name</th>
-                            <th class="px-8 py-5">Course Meta</th>
-                            <th class="px-8 py-5">Load</th>
-                            <th class="px-8 py-5 text-right">Operations</th>
-                        </tr>
-                    </thead>
-                    <tbody id="masterTableBody" class="divide-y divide-white/5 text-xs"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <div id="viewModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden items-center justify-center z-[60] p-4 no-print">
+    <div id="viewModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden items-center justify-center z-[100] p-4 no-print">
         <div class="glass-card w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border-white/20">
-            <div class="px-8 py-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Student Profile Review</span>
+            <div class="px-8 py-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                <span class="text-[10px] font-black uppercase text-gray-500">Record Review</span>
                 <button onclick="closeModal('viewModal')" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-10">
-                <div class="mb-10 text-center">
+                <div class="text-center mb-10">
                     <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-14 mx-auto mb-4">
-                    <h2 id="mName" class="text-3xl font-black uppercase tracking-tighter"></h2>
-                    <p id="mId" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mt-2"></p>
+                    <h2 id="mName" class="text-2xl font-black uppercase"></h2>
+                    <p id="mId" class="text-[9px] text-gray-500 font-black mt-2"></p>
                 </div>
-                <div class="grid grid-cols-2 gap-x-12 gap-y-4 mb-10 text-[11px] font-bold border-y border-white/5 py-8">
-                    <div class="text-gray-500">COURSE: <span id="mCourse" class="text-white ml-2"></span></div>
-                    <div class="text-gray-500">LEVEL: <span id="mLevel" class="text-white ml-2"></span></div>
-                    <div class="text-gray-500">EMAIL: <span id="mEmail" class="text-white ml-2 lowercase font-normal"></span></div>
+                <div class="grid grid-cols-2 gap-8 text-[11px] font-bold border-y border-white/5 py-8 mb-8">
+                    <div>COURSE: <span id="mCourse" class="text-gray-400 ml-2"></span></div>
+                    <div>LEVEL: <span id="mLevel" class="text-gray-400 ml-2"></span></div>
                 </div>
-                <div class="space-y-4">
-                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4">Academic Load Details</p>
-                    <div id="mSubjectTable" class="space-y-3"></div>
-                </div>
+                <div id="mSubjectTable" class="space-y-2"></div>
             </div>
-            <div class="px-8 py-6 border-t border-white/5 flex justify-end gap-4 bg-white/[0.02]">
-                <button onclick="closeModal('viewModal')" class="px-8 py-3 text-[10px] font-black uppercase text-gray-400">Close</button>
-                <button id="modalPrintBtn" class="bg-white text-black px-10 py-3 rounded-full text-[10px] font-black uppercase tracking-widest">Print Official Record</button>
+            <div class="px-8 py-4 border-t border-white/5 flex justify-end gap-4">
+                <button onclick="closeModal('viewModal')" class="text-[10px] font-black uppercase text-gray-500">Cancel</button>
+                <button id="modalPrintBtn" class="bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest">Print Official Copy</button>
             </div>
         </div>
     </div>
@@ -241,22 +209,10 @@
         let masterData = [];
         let courseSYMap = {};
 
-        const formatYear = y => String(y).charAt(0);
-        const formatSem = s => String(s).toUpperCase().includes("1ST") ? "1ST SEMESTER" : "2ND SEMESTER";
-        const formatTime = t => {
-            if(!t) return "";
-            const [h, m] = t.split(':');
-            const hh = parseInt(h);
-            return `${((hh + 11) % 12 + 1)}:${m} ${hh >= 12 ? "PM" : "AM"}`;
-        };
-
         onAuthStateChanged(auth, async user => {
             if (user) {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists() && snap.data().role === 'admin') {
-                    const data = snap.data();
-                    document.getElementById('adminName').innerText = `${data.lastname}, ${data.firstname}`.toUpperCase();
-                    document.getElementById('adminInitial').innerText = data.firstname.charAt(0).toUpperCase();
                     await loadCourses();
                     initStudentListener();
                 } else { window.location.href = "login.html"; }
@@ -278,11 +234,7 @@
         function initStudentListener() {
             const q = query(collection(db, "users"), where("role", "==", "student"), where("status", "==", "approved"));
             onSnapshot(q, snap => {
-                masterData = snap.docs.map(d => ({ 
-                    uid: d.id, ...d.data(), 
-                    year: formatYear(d.data().year), 
-                    semester: formatSem(d.data().semester) 
-                }));
+                masterData = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
                 applyFilters();
             });
         }
@@ -295,27 +247,26 @@
 
             document.getElementById('lblCourse').innerText = course;
             document.getElementById('lblYear').innerText = year;
-            document.getElementById('lblSem').innerText = sem === 'ALL' ? 'ALL' : (sem.includes('1ST') ? '1ST' : '2ND');
+            document.getElementById('lblSem').innerText = sem;
+            document.getElementById('lblTime').innerText = new Date().toLocaleString();
 
             const filtered = masterData.filter(s => 
                 (course === 'ALL' || s.course?.toUpperCase() === course) &&
-                (year === 'ALL' || s.year === year) &&
+                (year === 'ALL' || String(s.year).includes(year)) &&
                 (sem === 'ALL' || s.semester === sem) &&
                 (!search || s.lastname?.toUpperCase().includes(search) || s.studentId?.includes(search))
             );
 
             const tbody = document.getElementById('masterTableBody');
             tbody.innerHTML = filtered.map((s, i) => `
-                <tr class="hover:bg-white/[0.02] border-b border-white/5 transition-colors">
-                    <td class="px-8 py-5 text-gray-600 font-black text-[10px]">${i + 1}</td>
+                <tr class="border-b border-white/5">
+                    <td class="px-8 py-5 text-gray-600 font-bold">${i + 1}</td>
                     <td class="px-8 py-5 font-black text-white">${s.studentId || 'N/A'}</td>
-                    <td class="px-8 py-5 uppercase font-black text-white">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-8 py-5 text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                        SY ${courseSYMap[s.course?.toUpperCase()] || 'N/A'} / ${s.course} / Y${s.year}
-                    </td>
-                    <td class="px-8 py-5 font-black uppercase text-[10px] text-gray-400">${(s.assignedPrograms || []).length} Subjects</td>
+                    <td class="px-8 py-5 uppercase font-black">${s.lastname}, ${s.firstname}</td>
+                    <td class="px-8 py-5 text-[9px] font-bold text-gray-500 uppercase">${s.course} / Y${s.year}</td>
+                    <td class="px-8 py-5 font-bold text-gray-400">${(s.assignedPrograms || []).length} SUBJ</td>
                     <td class="px-8 py-5 text-right no-print">
-                        <button onclick="viewProfile('${s.uid}')" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black text-white uppercase hover:bg-white hover:text-black transition-all">Profile</button>
+                        <button onclick="viewProfile('${s.uid}')" class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase hover:bg-white hover:text-black transition-all">Profile</button>
                     </td>
                 </tr>`).join('');
         };
@@ -325,31 +276,20 @@
             if(!s) return;
 
             document.getElementById('mName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
-            document.getElementById('mId').innerText = s.studentId || 'NO ID ASSIGNED';
+            document.getElementById('mId').innerText = s.studentId || 'N/A';
             document.getElementById('mCourse').innerText = s.course || 'N/A';
-            document.getElementById('mLevel').innerText = `YEAR ${s.year} • ${s.semester}`;
-            document.getElementById('mEmail').innerText = (s.email || 'N/A');
+            document.getElementById('mLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
 
             const progSnap = await getDocs(collection(db, "programs"));
             const progMap = {};
             progSnap.forEach(p => { progMap[p.data().code] = p.data(); });
 
             const modalTable = (s.assignedPrograms || []).map(code => {
-                const info = progMap[code] || { name: 'NOT FOUND', teacher: '---' };
-                return `
-                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5">
-                        <div class="text-[10px] font-black text-white w-20">${code}</div>
-                        <div class="flex-1">
-                            <div class="text-xs font-black uppercase">${info.name}</div>
-                            <div class="text-[9px] font-bold text-gray-500 uppercase mt-1">Instructor: ${info.teacher}</div>
-                        </div>
-                        <div class="text-right text-[9px] font-black text-gray-400 uppercase">
-                            ${info.schedule || ''} ${formatTime(info.startTime)}
-                        </div>
-                    </div>`;
+                const info = progMap[code] || { name: 'N/A', teacher: '---' };
+                return `<div class="p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center"><div class="text-[10px] font-black uppercase"> <span class="text-gray-500 mr-2">${code}</span> ${info.name}</div><div class="text-[9px] text-gray-500 uppercase">${info.teacher}</div></div>`;
             }).join('');
 
-            document.getElementById('mSubjectTable').innerHTML = modalTable || '<p class="text-center py-10 text-gray-600 text-xs font-black uppercase">No Academic Load</p>';
+            document.getElementById('mSubjectTable').innerHTML = modalTable || '<p class="text-center text-gray-600 text-xs">NO LOAD</p>';
 
             document.getElementById('modalPrintBtn').onclick = () => {
                 document.getElementById('pName').innerText = `${s.lastname}, ${s.firstname}`.toUpperCase();
@@ -358,15 +298,9 @@
                 document.getElementById('pCourse').innerText = s.course || 'N/A';
                 document.getElementById('pLevel').innerText = `YEAR ${s.year} / ${s.semester}`;
                 document.getElementById('pSY').innerText = courseSYMap[s.course?.toUpperCase()] || 'N/A';
-                
                 document.getElementById('pSubjectTable').innerHTML = (s.assignedPrograms || []).map(code => {
                     const info = progMap[code] || { name: 'N/A', teacher: '---' };
-                    return `<tr>
-                        <td class="p-2 border border-black">${code}</td>
-                        <td class="p-2 border border-black font-bold">${info.name}</td>
-                        <td class="p-2 border border-black">${info.teacher}</td>
-                        <td class="p-2 border border-black text-right">${info.schedule || ''}</td>
-                    </tr>`;
+                    return `<tr><td class="p-2 border border-black">${code}</td><td class="p-2 border border-black font-bold">${info.name}</td><td class="p-2 border border-black">${info.teacher}</td><td class="p-2 border border-black">${info.schedule || ''}</td></tr>`;
                 }).join('');
                 preparePrint('individual');
             };
@@ -380,19 +314,18 @@
             window.print();
         };
 
-        window.closeModal = id => { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); };
+        window.closeModal = id => { 
+            document.getElementById(id).classList.add('hidden'); 
+            document.getElementById(id).classList.remove('flex'); 
+        };
 
         window.exportCSV = () => {
-            const courseF = document.getElementById('filterCourse').value;
-            const rows = [["Rank", "ID", "Name", "Course", "Year", "Sem", "Subjects"]];
-            masterData.filter(s => (courseF === 'ALL' || s.course?.toUpperCase() === courseF)).forEach((s, i) => {
-                rows.push([i+1, s.studentId, `${s.lastname}, ${s.firstname}`, s.course, s.year, s.semester, (s.assignedPrograms || []).length]);
-            });
+            const rows = [["Rank", "ID", "Name", "Course", "Year", "Sem"]];
+            masterData.forEach((s, i) => rows.push([i+1, s.studentId, `${s.lastname}, ${s.firstname}`, s.course, s.year, s.semester]));
             const blob = new Blob([rows.map(e => e.join(",")).join("\n")], { type: 'text/csv' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `CMCS_Master_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
+            a.download = `CMCS_Master.csv`; a.click();
         };
 
         document.querySelectorAll('select, input').forEach(el => el.addEventListener('change', applyFilters));
