@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
@@ -25,10 +26,7 @@
             opacity: 0.06;
             pointer-events: none;
         }
-        .logo-watermark img {
-            height: 80%;
-            filter: grayscale(1) brightness(0.5);
-        }
+        .logo-watermark img { height: 80%; filter: grayscale(1) brightness(0.5); }
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(24px);
@@ -36,18 +34,9 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 1.5rem;
         }
-        .nav-link {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
-        }
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        .nav-link.active {
-            background: white;
-            color: black !important;
-        }
+        .nav-link { transition: all 0.3s ease; border: 1px solid transparent; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+        .nav-link.active { background: white; color: black !important; }
         .sidebar {
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(20px);
@@ -72,32 +61,31 @@
         </div>
 
         <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
-            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Operations</p>
-            
-            <a href="#" class="nav-link active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold">
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Main Menu</p>
+            <a href="admin_dashboard.html" class="nav-link active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold">
                 <i class="fa-solid fa-chart-line text-base"></i> Dashboard
             </a>
-            <a href="#" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
+            <a href="admin_approvalbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
                 <i class="fa-solid fa-check-to-slot text-base"></i> Approvals
             </a>
-            <a href="#" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
+            <a href="admin_setupbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
                 <i class="fa-solid fa-school text-base"></i> Academic Setup
             </a>
-            <a href="#" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
+            <a href="admin_recordsbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
                 <i class="fa-solid fa-folder-open text-base"></i> Master Record
             </a>
         </nav>
 
         <div class="p-6 border-t border-white/5">
-            <div class="glass-card p-4 flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-600 to-gray-400 flex items-center justify-center text-xs font-bold text-black">AD</div>
+            <a href="admin_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
+                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">..</div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold truncate uppercase" id="adminName">Admin User</p>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System Master</p>
+                    <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Administrator</p>
                 </div>
-            </div>
-            <button class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
-                Terminate Session
+            </a>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
+                Sign Out
             </button>
         </div>
     </aside>
@@ -107,257 +95,218 @@
             <h1 class="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">System <span class="text-white">Overview</span></h1>
             <div class="flex items-center gap-6">
                 <div class="text-right">
-                    <p id="clock" class="text-sm font-black tracking-widest">00:00:00</p>
-                    <p id="currentDate" class="text-[10px] font-bold text-gray-500 uppercase">February 17, 2026</p>
+                    <p id="clock" class="text-sm font-black tracking-widest text-white">--:--</p>
+                    <p id="currentDate" class="text-[10px] font-bold text-gray-500 uppercase">--- --, ----</p>
                 </div>
-                <div class="w-px h-8 bg-white/10"></div>
-                <button class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-bell text-xs"></i>
-                </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-10 space-y-8">
+        <div class="flex-1 overflow-y-auto p-10 space-y-8" id="dashboardContent">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="glass-card p-6 flex flex-col justify-between min-h-[140px] hover:border-white/20 transition-all cursor-default group">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Enrollment</p>
-                        <i class="fa-solid fa-user-graduate text-gray-600 group-hover:text-white transition-colors"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-black">1,284</h3>
-                        <p class="text-[10px] text-emerald-500 font-bold">+12% from last sem</p>
-                    </div>
+                <div class="glass-card p-6 flex flex-col justify-between min-h-[130px]">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Students</p>
+                    <h3 class="text-3xl font-black" id="statStudents">0</h3>
                 </div>
-                <div class="glass-card p-6 flex flex-col justify-between min-h-[140px]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Faculty</p>
-                        <i class="fa-solid fa-user-tie text-gray-600"></i>
-                    </div>
-                    <h3 class="text-3xl font-black">48</h3>
+                <div class="glass-card p-6 flex flex-col justify-between min-h-[130px]">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Faculty Staff</p>
+                    <h3 class="text-3xl font-black" id="statFaculty">0</h3>
                 </div>
-                <div class="glass-card p-6 flex flex-col justify-between min-h-[140px]">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Subjects</p>
-                        <i class="fa-solid fa-book text-gray-600"></i>
-                    </div>
-                    <h3 class="text-3xl font-black">156</h3>
+                <div class="glass-card p-6 flex flex-col justify-between min-h-[130px]">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Programs</p>
+                    <h3 class="text-3xl font-black" id="statSubjects">0</h3>
                 </div>
-                <div class="glass-card p-6 flex flex-col justify-between min-h-[140px] border-red-500/20">
-                    <div class="flex justify-between items-start">
-                        <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Action Required</p>
-                        <i class="fa-solid fa-clock-rotate-left text-red-500/50"></i>
-                    </div>
-                    <h3 class="text-3xl font-black text-red-500">24</h3>
+                <div class="glass-card p-6 flex flex-col justify-between min-h-[130px] border-red-500/20">
+                    <p class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Pending Approvals</p>
+                    <h3 class="text-3xl font-black text-red-500" id="statPending">0</h3>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="glass-card p-8">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8">Course Distribution</h3>
-                    <div class="h-[250px] flex items-center justify-center">
-                        <canvas id="courseChart"></canvas>
-                    </div>
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Student Distribution</h3>
+                    <div class="h-[250px]"><canvas id="courseChart"></canvas></div>
                 </div>
-                <div class="glass-card p-8">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-8">Year Level Growth</h3>
-                    <div class="h-[250px] flex items-center justify-center">
-                        <canvas id="yearLevelChart"></canvas>
-                    </div>
+                <div class="glass-card p-8 text-center">
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Year Level Breakdown</h3>
+                    <div class="h-[250px] flex justify-center"><canvas id="yearLevelChart"></canvas></div>
                 </div>
             </div>
 
             <div class="glass-card overflow-hidden">
-                <div class="px-8 py-6 border-b border-white/5 flex justify-between items-center">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Faculty Load Status</h3>
-                    <button class="text-[10px] font-bold uppercase text-gray-500 hover:text-white">View Full Report</button>
+                <div class="px-8 py-5 border-b border-white/5">
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Faculty Workload Report</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">
                                 <th class="px-8 py-4">Instructor</th>
-                                <th class="px-8 py-4">Status</th>
-                                <th class="px-8 py-4 text-right">Load Units</th>
+                                <th class="px-8 py-4">Workload</th>
+                                <th class="px-8 py-4 text-right">Student Reach</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/5">
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-8 py-4 text-sm font-semibold">Dr. Julian Casablancas</td>
-                                <td class="px-8 py-4">
-                                    <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase">Active</span>
-                                </td>
-                                <td class="px-8 py-4 text-right font-mono text-sm">21.0</td>
-                            </tr>
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-8 py-4 text-sm font-semibold">Prof. Karen O</td>
-                                <td class="px-8 py-4">
-                                    <span class="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black uppercase">Pending</span>
-                                </td>
-                                <td class="px-8 py-4 text-right font-mono text-sm">18.5</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="workloadTable" class="divide-y divide-white/5">
+                            </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-        authDomain: "svls-289ee.firebaseapp.com",
-        projectId: "svls-289ee",
-        storageBucket: "svls-289ee.firebasestorage.app",
-        messagingSenderId: "500705386198",
-        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-    };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let courseChart, yearChart;
 
-    let courseChart, yearChart;
+        // Chart.js Global Styles
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
 
-    // --- 1. AUTHENTICATION & ROLE CHECK ---
-    onAuthStateChanged(auth, async user => {
-        if (user) {
-            try {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const userData = snap.data();
-                    
-                    // SECURITY: Strict Admin Role Check
-                    if (userData.role === 'admin') {
+        onAuthStateChanged(auth, async user => {
+            if (user) {
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists() && snap.data().role === 'admin') {
+                        const userData = snap.data();
                         document.getElementById('adminName').innerText = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
                         document.getElementById('adminInitial').innerText = userData.firstname[0].toUpperCase();
                         initDashboard();
                     } else {
-                        alert("Access Denied: Admin privileges required.");
                         window.location.href = "login.html";
                     }
-                } else {
-                    window.location.href = "login.html";
+                } catch (e) { window.location.href = "login.html"; }
+            } else { window.location.href = "login.html"; }
+        });
+
+        async function initDashboard() {
+            const dateEl = document.getElementById('currentDate');
+            if (dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+
+            try {
+                const [userSnap, progSnap] = await Promise.all([
+                    getDocs(collection(db, "users")),
+                    getDocs(collection(db, "programs"))
+                ]);
+
+                const users = userSnap.docs.map(d => d.data());
+                const programs = progSnap.docs.map(d => d.data());
+
+                const students = users.filter(u => u.role === 'student' && u.status === 'approved');
+                const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
+                const pending = users.filter(u => u.status === 'pending');
+
+                document.getElementById('statStudents').innerText = students.length;
+                document.getElementById('statFaculty').innerText = faculty.length;
+                document.getElementById('statSubjects').innerText = programs.length;
+                document.getElementById('statPending').innerText = pending.length;
+
+                updateCourseChart(students);
+                updateYearChart(students);
+                updateWorkloadTable(faculty, programs, students);
+
+                gsap.from(".glass-card", { opacity: 0, y: 20, duration: 0.6, stagger: 0.1, ease: "power2.out" });
+            } catch (error) { console.error(error); }
+        }
+
+        function updateWorkloadTable(faculty, programs, students) {
+            const workloadTable = document.getElementById('workloadTable');
+            workloadTable.innerHTML = faculty.map(f => {
+                const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
+                const handled = programs.filter(p => p.teacher === fullName);
+                const studentCount = students.filter(s => 
+                    s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
+                ).length;
+
+                return `
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="px-8 py-4 text-sm font-semibold text-white">${fullName}</td>
+                        <td class="px-8 py-4"><span class="bg-white/10 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">${handled.length} Subjects</span></td>
+                        <td class="px-8 py-4 text-right font-mono text-sm text-gray-400">${studentCount} Students</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateCourseChart(students) {
+            const counts = {};
+            students.forEach(s => { counts[s.course || "N/A"] = (counts[s.course || "N/A"] || 0) + 1; });
+            const ctx = document.getElementById('courseChart');
+            if (courseChart) courseChart.destroy();
+            courseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{ 
+                        data: Object.values(counts), 
+                        backgroundColor: 'white', 
+                        borderRadius: 12, 
+                        barThickness: 25 
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+                        x: { grid: { display: false }, border: { display: false } }
+                    }
                 }
-            } catch (error) {
-                console.error("Auth error:", error);
-                window.location.href = "login.html";
-            }
-        } else {
-            window.location.href = "login.html";
+            });
         }
-    });
 
-    // --- 2. CORE DASHBOARD LOGIC ---
-    async function initDashboard() {
-        // Fix: Update date display
-        const dateEl = document.getElementById('currentDate');
-        if (dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        function updateYearChart(students) {
+            const yearCounts = { "1st": 0, "2nd": 0, "3rd": 0, "4th": 0 };
+            students.forEach(s => { if(yearCounts[s.year + 'st']) yearCounts[s.year + 'st']++; }); 
+            // Simplified matching for the logic:
+            students.forEach(s => {
+                if(s.year == '1') yearCounts["1st"]++;
+                else if(s.year == '2') yearCounts["2nd"]++;
+                else if(s.year == '3') yearCounts["3rd"]++;
+                else if(s.year == '4') yearCounts["4th"]++;
+            });
 
-        try {
-            // Speed Boost: Fetch users and programs at the same time
-            const [userSnap, progSnap] = await Promise.all([
-                getDocs(collection(db, "users")),
-                getDocs(collection(db, "programs"))
-            ]);
-
-            const users = userSnap.docs.map(d => d.data());
-            const programs = progSnap.docs.map(d => d.data());
-
-            // Data Filters
-            const students = users.filter(u => u.role === 'student' && u.status === 'approved');
-            const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
-            const pending = users.filter(u => u.status === 'pending');
-
-            // Update Numeric Stats
-            document.getElementById('statStudents').innerText = students.length;
-            document.getElementById('statFaculty').innerText = faculty.length;
-            document.getElementById('statSubjects').innerText = programs.length;
-            document.getElementById('statPending').innerText = pending.length;
-
-            // Process & Render Charts
-            updateCourseChart(students);
-            updateYearChart(students);
-
-            // Render Table
-            updateWorkloadTable(faculty, programs, students);
-
-        } catch (error) {
-            console.error("Data fetch error:", error);
+            const ctx = document.getElementById('yearLevelChart');
+            if (yearChart) yearChart.destroy();
+            yearChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(yearCounts),
+                    datasets: [{ 
+                        data: Object.values(yearCounts), 
+                        backgroundColor: ['#ffffff', '#666666', '#333333', '#111111'], 
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '80%', 
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 20 } } } 
+                }
+            });
         }
-    }
 
-    // --- 3. UI RENDERING HELPERS ---
-    function updateWorkloadTable(faculty, programs, students) {
-        const workloadTable = document.getElementById('workloadTable');
-        workloadTable.innerHTML = faculty.map(f => {
-            const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
-            const handled = programs.filter(p => p.teacher === fullName);
-            const studentCount = students.filter(s => 
-                s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
-            ).length;
-
-            return `
-                <tr class="hover:bg-gray-50/50 border-b border-gray-50">
-                    <td class="px-6 py-4 font-bold text-gray-800">${fullName}</td>
-                    <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">${handled.length} SUBJECTS</span></td>
-                    <td class="px-6 py-4 font-mono">${studentCount} Students</td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    function updateCourseChart(students) {
-        const counts = {};
-        students.forEach(s => {
-            const c = s.course || "Unassigned";
-            counts[c] = (counts[c] || 0) + 1;
-        });
-
-        const ctx = document.getElementById('courseChart');
-        if (courseChart) courseChart.destroy();
-        courseChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{ label: 'Students', data: Object.values(counts), backgroundColor: '#2563eb', borderRadius: 8 }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-    }
-
-    function updateYearChart(students) {
-        const yearCounts = { "1st Year": 0, "2nd Year": 0, "3rd Year": 0, "4th Year": 0 };
-        students.forEach(s => {
-            if(s.year == '1') yearCounts["1st Year"]++;
-            else if(s.year == '2') yearCounts["2nd Year"]++;
-            else if(s.year == '3') yearCounts["3rd Year"]++;
-            else if(s.year == '4') yearCounts["4th Year"]++;
-        });
-
-        const ctx = document.getElementById('yearLevelChart');
-        if (yearChart) yearChart.destroy();
-        yearChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(yearCounts),
-                datasets: [{ data: Object.values(yearCounts), backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
-            },
-            options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-        });
-    }
-
-    // --- 4. UTILITIES & CLOCK ---
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-
-    setInterval(() => {
-        const clock = document.getElementById('clock');
-        if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }, 1000);
-</script>
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+        setInterval(() => {
+            const clock = document.getElementById('clock');
+            if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        }, 1000);
+    </script>
 </body>
 </html>
