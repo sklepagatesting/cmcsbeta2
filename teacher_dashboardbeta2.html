@@ -3,53 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Portal | CMCS VLS</title>
+    <title>Faculty Dashboard | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
-        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.03; pointer-events: none; }
-        .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.04; pointer-events: none; }
+        .logo-watermark img { height: 75%; filter: grayscale(1) brightness(0.5); }
         
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
-        
-        /* Sidebar & Nav */
         .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Nav Styling */
         .nav-link { transition: all 0.3s ease; border: 1px solid transparent; color: #94a3b8; }
         .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: white; }
-        .active-nav { background: white !important; color: black !important; font-weight: 800; box-shadow: 0 10px 20px -5px rgba(255,255,255,0.2); }
+        .active-nav { background: white !important; color: black !important; font-weight: 800; border-radius: 12px; }
 
-        /* Inputs & Selects Fix */
+        /* Form Controls Fix */
         input, select, textarea { 
             background: rgba(255, 255, 255, 0.05) !important; 
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: white !important;
-            outline: none;
-            transition: all 0.3s ease;
+            outline: none !important;
         }
-        input:focus, select:focus, textarea:focus { border-color: rgba(255, 255, 255, 0.3) !important; background: rgba(255, 255, 255, 0.08) !important; }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-
-        /* Table Design */
-        .modern-table thead th { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: #64748b; padding: 1.25rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .modern-table tbody td { padding: 1.25rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
-
-        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid white; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; }
+        input:focus, select:focus { border-color: rgba(255, 255, 255, 0.3) !important; }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { 
+            filter: invert(1); 
+            cursor: pointer;
+        }
+        
+        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid white; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        .print-val { display: none; }
+
+        /* TRADITIONAL PRINT PRESERVATION */
         @media print {
-            body { background: white !important; color: black !important; }
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; color: black !important; }
             .no-print { display: none !important; }
-            #printArea { position: absolute; inset: 0; width: 100%; visibility: visible; }
-            #printArea * { visibility: visible; }
-            table { border-collapse: collapse; width: 100%; border: 1px solid black; }
-            th, td { border: 1px solid black !important; color: black !important; padding: 5px !important; font-size: 10pt !important; }
-            .print-val { display: block !important; }
-            .input-box, .radio-group { display: none !important; }
+            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
+            th, td { border: 1pt solid black !important; padding: 6px 10px !important; color: black !important; font-size: 10pt !important; }
+            .print-val { display: inline-block !important; color: black !important; }
         }
     </style>
 </head>
@@ -59,6 +57,15 @@
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
+    <div id="modalOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] hidden flex items-center justify-center p-4">
+        <div id="modalContent" class="glass-card max-w-sm w-full p-8 text-center border-white/20">
+            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl"></div>
+            <h3 id="modalTitle" class="text-lg font-black uppercase tracking-tighter mb-2"></h3>
+            <p id="modalBody" class="text-xs text-gray-400 leading-relaxed mb-8"></p>
+            <div class="grid grid-cols-2 gap-3" id="modalButtons"></div>
+        </div>
+    </div>
+
     <aside class="w-72 sidebar flex flex-col z-20 no-print">
         <div class="h-20 flex items-center px-8 border-b border-white/5">
             <div class="flex items-center gap-3">
@@ -66,38 +73,40 @@
                 <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
             </div>
         </div>
-        
+
         <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto" id="subjectNav">
-            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Your Loads</p>
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Subject Loads</p>
             </nav>
 
         <div class="p-6 border-t border-white/5">
             <a href="teacher_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
-                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">AD</div>
+                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase"></div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
                     <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Faculty Member</p>
                 </div>
             </a>
-            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Logout Session</button>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
+                Logout
+            </button>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
-        <header class="h-20 flex items-center justify-between px-10 border-b border-white/5 z-10 no-print">
+        <header class="h-20 flex items-center justify-between px-10 border-b border-white/5 no-print">
             <div class="flex flex-col">
-                <h1 id="activeSubjectTitle" class="text-sm font-black uppercase tracking-widest text-white">Select a Subject</h1>
-                <p id="subjectSubDetails" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1"></p>
+                <h1 id="activeSubjectTitle" class="text-sm font-black uppercase tracking-widest text-white leading-none">Class Assignment</h1>
+                <p id="subjectSubDetails" class="text-[9px] text-gray-500 font-bold uppercase mt-2 tracking-tighter"></p>
             </div>
             
-            <div class="flex items-center gap-4">
-                <div id="viewToggles" class="hidden glass-card p-1 flex gap-1 rounded-xl">
-                    <button id="btnAtt" onclick="switchView('attendance')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active-nav">Attendance</button>
-                    <button id="btnGrd" onclick="switchView('grades')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all text-gray-400">Gradebook</button>
-                    <button id="btnMat" onclick="switchView('materials')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all text-gray-400">Materials</button>
+            <div class="flex items-center gap-6">
+                <div id="viewToggles" class="hidden glass-card !rounded-xl p-1 flex gap-1 border-white/5">
+                    <button id="btnAtt" onclick="switchView('attendance')" class="px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all active-nav">Attendance</button>
+                    <button id="btnGrd" onclick="switchView('grades')" class="px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all text-gray-500">Grades</button>
+                    <button id="btnMat" onclick="switchView('materials')" class="px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all text-gray-500">Materials</button>
                 </div>
-                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-white text-black px-6 py-3 rounded-xl text-[10px] font-black tracking-widest uppercase hover:scale-105 transition-all shadow-lg flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync Cloud
+                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-white text-black px-6 py-2.5 rounded-xl text-[10px] font-black shadow-lg transition-all flex items-center gap-2 uppercase tracking-widest hover:scale-105">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync Data
                 </button>
             </div>
         </header>
@@ -105,55 +114,57 @@
         <div class="flex-1 overflow-y-auto p-10 scrollbar-hide">
             <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-600">
                 <i class="fa-solid fa-chalkboard-user text-6xl mb-6 opacity-10"></i>
-                <p class="font-black uppercase text-[10px] tracking-[0.4em]">Initialize classroom to begin</p>
+                <p class="font-black uppercase text-[10px] tracking-[0.4em]">Select Subject Load</p>
             </div>
 
             <div id="workspace" class="hidden space-y-8">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-6 no-print">
-                    <div class="relative w-full md:w-96">
+                <div class="flex justify-between items-center no-print">
+                    <div class="relative w-96">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input type="text" id="masterSearch" placeholder="SEARCH STUDENT..." class="w-full pl-12 pr-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                        <input type="text" id="masterSearch" placeholder="Search Student Identity..." 
+                                class="w-full pl-12 pr-4 py-3 rounded-xl text-xs font-black uppercase">
                     </div>
                     <div id="searchExportActions" class="flex gap-3">
-                        <button onclick="exportCSV()" class="px-5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all">CSV Export</button>
-                        <button onclick="exportPDF()" class="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[9px] font-black uppercase border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">Print PDF</button>
+                        <button onclick="exportCSV()" class="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-black transition-all">CSV Export</button>
+                        <button onclick="exportPDF()" class="px-6 py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all">Generate PDF</button>
                     </div>
                 </div>
 
-                <div id="materialUploadSection" class="hidden glass-card p-8 no-print border-blue-500/20">
-                    <h3 id="matFormTitle" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Learning Resource Management</h3>
+                <div id="materialUploadSection" class="hidden glass-card p-8 no-print">
+                    <h3 id="matFormTitle" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-6">Learning Resource Management</h3>
                     <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <input type="hidden" id="editMatId">
-                        <input type="text" id="matName" placeholder="TITLE OF RESOURCE" class="text-[10px] p-3 rounded-xl font-black uppercase" required>
-                        <input type="url" id="matLink" placeholder="RESOURCE LINK (URL)" class="text-[10px] p-3 rounded-xl font-black" required>
-                        <input type="datetime-local" id="matSchedule" class="text-[10px] p-3 rounded-xl font-black" required>
-                        <textarea id="matDesc" placeholder="INSTRUCTIONS OR DESCRIPTION..." class="md:col-span-2 text-[10px] p-3 rounded-xl h-12 font-black uppercase"></textarea>
+                        <input type="text" id="matName" placeholder="TITLE" class="rounded-xl p-4 text-xs font-bold uppercase" required>
+                        <input type="url" id="matLink" placeholder="RESOURCE URL" class="rounded-xl p-4 text-xs font-bold" required>
+                        <input type="datetime-local" id="matSchedule" class="rounded-xl p-4 text-xs font-bold" required>
+                        <textarea id="matDesc" placeholder="DESCRIPTION / INSTRUCTIONS..." class="md:col-span-2 rounded-xl p-4 text-xs font-bold h-16"></textarea>
                         <div class="flex gap-2">
-                            <button type="submit" id="matSubmitBtn" class="flex-1 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Publish</button>
-                            <button type="button" id="cancelEditBtn" onclick="resetMatForm()" class="hidden bg-white/5 text-gray-400 px-4 rounded-xl text-[10px] font-black uppercase">Cancel</button>
+                            <button type="submit" id="matSubmitBtn" class="flex-1 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest">Post Material</button>
+                            <button type="button" id="cancelEditBtn" onclick="resetMatForm()" class="hidden bg-white/5 text-gray-400 px-6 rounded-xl text-[10px] font-black uppercase">Cancel</button>
                         </div>
                     </form>
                 </div>
 
                 <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-10">
-                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-16 h-16 mb-4">
-                        <h2 class="text-xl font-black uppercase tracking-tight text-center">Central Mindanao Computer School</h2>
-                        <p class="text-[9px] font-black uppercase tracking-[0.3em] border-b border-black/20 pb-2 mb-4" id="lblReportType"></p>
-                        <div class="grid grid-cols-2 gap-x-12 gap-y-2 text-[9px] font-bold uppercase w-full max-w-2xl">
-                            <div>COURSE: <span id="lblCourse" class="font-normal border-b border-black/10"></span></div>
-                            <div>YEAR/SEM: <span id="lblYear" class="font-normal border-b border-black/10"></span></div>
-                            <div>SUBJECT: <span id="lblSubj" class="font-normal border-b border-black/10"></span></div>
-                            <div>FACULTY: <span id="lblFaculty" class="font-normal border-b border-black/10"></span></div>
+                    <div id="printHeader" class="hidden flex-col items-center mb-8">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-16 h-16 mb-2">
+                        <h2 class="text-2xl font-black uppercase text-black text-center">Central Mindanao Computer School</h2>
+                        <p class="text-[11px] font-bold uppercase tracking-widest border-b border-black pb-1 mb-2" id="lblReportType"></p>
+                        <div class="grid grid-cols-2 gap-x-8 text-[10px] font-bold uppercase w-full max-w-lg">
+                            <div>COURSE: <span id="lblCourse" class="font-normal underline"></span></div>
+                            <div>YEAR/SEM: <span id="lblYear" class="font-normal underline"></span></div>
+                            <div>SUBJECT: <span id="lblSubj" class="font-normal underline"></span></div>
+                            <div>FACULTY: <span id="lblFaculty" class="font-normal underline"></span></div>
                         </div>
+                        <p class="text-[8px] italic mt-4">Date Generated: <span id="lblTime"></span></p>
                     </div>
 
-                    <div class="glass-card overflow-hidden">
+                    <div class="glass-card overflow-hidden !border-white/5">
                         <div id="tableHeader" class="px-8 py-5 border-b border-white/5 bg-white/[0.02] no-print"></div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left modern-table">
-                                <thead id="tableHead"></thead>
-                                <tbody id="tableBody" class="text-xs"></tbody>
+                            <table class="w-full text-left">
+                                <thead id="tableHead" class="bg-white/[0.02] text-gray-500 text-[9px] uppercase font-black tracking-widest border-b border-white/5"></thead>
+                                <tbody id="tableBody" class="divide-y divide-white/5 text-xs"></tbody>
                             </table>
                         </div>
                     </div>
@@ -161,15 +172,6 @@
             </div>
         </div>
     </main>
-
-    <div id="modalOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] hidden flex items-center justify-center p-4">
-        <div class="glass-card max-w-sm w-full p-8 text-center border-white/20">
-            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl"></div>
-            <h3 id="modalTitle" class="text-lg font-black uppercase tracking-tighter mb-2 text-white"></h3>
-            <p id="modalBody" class="text-xs text-gray-500 leading-relaxed mb-8"></p>
-            <div class="grid grid-cols-1 gap-3" id="modalButtons"></div>
-        </div>
-    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -191,6 +193,7 @@
 
     let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null, searchTerm = "";
 
+    // MODAL SYSTEM
     window.showAlert = (title, message, type = 'success', onConfirm = null) => {
         const overlay = document.getElementById('modalOverlay');
         const icon = document.getElementById('modalIcon');
@@ -201,29 +204,33 @@
         btnContainer.innerHTML = '';
         if(onConfirm) {
             const cBtn = document.createElement('button');
-            cBtn.className = "py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest";
+            cBtn.className = "py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all";
             cBtn.innerText = "Confirm Delete";
             cBtn.onclick = () => { onConfirm(); closeModal(); };
             btnContainer.appendChild(cBtn);
         }
         
         const closeBtn = document.createElement('button');
-        closeBtn.className = "py-3 bg-white/5 text-gray-400 rounded-xl font-black text-[10px] uppercase tracking-widest";
-        closeBtn.innerText = onConfirm ? "Cancel" : "Dismiss";
+        closeBtn.className = "py-3 bg-white/5 text-white rounded-xl font-black text-[10px] uppercase tracking-widest";
+        closeBtn.innerText = onConfirm ? "Cancel" : "Close";
         closeBtn.onclick = closeModal;
         btnContainer.appendChild(closeBtn);
 
-        icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
-        icon.className = `w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl ${type === 'success' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`;
+        icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-shield-check text-emerald-400"></i>' : '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
         overlay.classList.remove('hidden');
     };
 
     window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
 
-    document.getElementById('masterSearch').addEventListener('input', (e) => {
-        searchTerm = e.target.value.toLowerCase();
-        renderTable();
-    });
+    // TIME FORMATTER
+    function formatTimeAMPM(time24) {
+        if(!time24) return "";
+        let [hours, minutes] = time24.split(':');
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        return `${hours}:${minutes} ${ampm}`;
+    }
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -232,7 +239,7 @@
                 const ud = snap.data();
                 currentTeacherName = `${ud.lastname}, ${ud.firstname}`.toUpperCase();
                 document.getElementById('adminName').innerText = currentTeacherName;
-                document.getElementById('adminInitial').innerText = ud.firstname[0] + ud.lastname[0];
+                document.getElementById('adminInitial').innerText = (ud.firstname[0] + ud.lastname[0]).toUpperCase();
                 loadSubjects();
             } else { window.location.href = "login.html"; }
         } else { window.location.href = "login.html"; }
@@ -242,17 +249,17 @@
         const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
         const snap = await getDocs(q);
         const nav = document.getElementById('subjectNav');
-        nav.innerHTML = '<p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Your Loads</p>';
+        nav.innerHTML = '<p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Subject Loads</p>';
         snap.forEach(d => {
             const s = d.data();
             const a = document.createElement('a');
-            a.className = "subj-btn nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold cursor-pointer mb-2";
+            a.className = "subj-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all cursor-pointer mb-2";
             a.onclick = () => {
                 document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
                 a.classList.add('active-nav');
                 selectSubject(s);
             };
-            a.innerHTML = `<i class="fa-solid fa-book-bookmark text-base"></i> <span>${s.code}</span>`;
+            a.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> <span class="font-black text-xs uppercase tracking-tighter">${s.code}</span>`;
             nav.appendChild(a);
         });
     }
@@ -260,8 +267,14 @@
     async function selectSubject(s) {
         subjContext = s;
         activeSubj = s.code;
+        
+        const startTime = formatTimeAMPM(s.startTime);
+        const endTime = formatTimeAMPM(s.endTime);
+
         document.getElementById('activeSubjectTitle').innerText = s.name;
-        document.getElementById('subjectSubDetails').innerText = `${s.course} | ${s.schedule} | ${s.startTime}-${s.endTime}`;
+        document.getElementById('subjectSubDetails').innerText = 
+            `${s.course} ${s.year} | ${s.schedule} | ${startTime} - ${endTime} | ${s.semester}`;
+
         document.getElementById('placeholder').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('viewToggles').classList.remove('hidden');
@@ -278,16 +291,10 @@
         ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
             const btn = document.getElementById(id);
             btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.replace('text-black', 'text-gray-400');
+            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
         });
         document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
         renderTable();
-    };
-
-    window.handleDateChange = () => {
-        const body = document.getElementById('tableBody');
-        body.innerHTML = '<tr><td colspan="3" class="p-20 text-center"><div class="loader mx-auto mb-4"></div><p class="text-[9px] font-black uppercase tracking-widest text-gray-500">Recalibrating Sheet...</p></td></tr>';
-        setTimeout(() => renderTable(), 400);
     };
 
     function renderTable() {
@@ -297,18 +304,18 @@
         body.innerHTML = '';
 
         if (currentView === 'materials') {
-            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Digital Learning Resources</h2>`;
-            head.innerHTML = `<tr><th>Title</th><th>Access Point</th><th class="text-right">Admin</th></tr>`;
+            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Resources Repository</h2>`;
+            head.innerHTML = `<tr><th class="px-8 py-5">Title / Schedule</th><th class="px-8 py-5">Link</th><th class="px-8 py-5 text-right">Actions</th></tr>`;
             onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
                 body.innerHTML = '';
                 snap.forEach(dSnap => {
                     const m = dSnap.data();
                     body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                        <td class="font-black text-white uppercase">${m.name}<div class="text-[8px] text-gray-500 lowercase font-normal mt-1">${m.schedule}</div></td>
-                        <td><a href="${m.link}" target="_blank" class="text-blue-400 font-black text-[10px] flex items-center gap-2"><i class="fa-solid fa-link"></i> OPEN RESOURCE</a></td>
-                        <td class="text-right">
-                            <button onclick="editMat('${dSnap.id}')" class="p-2 text-blue-400 hover:text-white"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteMatConfirm('${dSnap.id}')" class="p-2 text-red-500 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                        <td class="px-8 py-5 font-black uppercase text-white text-[11px]">${m.name}<div class="text-[9px] text-gray-500 font-medium lowercase mt-1">${m.schedule}</div></td>
+                        <td class="px-8 py-5"><a href="${m.link}" target="_blank" class="text-white hover:underline font-bold text-[10px]"><i class="fa-solid fa-link mr-1"></i> Access File</a></td>
+                        <td class="px-8 py-5 text-right">
+                            <button onclick="editMat('${dSnap.id}')" class="text-gray-400 hover:text-white mx-2"><i class="fa-solid fa-pen-nib"></i></button>
+                            <button onclick="deleteMatConfirm('${dSnap.id}')" class="text-red-500/50 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
                         </td></tr>`;
                 });
             });
@@ -319,86 +326,43 @@
 
         if (currentView === 'attendance') {
             const dateVal = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-            hInfo.innerHTML = `<div class="flex items-center gap-4"><input type="date" id="attDate" value="${dateVal}" onchange="handleDateChange()" class="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl"> <span class="text-[9px] text-gray-500 font-black uppercase tracking-widest">Daily Attendance Log</span></div>`;
-            head.innerHTML = `<tr><th>Student ID</th><th>Legal Name</th><th class="text-center">Status</th></tr>`;
+            hInfo.innerHTML = `<div class="flex items-center gap-4">
+                <input type="date" id="attDate" value="${dateVal}" onchange="renderTable()" class="rounded-xl px-4 py-2 text-[10px] font-black uppercase"> 
+                <span class="text-[9px] text-gray-500 font-black uppercase tracking-widest">Master Daily Attendance Log</span>
+            </div>`;
+            head.innerHTML = `<tr><th class="px-8 py-5">Student Identity</th><th class="px-8 py-5 text-center">Marking</th></tr>`;
             filtered.forEach(s => {
                 const status = s.attendance?.[activeSubj]?.[dateVal] || "P";
                 body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                    <td class="font-mono text-gray-400">${s.studentId || '-'}</td>
-                    <td class="font-black uppercase text-white">${s.lastname}, ${s.firstname}</td>
-                    <td class="text-center">
+                    <td class="px-8 py-5 font-black uppercase text-white text-[11px]">${s.lastname}, ${s.firstname}<div class="text-[9px] text-gray-500 font-mono mt-1">${s.studentId || '-'}</div></td>
+                    <td class="px-8 py-5">
                         <div class="radio-group flex justify-center gap-6 text-[10px] font-black no-print">
-                            <label class="cursor-pointer flex items-center gap-2"><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''}> P</label>
-                            <label class="cursor-pointer flex items-center gap-2 text-orange-400"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''}> L</label>
-                            <label class="cursor-pointer flex items-center gap-2 text-red-500"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''}> A</label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:text-white"><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''}> PRESENT</label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:text-orange-400"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''}> LATE</label>
+                            <label class="flex items-center gap-2 cursor-pointer hover:text-red-500"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''}> ABSENT</label>
                         </div>
-                        <span class="hidden print-val">${status}</span>
+                        <span class="print-val">${status}</span>
                     </td></tr>`;
             });
         } else if (currentView === 'grades') {
-            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Master Gradebook Consolidation</h2>`;
-            head.innerHTML = `<tr><th>ID Number</th><th>Student Name</th><th class="text-center">PRE</th><th class="text-center">MID</th><th class="text-center">FIN</th><th class="text-right">POINT</th></tr>`;
+            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-500 tracking-widest">Electronic Grade Sheet</h2>`;
+            head.innerHTML = `<tr><th class="px-8 py-5">Student Identity</th><th class="px-8 py-5 text-center">PRELIM</th><th class="px-8 py-5 text-center">MIDTERM</th><th class="px-8 py-5 text-center">FINALS</th><th class="px-8 py-5 text-right">POINT</th></tr>`;
             filtered.forEach(s => {
                 const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '', point: '5.0' };
                 body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                    <td class="font-mono text-gray-400">${s.studentId || '-'}</td>
-                    <td class="font-black uppercase text-white">${s.lastname}, ${s.firstname}</td>
-                    <td class="text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.prelim}"></td>
-                    <td class="text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.midterm}"></td>
-                    <td class="text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.final}"></td>
-                    <td class="text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-red-500':'text-blue-400'}" id="pt_${s.id}">${g.point}</td>
+                    <td class="px-8 py-5 font-black uppercase text-white text-[11px]">${s.lastname}, ${s.firstname}<div class="text-[9px] text-gray-500 font-mono mt-1">${s.studentId || '-'}</div></td>
+                    <td class="px-8 py-5 text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center text-xs font-black no-print" value="${g.prelim}"><span class="print-val">${g.prelim || '-'}</span></td>
+                    <td class="px-8 py-5 text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center text-xs font-black no-print" value="${g.midterm}"><span class="print-val">${g.midterm || '-'}</span></td>
+                    <td class="px-8 py-5 text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center text-xs font-black no-print" value="${g.final}"><span class="print-val">${g.final || '-'}</span></td>
+                    <td class="px-8 py-5 text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-red-500':'text-blue-400'}" id="pt_${s.id}">${g.point}</td>
                 </tr>`;
             });
         }
     }
 
-    document.getElementById('materialForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const mid = document.getElementById('editMatId').value;
-        const payload = {
-            subjectCode: activeSubj,
-            name: document.getElementById('matName').value.toUpperCase(),
-            link: document.getElementById('matLink').value,
-            desc: document.getElementById('matDesc').value,
-            schedule: document.getElementById('matSchedule').value.replace('T', ' '),
-            updatedAt: serverTimestamp()
-        };
-        try {
-            if(mid) await updateDoc(doc(db, "materials", mid), payload);
-            else { payload.createdAt = serverTimestamp(); await setDoc(doc(collection(db, "materials")), payload); }
-            resetMatForm();
-            showAlert("Sync Successful", "Resource deployment successful.");
-        } catch (e) { showAlert("Error", "Action failed.", "danger"); }
-    };
+    document.getElementById('masterSearch').addEventListener('input', (e) => { searchTerm = e.target.value.toLowerCase(); renderTable(); });
 
-    window.editMat = async (id) => {
-        const snap = await getDoc(doc(db, "materials", id));
-        if(snap.exists()) {
-            const d = snap.data();
-            document.getElementById('editMatId').value = id;
-            document.getElementById('matName').value = d.name;
-            document.getElementById('matLink').value = d.link;
-            document.getElementById('matDesc').value = d.desc;
-            document.getElementById('matFormTitle').innerText = "Update Deployed Resource";
-            document.getElementById('matSubmitBtn').innerText = "Update Publication";
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-        }
-    };
-
-    window.resetMatForm = () => {
-        document.getElementById('materialForm').reset();
-        document.getElementById('editMatId').value = "";
-        document.getElementById('matFormTitle').innerText = "Learning Resource Management";
-        document.getElementById('matSubmitBtn').innerText = "Publish";
-        document.getElementById('cancelEditBtn').classList.add('hidden');
-    };
-
-    window.deleteMatConfirm = (id) => {
-        showAlert("Delete Resource", "Destroy this learning publication? This cannot be undone.", "danger", async () => {
-            await deleteDoc(doc(db, "materials", id));
-        });
-    };
-
+    // CALCULATION LOGIC
     window.calcPt = (id) => {
         const p = parseFloat(document.getElementById(`pre_${id}`).value || 0);
         const m = parseFloat(document.getElementById(`mid_${id}`).value || 0);
@@ -407,13 +371,14 @@
         let pt = avg >= 75 ? (avg >= 97 ? "1.0" : avg >= 94 ? "1.25" : avg >= 91 ? "1.5" : avg >= 88 ? "1.75" : avg >= 85 ? "2.0" : avg >= 82 ? "2.25" : avg >= 79 ? "2.5" : avg >= 76 ? "2.75" : "3.0") : "5.0";
         const el = document.getElementById(`pt_${id}`);
         el.innerText = pt;
-        el.className = parseFloat(pt) > 3.0 ? "text-right font-black text-xs text-red-500" : "text-right font-black text-xs text-blue-400";
+        el.className = parseFloat(pt) > 3.0 ? "px-8 py-5 text-right font-black text-xs text-red-500" : "px-8 py-5 text-right font-black text-xs text-blue-400";
     };
 
+    // CLOUD SYNC
     window.saveCurrentWork = async () => {
         const btn = document.getElementById('saveBtn');
         const date = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-        btn.disabled = true; btn.innerHTML = '<div class="loader mr-2"></div> SYNCING...';
+        btn.disabled = true; btn.innerHTML = '<span class="loader mr-2"></span> Syncing...';
         try {
             const ps = roster.map(s => {
                 const ref = doc(db, "users", s.id);
@@ -431,11 +396,58 @@
                 return updateDoc(ref, p);
             });
             await Promise.all(ps);
-            showAlert("Success", "Data synchronized with encrypted cloud.");
-        } catch (e) { showAlert("Error", "Handshake failed.", "danger"); }
-        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Sync Cloud';
+            showAlert("Cloud Sync", "All student data has been synchronized with the main server.");
+        } catch (e) { showAlert("Error", "Server sync failed. Check connection.", "danger"); }
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Sync Data';
     };
 
+    // MATERIALS LOGIC
+    document.getElementById('materialForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const mid = document.getElementById('editMatId').value;
+        const payload = {
+            subjectCode: activeSubj,
+            name: document.getElementById('matName').value.toUpperCase(),
+            link: document.getElementById('matLink').value,
+            desc: document.getElementById('matDesc').value,
+            schedule: document.getElementById('matSchedule').value.replace('T', ' '),
+            updatedAt: serverTimestamp()
+        };
+        if(mid) await updateDoc(doc(db, "materials", mid), payload);
+        else { payload.createdAt = serverTimestamp(); await setDoc(doc(collection(db, "materials")), payload); }
+        resetMatForm();
+        showAlert("Success", "Learning Material has been deployed.");
+    };
+
+    window.editMat = async (id) => {
+        const snap = await getDoc(doc(db, "materials", id));
+        if(snap.exists()) {
+            const d = snap.data();
+            document.getElementById('editMatId').value = id;
+            document.getElementById('matName').value = d.name;
+            document.getElementById('matLink').value = d.link;
+            document.getElementById('matDesc').value = d.desc;
+            document.getElementById('matFormTitle').innerText = "Update Deployed Material";
+            document.getElementById('matSubmitBtn').innerText = "Update Resource";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+    };
+
+    window.resetMatForm = () => {
+        document.getElementById('materialForm').reset();
+        document.getElementById('editMatId').value = "";
+        document.getElementById('matFormTitle').innerText = "Learning Resource Management";
+        document.getElementById('matSubmitBtn').innerText = "Post Material";
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    };
+
+    window.deleteMatConfirm = (id) => {
+        showAlert("Delete Resource", "Permanently remove this learning material from student view?", "danger", async () => {
+            await deleteDoc(doc(db, "materials", id));
+        });
+    };
+
+    // EXPORTS
     window.exportCSV = () => {
         let csv = "Student ID,Name,";
         if (currentView === 'attendance') {
@@ -452,17 +464,20 @@
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `CMCS_${activeSubj}_${currentView}.csv`;
+        a.download = `${activeSubj}_${currentView}.csv`;
         a.click();
     };
 
     window.exportPDF = () => {
-        document.getElementById('lblReportType').innerText = currentView.toUpperCase() + " MASTER RECORD";
+        document.getElementById('lblReportType').innerText = currentView.toUpperCase() + " MASTER STUDENT RECORD";
         document.getElementById('lblCourse').innerText = subjContext.course;
         document.getElementById('lblYear').innerText = `${subjContext.year} / ${subjContext.semester}`;
         document.getElementById('lblSubj').innerText = subjContext.name;
         document.getElementById('lblFaculty').innerText = currentTeacherName;
+        document.getElementById('lblTime').innerText = new Date().toLocaleString();
+        document.getElementById('printHeader').classList.replace('hidden', 'flex');
         window.print();
+        document.getElementById('printHeader').classList.replace('flex', 'hidden');
     };
 
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
