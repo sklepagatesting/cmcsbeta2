@@ -3,151 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Dashboard | CMCS VLS</title>
+    <title>Faculty Portal | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#2563eb', secondary: '#1e293b', success: '#10b981', danger: '#ef4444' }
-                }
-            }
-        }
-    </script>
     <style>
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .active-nav { background: #2563eb !important; color: white !important; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.03; pointer-events: none; }
+        .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
         
-        /* MODERN UI DISPLAY (SCREEN) */
-        .print-val { display: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+        
+        /* Sidebar & Nav */
+        .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-link { transition: all 0.3s ease; border: 1px solid transparent; color: #94a3b8; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+        .active-nav { background: white !important; color: black !important; font-weight: 800; box-shadow: 0 10px 20px -5px rgba(255,255,255,0.2); }
 
-        /* TRADITIONAL TABLE LAYOUT (PRINT ONLY) */
-        @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
-            .no-print { display: none !important; }
-            
-            /* Remove modern styling */
-            .bg-white, .bg-gray-50, .bg-gray-50\/50 { background-color: transparent !important; }
-            .rounded-xl, .shadow-sm, .rounded-lg { border-radius: 0 !important; box-shadow: none !important; }
-            
-            /* Standard Grid Lines */
-            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
-            th, td { border: 1pt solid black !important; padding: 6px !important; color: black !important; font-size: 10pt !important; }
-            thead { background-color: #eeeeee !important; -webkit-print-color-adjust: exact; }
-            
-            .print-val { display: inline-block !important; font-weight: bold; }
-            .input-box, .radio-group, #materialUploadSection, #saveBtn, .viewToggles { display: none !important; }
+        /* Inputs & Selects Fix */
+        input, select, textarea { 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            outline: none;
+            transition: all 0.3s ease;
         }
+        input:focus, select:focus, textarea:focus { border-color: rgba(255, 255, 255, 0.3) !important; background: rgba(255, 255, 255, 0.08) !important; }
 
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* Table Design */
+        .modern-table thead th { font-size: 9px; text-transform: uppercase; letter-spacing: 0.2em; color: #64748b; padding: 1.25rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .modern-table tbody td { padding: 1.25rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+
+        .loader { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid white; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            #printArea { position: absolute; inset: 0; width: 100%; visibility: visible; }
+            #printArea * { visibility: visible; }
+            table { border-collapse: collapse; width: 100%; border: 1px solid black; }
+            th, td { border: 1px solid black !important; color: black !important; padding: 5px !important; font-size: 10pt !important; }
+            .print-val { display: block !important; }
+            .input-box, .radio-group { display: none !important; }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-    <div id="modalOverlay" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div id="modalContent" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
-            <div class="p-6 text-center">
-                <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
-                <h3 id="modalTitle" class="text-xl font-bold text-gray-900 mb-2"></h3>
-                <p id="modalBody" class="text-gray-500 text-sm mb-6"></p>
-                <div class="flex gap-3 justify-center" id="modalButtons">
-                    <button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase transition-all">Close</button>
-                </div>
-            </div>
-        </div>
+<body class="h-screen flex">
+
+    <div class="logo-watermark">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
-        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
-            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+    <aside class="w-72 sidebar flex flex-col z-20 no-print">
+        <div class="h-20 flex items-center px-8 border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-8 brightness-125">
+                <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
             </div>
         </div>
-        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto" id="subjectNav">
-            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Main Menu</p>
-        </nav>
-        <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <a href="admin_edit.html" class="flex items-center gap-3 mb-3 p-2 rounded-lg hover:bg-white/5 transition-all group">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase group-hover:ring-2 ring-primary ring-offset-2 ring-offset-slate-900 transition-all" id="adminInitial">AD</div>
+        
+        <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto" id="subjectNav">
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Your Loads</p>
+            </nav>
+
+        <div class="p-6 border-t border-white/5">
+            <a href="teacher_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
+                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">AD</div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-white truncate uppercase tracking-tight" id="adminName">Loading...</p>
-                    <p class="text-[10px] text-gray-400 uppercase flex items-center gap-1">
-                        <i class="fa-solid fa-gear text-[8px]"></i> Account Settings
-                    </p>
+                    <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Faculty Member</p>
                 </div>
-                <i class="fa-solid fa-chevron-right text-gray-600 text-[10px] group-hover:text-white"></i>
             </a>
-            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-xs font-bold transition-all uppercase tracking-widest">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Logout Session</button>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
-        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
+        <header class="h-20 flex items-center justify-between px-10 border-b border-white/5 z-10 no-print">
             <div class="flex flex-col">
-                <h1 id="activeSubjectTitle" class="text-lg font-black text-gray-800 leading-none">Class Assignment</h1>
-                <p id="subjectSubDetails" class="text-[10px] text-gray-400 font-bold uppercase mt-1"></p>
+                <h1 id="activeSubjectTitle" class="text-sm font-black uppercase tracking-widest text-white">Select a Subject</h1>
+                <p id="subjectSubDetails" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1"></p>
             </div>
+            
             <div class="flex items-center gap-4">
-                <div id="viewToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
-                    <button id="btnAtt" onclick="switchView('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
-                    <button id="btnGrd" onclick="switchView('grades')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Grades</button>
-                    <button id="btnMat" onclick="switchView('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
+                <div id="viewToggles" class="hidden glass-card p-1 flex gap-1 rounded-xl">
+                    <button id="btnAtt" onclick="switchView('attendance')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active-nav">Attendance</button>
+                    <button id="btnGrd" onclick="switchView('grades')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all text-gray-400">Gradebook</button>
+                    <button id="btnMat" onclick="switchView('materials')" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all text-gray-400">Materials</button>
                 </div>
-                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold shadow-md transition-all flex items-center gap-2 uppercase">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> SYNC DATA
+                <button onclick="saveCurrentWork()" id="saveBtn" class="hidden bg-white text-black px-6 py-3 rounded-xl text-[10px] font-black tracking-widest uppercase hover:scale-105 transition-all shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync Cloud
                 </button>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
-            <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-400 py-20">
-                <i class="fa-solid fa-book-open-reader text-5xl mb-4 opacity-20"></i>
-                <p class="font-bold uppercase text-xs tracking-widest">Select a subject to begin</p>
+        <div class="flex-1 overflow-y-auto p-10 scrollbar-hide">
+            <div id="placeholder" class="h-full flex flex-col items-center justify-center text-gray-600">
+                <i class="fa-solid fa-chalkboard-user text-6xl mb-6 opacity-10"></i>
+                <p class="font-black uppercase text-[10px] tracking-[0.4em]">Initialize classroom to begin</p>
             </div>
 
-            <div id="workspace" class="hidden space-y-6">
-                <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-6">
-                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16 mb-2">
-                        <h2 class="text-2xl font-black uppercase text-black text-center">Central Mindanao Computer School</h2>
-                        <p class="text-[11px] font-bold uppercase tracking-tight">Academic Management System - Official Report</p>
-                        <div class="mt-2 text-[10px] font-bold uppercase">
-                            COURSE: <span id="lblCourse"></span> | YEAR: <span id="lblYear"></span> | SEM: <span id="lblSem"></span>
+            <div id="workspace" class="hidden space-y-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6 no-print">
+                    <div class="relative w-full md:w-96">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                        <input type="text" id="masterSearch" placeholder="SEARCH STUDENT..." class="w-full pl-12 pr-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    </div>
+                    <div id="searchExportActions" class="flex gap-3">
+                        <button onclick="exportCSV()" class="px-5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all">CSV Export</button>
+                        <button onclick="exportPDF()" class="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[9px] font-black uppercase border border-red-500/20 hover:bg-red-500 hover:text-white transition-all">Print PDF</button>
+                    </div>
+                </div>
+
+                <div id="materialUploadSection" class="hidden glass-card p-8 no-print border-blue-500/20">
+                    <h3 id="matFormTitle" class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Learning Resource Management</h3>
+                    <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="hidden" id="editMatId">
+                        <input type="text" id="matName" placeholder="TITLE OF RESOURCE" class="text-[10px] p-3 rounded-xl font-black uppercase" required>
+                        <input type="url" id="matLink" placeholder="RESOURCE LINK (URL)" class="text-[10px] p-3 rounded-xl font-black" required>
+                        <input type="datetime-local" id="matSchedule" class="text-[10px] p-3 rounded-xl font-black" required>
+                        <textarea id="matDesc" placeholder="INSTRUCTIONS OR DESCRIPTION..." class="md:col-span-2 text-[10px] p-3 rounded-xl h-12 font-black uppercase"></textarea>
+                        <div class="flex gap-2">
+                            <button type="submit" id="matSubmitBtn" class="flex-1 bg-white text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Publish</button>
+                            <button type="button" id="cancelEditBtn" onclick="resetMatForm()" class="hidden bg-white/5 text-gray-400 px-4 rounded-xl text-[10px] font-black uppercase">Cancel</button>
                         </div>
-                        <p class="text-[9px] italic text-gray-600 uppercase">Generated on: <span id="lblTime"></span></p>
-                        <div class="border-b-2 border-black mt-4 mb-4 w-full"></div>
+                    </form>
+                </div>
+
+                <div id="printArea">
+                    <div id="printHeader" class="hidden flex-col items-center mb-10">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-16 h-16 mb-4">
+                        <h2 class="text-xl font-black uppercase tracking-tight text-center">Central Mindanao Computer School</h2>
+                        <p class="text-[9px] font-black uppercase tracking-[0.3em] border-b border-black/20 pb-2 mb-4" id="lblReportType"></p>
+                        <div class="grid grid-cols-2 gap-x-12 gap-y-2 text-[9px] font-bold uppercase w-full max-w-2xl">
+                            <div>COURSE: <span id="lblCourse" class="font-normal border-b border-black/10"></span></div>
+                            <div>YEAR/SEM: <span id="lblYear" class="font-normal border-b border-black/10"></span></div>
+                            <div>SUBJECT: <span id="lblSubj" class="font-normal border-b border-black/10"></span></div>
+                            <div>FACULTY: <span id="lblFaculty" class="font-normal border-b border-black/10"></span></div>
+                        </div>
                     </div>
 
-                    <div id="materialUploadSection" class="hidden bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6 no-print">
-                        <h3 id="matFormTitle" class="text-xs font-bold text-gray-800 uppercase tracking-widest mb-4">Post Learning Material</h3>
-                        <form id="materialForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="hidden" id="editMatId">
-                            <input type="text" id="matName" placeholder="Title" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
-                            <input type="url" id="matLink" placeholder="Resource URL" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
-                            <input type="datetime-local" id="matSchedule" class="text-xs border border-gray-200 rounded-lg p-3 outline-none focus:border-primary transition-all" required>
-                            <textarea id="matDesc" placeholder="Instructions..." class="md:col-span-2 text-xs border border-gray-200 rounded-lg p-3 outline-none h-12 focus:border-primary transition-all"></textarea>
-                            <div class="flex gap-2">
-                                <button type="submit" id="matSubmitBtn" class="flex-1 bg-secondary text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all uppercase">Upload Material</button>
-                                <button type="button" id="cancelEditBtn" onclick="resetMatForm()" class="hidden bg-gray-200 text-gray-600 px-4 rounded-lg text-xs font-bold uppercase">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div id="tableHeader" class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 no-print"></div>
+                    <div class="glass-card overflow-hidden">
+                        <div id="tableHeader" class="px-8 py-5 border-b border-white/5 bg-white/[0.02] no-print"></div>
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse" id="mainDataTable">
-                                <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b border-gray-100"></thead>
-                                <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>                            </table>
+                            <table class="w-full text-left modern-table">
+                                <thead id="tableHead"></thead>
+                                <tbody id="tableBody" class="text-xs"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -155,7 +162,16 @@
         </div>
     </main>
 
-    <script type="module">
+    <div id="modalOverlay" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-sm w-full p-8 text-center border-white/20">
+            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl"></div>
+            <h3 id="modalTitle" class="text-lg font-black uppercase tracking-tighter mb-2 text-white"></h3>
+            <p id="modalBody" class="text-xs text-gray-500 leading-relaxed mb-8"></p>
+            <div class="grid grid-cols-1 gap-3" id="modalButtons"></div>
+        </div>
+    </div>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -175,253 +191,281 @@
 
     let currentTeacherName = "", activeSubj = "", currentView = 'attendance', roster = [], subjContext = null, searchTerm = "";
 
-    // --- UI Utils ---
-    window.showAlert = (title, message, type = 'success') => {
+    window.showAlert = (title, message, type = 'success', onConfirm = null) => {
         const overlay = document.getElementById('modalOverlay');
         const icon = document.getElementById('modalIcon');
-        const titleEl = document.getElementById('modalTitle');
-        const bodyEl = document.getElementById('modalBody');
         const btnContainer = document.getElementById('modalButtons');
-        btnContainer.innerHTML = `<button onclick="closeModal()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-bold text-xs uppercase transition-all">Dismiss</button>`;
-        titleEl.innerText = title;
-        bodyEl.innerText = message;
-        if(type === 'success') {
-            icon.innerHTML = '<i class="fa-solid fa-circle-check text-success"></i>';
-            icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-emerald-50';
-        } else if(type === 'danger') {
-            icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-danger"></i>';
-            icon.className = 'w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl bg-red-50';
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalBody').innerText = message;
+        
+        btnContainer.innerHTML = '';
+        if(onConfirm) {
+            const cBtn = document.createElement('button');
+            cBtn.className = "py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest";
+            cBtn.innerText = "Confirm Delete";
+            cBtn.onclick = () => { onConfirm(); closeModal(); };
+            btnContainer.appendChild(cBtn);
         }
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = "py-3 bg-white/5 text-gray-400 rounded-xl font-black text-[10px] uppercase tracking-widest";
+        closeBtn.innerText = onConfirm ? "Cancel" : "Dismiss";
+        closeBtn.onclick = closeModal;
+        btnContainer.appendChild(closeBtn);
+
+        icon.innerHTML = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>';
+        icon.className = `w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl ${type === 'success' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`;
         overlay.classList.remove('hidden');
     };
 
     window.closeModal = () => document.getElementById('modalOverlay').classList.add('hidden');
 
-    // --- Auth Logic ---
+    document.getElementById('masterSearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderTable();
+    });
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const data = snap.data();
-                currentTeacherName = `${data.lastname}, ${data.firstname}`.toUpperCase();
+            if (snap.exists() && snap.data().role === 'teacher') {
+                const ud = snap.data();
+                currentTeacherName = `${ud.lastname}, ${ud.firstname}`.toUpperCase();
                 document.getElementById('adminName').innerText = currentTeacherName;
-                document.getElementById('adminInitial').innerText = (data.firstname[0] + data.lastname[0]).toUpperCase();
+                document.getElementById('adminInitial').innerText = ud.firstname[0] + ud.lastname[0];
                 loadSubjects();
-            }
+            } else { window.location.href = "login.html"; }
         } else { window.location.href = "login.html"; }
     });
 
     async function loadSubjects() {
-        const nav = document.getElementById('subjectNav');
         const q = query(collection(db, "programs"), where("teacher", "==", currentTeacherName));
         const snap = await getDocs(q);
-        nav.innerHTML = '<p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">My Handle Subjects</p>';
+        const nav = document.getElementById('subjectNav');
+        nav.innerHTML = '<p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Your Loads</p>';
         snap.forEach(d => {
             const s = d.data();
             const a = document.createElement('a');
-            a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer";
-            a.onclick = () => selectSubject(s, a);
-            a.innerHTML = `<i class="fa-solid fa-chalkboard-user w-5"></i> <span class="font-medium text-sm">${s.code}</span>`;
+            a.className = "subj-btn nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold cursor-pointer mb-2";
+            a.onclick = () => {
+                document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active-nav'));
+                a.classList.add('active-nav');
+                selectSubject(s);
+            };
+            a.innerHTML = `<i class="fa-solid fa-book-bookmark text-base"></i> <span>${s.code}</span>`;
             nav.appendChild(a);
         });
     }
 
-    async function selectSubject(subjData, el) {
-        subjContext = subjData; activeSubj = subjData.code;
-        document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('bg-primary', 'text-white'));
-        el.classList.add('bg-primary', 'text-white');
-                
-        document.getElementById('activeSubjectTitle').innerText = subjData.name;
-        document.getElementById('subjectSubDetails').innerText = `${subjData.course} ${subjData.year} | ${subjData.schedule} | ${subjData.startTime}-${subjData.endTime} | ${subjData.semester}`;
+    async function selectSubject(s) {
+        subjContext = s;
+        activeSubj = s.code;
+        document.getElementById('activeSubjectTitle').innerText = s.name;
+        document.getElementById('subjectSubDetails').innerText = `${s.course} | ${s.schedule} | ${s.startTime}-${s.endTime}`;
         document.getElementById('placeholder').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('viewToggles').classList.remove('hidden');
         document.getElementById('saveBtn').classList.remove('hidden');
 
-        const q = query(collection(db, "users"), where("role", "==", "student"), where("assignedPrograms", "array-contains", activeSubj));
-        onSnapshot(q, (snap) => {
+        onSnapshot(query(collection(db, "users"), where("assignedPrograms", "array-contains", activeSubj)), snap => {
             roster = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             renderTable();
         });
     }
-
-    // --- Search & Interaction Fixes ---
-    window.handleSearch = (val) => {
-        searchTerm = val.toLowerCase();
-        renderTable();
-    };
-
-    window.updateDate = (val) => {
-        const body = document.getElementById('tableBody');
-        body.innerHTML = '<tr><td colspan="3" class="p-10 text-center"><span class="loader"></span><p class="text-[10px] font-bold mt-2">LOADING DATA...</p></td></tr>';
-        setTimeout(() => renderTable(), 300);
-    };
 
     window.switchView = (v) => {
         currentView = v;
         ['btnAtt', 'btnGrd', 'btnMat'].forEach(id => {
             const btn = document.getElementById(id);
             btn.classList.toggle('active-nav', id.toLowerCase().includes(v.substring(0,3)));
-            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.add('text-gray-500');
+            if(!id.toLowerCase().includes(v.substring(0,3))) btn.classList.replace('text-black', 'text-gray-400');
         });
         document.getElementById('materialUploadSection').classList.toggle('hidden', v !== 'materials');
         renderTable();
     };
 
-    // --- Render Table Logic ---
+    window.handleDateChange = () => {
+        const body = document.getElementById('tableBody');
+        body.innerHTML = '<tr><td colspan="3" class="p-20 text-center"><div class="loader mx-auto mb-4"></div><p class="text-[9px] font-black uppercase tracking-widest text-gray-500">Recalibrating Sheet...</p></td></tr>';
+        setTimeout(() => renderTable(), 400);
+    };
+
     function renderTable() {
         const body = document.getElementById('tableBody');
         const head = document.getElementById('tableHead');
         const hInfo = document.getElementById('tableHeader');
         body.innerHTML = '';
 
-        const filteredRoster = roster.filter(s => 
-            s.lastname.toLowerCase().includes(searchTerm) || 
-            s.firstname.toLowerCase().includes(searchTerm) ||
-            s.studentId?.toLowerCase().includes(searchTerm)
-        ).sort((a,b) => a.lastname.localeCompare(b.lastname));
+        if (currentView === 'materials') {
+            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Digital Learning Resources</h2>`;
+            head.innerHTML = `<tr><th>Title</th><th>Access Point</th><th class="text-right">Admin</th></tr>`;
+            onSnapshot(query(collection(db, "materials"), where("subjectCode", "==", activeSubj)), snap => {
+                body.innerHTML = '';
+                snap.forEach(dSnap => {
+                    const m = dSnap.data();
+                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                        <td class="font-black text-white uppercase">${m.name}<div class="text-[8px] text-gray-500 lowercase font-normal mt-1">${m.schedule}</div></td>
+                        <td><a href="${m.link}" target="_blank" class="text-blue-400 font-black text-[10px] flex items-center gap-2"><i class="fa-solid fa-link"></i> OPEN RESOURCE</a></td>
+                        <td class="text-right">
+                            <button onclick="editMat('${dSnap.id}')" class="p-2 text-blue-400 hover:text-white"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="deleteMatConfirm('${dSnap.id}')" class="p-2 text-red-500 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                        </td></tr>`;
+                });
+            });
+            return;
+        }
 
-        const searchUI = `
-            <div class="relative flex-1 max-w-xs ml-4 no-print">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]"></i>
-                <input type="text" id="searchInput" oninput="handleSearch(this.value)" value="${searchTerm}" placeholder="Search student..." class="w-full text-[11px] bg-white border border-gray-200 rounded-full py-1.5 pl-8 pr-4 focus:border-primary outline-none">
-            </div>`;
-        
-        const controls = `<div class="flex gap-2">${searchUI}<button onclick="exportCSV()" class="no-print text-[10px] bg-emerald-50 text-emerald-600 px-3 py-1 rounded font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">CSV</button><button onclick="exportPDF()" class="no-print text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded font-bold border border-red-100 hover:bg-red-100 transition-all">PDF</button></div>`;
+        const filtered = roster.filter(s => s.lastname?.toLowerCase().includes(searchTerm) || s.firstname?.toLowerCase().includes(searchTerm) || s.studentId?.toLowerCase().includes(searchTerm)).sort((a,b) => a.lastname.localeCompare(b.lastname));
 
         if (currentView === 'attendance') {
             const dateVal = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-            hInfo.innerHTML = `<div class="flex items-center gap-2 no-print"><input type="date" id="attDate" value="${dateVal}" onchange="updateDate(this.value)" class="text-xs bg-white rounded px-2 py-1 font-bold outline-none border border-gray-200 focus:border-primary"> <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Attendance Sheet</span></div> ${controls}`;
-            head.innerHTML = `<tr><th class="px-6 py-4">Student Name</th><th class="px-6 py-4 text-center">Gender</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-            
-            filteredRoster.forEach(s => {
+            hInfo.innerHTML = `<div class="flex items-center gap-4"><input type="date" id="attDate" value="${dateVal}" onchange="handleDateChange()" class="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl"> <span class="text-[9px] text-gray-500 font-black uppercase tracking-widest">Daily Attendance Log</span></div>`;
+            head.innerHTML = `<tr><th>Student ID</th><th>Legal Name</th><th class="text-center">Status</th></tr>`;
+            filtered.forEach(s => {
                 const status = s.attendance?.[activeSubj]?.[dateVal] || "P";
-                body.innerHTML += `<tr>
-                    <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}<div class="text-[10px] text-gray-400 font-normal no-print">${s.studentId}</div></td>
-                    <td class="px-6 py-4 text-center uppercase">${s.gender || '-'}</td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="radio-group flex justify-center gap-4 text-xs font-bold no-print">
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''} class="accent-primary"> P</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''} class="accent-primary"> L</label>
-                            <label class="cursor-pointer"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''} class="accent-primary"> A</label>
+                body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                    <td class="font-mono text-gray-400">${s.studentId || '-'}</td>
+                    <td class="font-black uppercase text-white">${s.lastname}, ${s.firstname}</td>
+                    <td class="text-center">
+                        <div class="radio-group flex justify-center gap-6 text-[10px] font-black no-print">
+                            <label class="cursor-pointer flex items-center gap-2"><input type="radio" name="att_${s.id}" value="P" ${status==='P'?'checked':''}> P</label>
+                            <label class="cursor-pointer flex items-center gap-2 text-orange-400"><input type="radio" name="att_${s.id}" value="L" ${status==='L'?'checked':''}> L</label>
+                            <label class="cursor-pointer flex items-center gap-2 text-red-500"><input type="radio" name="att_${s.id}" value="A" ${status==='A'?'checked':''}> A</label>
                         </div>
-                        <span class="print-val">${status}</span>
+                        <span class="hidden print-val">${status}</span>
                     </td></tr>`;
             });
         } else if (currentView === 'grades') {
-            hInfo.innerHTML = `<h2 class="text-xs font-bold uppercase text-gray-400 no-print">Class Gradebook</h2> ${controls}`;
-            head.innerHTML = `<tr><th class="px-6 py-4">Student Name</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
-            
-            filteredRoster.forEach(s => {
+            hInfo.innerHTML = `<h2 class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Master Gradebook Consolidation</h2>`;
+            head.innerHTML = `<tr><th>ID Number</th><th>Student Name</th><th class="text-center">PRE</th><th class="text-center">MID</th><th class="text-center">FIN</th><th class="text-right">POINT</th></tr>`;
+            filtered.forEach(s => {
                 const g = s.grades?.[activeSubj] || { prelim: '', midterm: '', final: '', point: '5.0' };
-                body.innerHTML += `<tr>
-                    <td class="px-6 py-4 font-bold uppercase">${s.lastname}, ${s.firstname}</td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="pre_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1 no-print" value="${g.prelim}"><span class="print-val">${g.prelim || '-'}</span></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="mid_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1 no-print" value="${g.midterm}"><span class="print-val">${g.midterm || '-'}</span></td>
-                    <td class="px-6 py-4 text-center"><input type="number" id="fin_${s.id}" oninput="calculatePoint('${s.id}')" class="input-box w-12 bg-gray-100 text-center rounded text-xs font-bold py-1 no-print" value="${g.final}"><span class="print-val">${g.final || '-'}</span></td>
-                    <td class="px-6 py-4 text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-danger':'text-primary'}" id="pt_${s.id}">${g.point}</td>
+                body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                    <td class="font-mono text-gray-400">${s.studentId || '-'}</td>
+                    <td class="font-black uppercase text-white">${s.lastname}, ${s.firstname}</td>
+                    <td class="text-center"><input type="number" id="pre_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.prelim}"></td>
+                    <td class="text-center"><input type="number" id="mid_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.midterm}"></td>
+                    <td class="text-center"><input type="number" id="fin_${s.id}" oninput="calcPt('${s.id}')" class="w-16 p-2 rounded-lg text-center font-black" value="${g.final}"></td>
+                    <td class="text-right font-black text-xs ${parseFloat(g.point)>3.0?'text-red-500':'text-blue-400'}" id="pt_${s.id}">${g.point}</td>
                 </tr>`;
             });
         }
     }
 
-    // --- Sync & Data Logic ---
-    window.saveCurrentWork = async () => {
-        const btn = document.getElementById('saveBtn');
-        const originalHTML = btn.innerHTML;
-        const date = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
-        btn.innerHTML = '<span class="loader mr-2"></span> SYNCING...';
-        btn.disabled = true;
-
+    document.getElementById('materialForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const mid = document.getElementById('editMatId').value;
+        const payload = {
+            subjectCode: activeSubj,
+            name: document.getElementById('matName').value.toUpperCase(),
+            link: document.getElementById('matLink').value,
+            desc: document.getElementById('matDesc').value,
+            schedule: document.getElementById('matSchedule').value.replace('T', ' '),
+            updatedAt: serverTimestamp()
+        };
         try {
-            const syncPromises = roster.map(student => {
-                const userRef = doc(db, "users", student.id);
-                let payload = {};
-                if (currentView === 'attendance') {
-                    const status = document.querySelector(`input[name="att_${student.id}"]:checked`).value;
-                    payload[`attendance.${activeSubj}.${date}`] = status;
-                } else if (currentView === 'grades') {
-                    payload[`grades.${activeSubj}`] = {
-                        prelim: document.getElementById(`pre_${student.id}`).value,
-                        midterm: document.getElementById(`mid_${student.id}`).value,
-                        final: document.getElementById(`fin_${student.id}`).value,
-                        point: document.getElementById(`pt_${student.id}`).innerText
-                    };
-                }
-                return updateDoc(userRef, payload);
-            });
-            await Promise.all(syncPromises);
-            window.showAlert("Success", "All records successfully synced to cloud.");
-        } catch (err) { window.showAlert("Sync Error", "Failed to update records.", "danger"); }
-        finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+            if(mid) await updateDoc(doc(db, "materials", mid), payload);
+            else { payload.createdAt = serverTimestamp(); await setDoc(doc(collection(db, "materials")), payload); }
+            resetMatForm();
+            showAlert("Sync Successful", "Resource deployment successful.");
+        } catch (e) { showAlert("Error", "Action failed.", "danger"); }
     };
 
-    // --- Exports ---
+    window.editMat = async (id) => {
+        const snap = await getDoc(doc(db, "materials", id));
+        if(snap.exists()) {
+            const d = snap.data();
+            document.getElementById('editMatId').value = id;
+            document.getElementById('matName').value = d.name;
+            document.getElementById('matLink').value = d.link;
+            document.getElementById('matDesc').value = d.desc;
+            document.getElementById('matFormTitle').innerText = "Update Deployed Resource";
+            document.getElementById('matSubmitBtn').innerText = "Update Publication";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+    };
+
+    window.resetMatForm = () => {
+        document.getElementById('materialForm').reset();
+        document.getElementById('editMatId').value = "";
+        document.getElementById('matFormTitle').innerText = "Learning Resource Management";
+        document.getElementById('matSubmitBtn').innerText = "Publish";
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+    };
+
+    window.deleteMatConfirm = (id) => {
+        showAlert("Delete Resource", "Destroy this learning publication? This cannot be undone.", "danger", async () => {
+            await deleteDoc(doc(db, "materials", id));
+        });
+    };
+
+    window.calcPt = (id) => {
+        const p = parseFloat(document.getElementById(`pre_${id}`).value || 0);
+        const m = parseFloat(document.getElementById(`mid_${id}`).value || 0);
+        const f = parseFloat(document.getElementById(`fin_${id}`).value || 0);
+        const avg = (p+m+f)/3;
+        let pt = avg >= 75 ? (avg >= 97 ? "1.0" : avg >= 94 ? "1.25" : avg >= 91 ? "1.5" : avg >= 88 ? "1.75" : avg >= 85 ? "2.0" : avg >= 82 ? "2.25" : avg >= 79 ? "2.5" : avg >= 76 ? "2.75" : "3.0") : "5.0";
+        const el = document.getElementById(`pt_${id}`);
+        el.innerText = pt;
+        el.className = parseFloat(pt) > 3.0 ? "text-right font-black text-xs text-red-500" : "text-right font-black text-xs text-blue-400";
+    };
+
+    window.saveCurrentWork = async () => {
+        const btn = document.getElementById('saveBtn');
+        const date = document.getElementById('attDate')?.value || new Date().toISOString().split('T')[0];
+        btn.disabled = true; btn.innerHTML = '<div class="loader mr-2"></div> SYNCING...';
+        try {
+            const ps = roster.map(s => {
+                const ref = doc(db, "users", s.id);
+                let p = {};
+                if(currentView === 'attendance') {
+                    p[`attendance.${activeSubj}.${date}`] = document.querySelector(`input[name="att_${s.id}"]:checked`).value;
+                } else if(currentView === 'grades') {
+                    p[`grades.${activeSubj}`] = {
+                        prelim: document.getElementById(`pre_${s.id}`).value,
+                        midterm: document.getElementById(`mid_${s.id}`).value,
+                        final: document.getElementById(`fin_${s.id}`).value,
+                        point: document.getElementById(`pt_${s.id}`).innerText
+                    };
+                }
+                return updateDoc(ref, p);
+            });
+            await Promise.all(ps);
+            showAlert("Success", "Data synchronized with encrypted cloud.");
+        } catch (e) { showAlert("Error", "Handshake failed.", "danger"); }
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Sync Cloud';
+    };
+
     window.exportCSV = () => {
         let csv = "Student ID,Name,";
         if (currentView === 'attendance') {
-            const date = document.getElementById('attDate').value;
-            csv += `Status (${date})\n`;
-            roster.forEach(s => {
-                const st = s.attendance?.[activeSubj]?.[date] || "P";
-                csv += `${s.studentId},"${s.lastname}, ${s.firstname}",${st}\n`;
-            });
+            const d = document.getElementById('attDate').value;
+            csv += `Status (${d})\n`;
+            roster.forEach(s => csv += `${s.studentId},"${s.lastname}, ${s.firstname}",${s.attendance?.[activeSubj]?.[d] || 'P'}\n`);
         } else {
             csv += "Prelim,Midterm,Final,Point\n";
             roster.forEach(s => {
-                const g = s.grades?.[activeSubj] || { prelim: 0, midterm: 0, final: 0, point: '5.0' };
+                const g = s.grades?.[activeSubj] || { prelim:0, midterm:0, final:0, point:'5.0' };
                 csv += `${s.studentId},"${s.lastname}, ${s.firstname}",${g.prelim},${g.midterm},${g.final},${g.point}\n`;
             });
         }
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `${activeSubj}_${currentView}_${new Date().toLocaleDateString()}.csv`;
+        a.href = URL.createObjectURL(blob);
+        a.download = `CMCS_${activeSubj}_${currentView}.csv`;
         a.click();
     };
 
     window.exportPDF = () => {
+        document.getElementById('lblReportType').innerText = currentView.toUpperCase() + " MASTER RECORD";
         document.getElementById('lblCourse').innerText = subjContext.course;
-        document.getElementById('lblYear').innerText = subjContext.year;
-        document.getElementById('lblSem').innerText = subjContext.semester;
-        document.getElementById('lblTime').innerText = new Date().toLocaleString();
-        
-        const header = document.getElementById('printHeader');
-        header.classList.remove('hidden');
-        header.classList.add('flex');
-        
+        document.getElementById('lblYear').innerText = `${subjContext.year} / ${subjContext.semester}`;
+        document.getElementById('lblSubj').innerText = subjContext.name;
+        document.getElementById('lblFaculty').innerText = currentTeacherName;
         window.print();
-        
-        header.classList.add('hidden');
-        header.classList.remove('flex');
-    };
-
-    window.calculatePoint = (id) => {
-        const pre = parseFloat(document.getElementById(`pre_${id}`).value || 0);
-        const mid = parseFloat(document.getElementById(`mid_${id}`).value || 0);
-        const fin = parseFloat(document.getElementById(`fin_${id}`).value || 0);
-        const avg = (pre + mid + fin) / 3;
-        
-        let pt = "5.0";
-        if (avg >= 75) {
-            if (avg >= 97) pt = "1.0";
-            else if (avg >= 94) pt = "1.25";
-            else if (avg >= 91) pt = "1.5";
-            else if (avg >= 88) pt = "1.75";
-            else if (avg >= 85) pt = "2.0";
-            else if (avg >= 82) pt = "2.25";
-            else if (avg >= 79) pt = "2.5";
-            else if (avg >= 76) pt = "2.75";
-            else pt = "3.0";
-        }
-        
-        const el = document.getElementById(`pt_${id}`);
-        el.innerText = pt;
-        el.className = parseFloat(pt) > 3.0 ? "px-6 py-4 text-right font-black text-xs text-danger" : "px-6 py-4 text-right font-black text-xs text-primary";
     };
 
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-    </script>
+</script>
 </body>
 </html>
