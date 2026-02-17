@@ -8,48 +8,65 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* DASHBOARD STYLING */
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
-        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.05; pointer-events: none; }
-        .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+   <style>
+    /* DASHBOARD STYLING */
+    body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+    .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.05; pointer-events: none; }
+    .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
+    .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+    
+    /* UNIVERSAL DROPDOWN FIX */
+    select { appearance: none; background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; cursor: pointer; }
+    select option { background-color: #121212 !important; color: white !important; }
+    input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+    .nav-link.active { background: white; color: black !important; }
+    .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+
+    /* PRESERVED ORIGINAL PRINT LOGIC */
+    #printHeader, #individualPrint { display: none; }
+
+    @media print {
+        @page { margin: 0.5cm; size: portrait; }
         
-        /* UNIVERSAL DROPDOWN FIX */
-        select { appearance: none; background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; cursor: pointer; }
-        select option { background-color: #121212 !important; color: white !important; }
-        input { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-
-        .nav-link.active { background: white; color: black !important; }
-        .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
-
-        /* PRESERVED ORIGINAL PRINT LOGIC */
-        #printHeader, #individualPrint { display: none; }
-        
-        @media print {
-            @page { margin: 0.5cm; size: portrait; }
-            .no-print { display: none !important; }
-            body { background: white !important; color: black !important; overflow: visible !important; padding: 0 !important; }
-            main { overflow: visible !important; height: auto !important; position: static !important; }
-            
-            /* Restore Original Table Borders for Print */
-            .master-table-container { border-radius: 0 !important; border: none !important; display: block !important; }
-            table { border-collapse: collapse !important; width: 100% !important; border: 1.5px solid #000 !important; }
-            th { 
-                background-color: #f3f4f6 !important; border: 1px solid #000 !important;
-                color: black !important; padding: 6px !important; font-size: 10px !important;
-                text-transform: uppercase; font-weight: 800; -webkit-print-color-adjust: exact;
-            }
-            td { border: 1px solid #000 !important; color: black !important; padding: 4px 8px !important; font-size: 10px !important; }
-            
-            /* Watermark for Print */
-            .logo-watermark { opacity: 0.08 !important; filter: grayscale(1); }
-
-            body.print-list #printHeader { display: block !important; }
-            body.print-individual #individualPrint { display: block !important; }
-            body.print-individual .master-table-container, body.print-individual #viewModal { display: none !important; }
+        /* HIDE NAVIGATION, SIDEBAR, AND HEADERS */
+        aside, header, .no-print { 
+            display: none !important; 
         }
-    </style>
+
+        body { 
+            background: white !important; 
+            color: black !important; 
+            overflow: visible !important; 
+            padding: 0 !important; 
+            display: block !important; /* Overrides flex layout for print */
+        }
+
+        main { 
+            overflow: visible !important; 
+            height: auto !important; 
+            position: static !important; 
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* Restore Original Table Borders for Print */
+        .master-table-container { border-radius: 0 !important; border: none !important; display: block !important; }
+        table { border-collapse: collapse !important; width: 100% !important; border: 1.5px solid #000 !important; }
+        th { 
+            background-color: #f3f4f6 !important; border: 1px solid #000 !important;
+            color: black !important; padding: 6px !important; font-size: 10px !important;
+            text-transform: uppercase; font-weight: 800; -webkit-print-color-adjust: exact;
+        }
+        td { border: 1px solid #000 !important; color: black !important; padding: 4px 8px !important; font-size: 10px !important; }
+
+        /* Watermark for Print */
+        .logo-watermark { opacity: 0.08 !important; filter: grayscale(1); }
+
+        body.print-list #printHeader { display: block !important; }
+        body.print-individual #individualPrint { display: block !important; }
+        body.print-individual .master-table-container, body.print-individual #viewModal { display: none !important; }
+    }
+</style>
 </head>
 <body class="h-screen flex overflow-hidden">
 
