@@ -5,160 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accounts Management | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        primary: '#2563eb',
-                        secondary: '#1e293b',
-                        danger: '#ef4444',
-                        success: '#10b981'
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
-        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.06; pointer-events: none; }
-        .logo-watermark img { height: 80%; filter: grayscale(1) brightness(0.5); }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.03; pointer-events: none; }
+        .logo-watermark img { height: 70%; filter: grayscale(1) brightness(0.5); }
+        
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
-        .nav-link { transition: all 0.3s ease; border: 1px solid transparent; }
-        .nav-link:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+        
+        /* Universal Dropdown & Input Fix */
+        select, input { 
+            appearance: none; 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        select:focus, input:focus { border-color: rgba(255, 255, 255, 0.3) !important; background: rgba(255, 255, 255, 0.08) !important; }
+        
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            cursor: pointer;
+        }
+        select option { background-color: #121212 !important; color: white !important; }
+        input::placeholder { color: rgba(255, 255, 255, 0.2); }
+
         .nav-link.active { background: white; color: black !important; }
         .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
-        .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .action-btn:hover { transform: translateY(-2px); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         
-        .modern-table thead th {
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: #64748b;
-            background: #f8fafc;
-            padding: 12px 24px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .modern-table tbody td {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f1f5f9;
-        }
+        /* Status Glows */
+        .badge-active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-blocked { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-pending { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-<aside class="w-72 sidebar flex flex-col z-20">
+<body class="h-screen flex">
+
+    <div class="logo-watermark">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+    </div>
+
+    <aside class="w-72 sidebar flex flex-col z-20">
         <div class="h-20 flex items-center px-8 border-b border-white/5">
             <div class="flex items-center gap-3">
                 <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-8 brightness-125">
                 <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
             </div>
         </div>
-
         <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
-            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Main Menu</p>
-            <a href="admin_dashboard.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
-                <i class="fa-solid fa-chart-line text-base"></i> Dashboard
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Administration</p>
+            <a href="admin_approvalbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
+                <i class="fa-solid fa-check-to-slot"></i> Approvals
             </a>
-            <a href="admin_approvalbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
-                <i class="fa-solid fa-check-to-slot text-base"></i> Approvals
+            <a href="admin_setupbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
+                <i class="fa-solid fa-school"></i> Academic Setup
             </a>
-            <a href="admin_setupbeta.html" class="nav-link active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold">
-                <i class="fa-solid fa-school text-base"></i> Academic Setup
+            <a href="admin_classbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
+                <i class="fa-solid fa-chalkboard-user"></i> Class Assignment
             </a>
-            <a href="admin_classbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
-                <i class="fa-solid fa-chalkboard-user text-base"></i> Class Assignment
+            <a href="admin_recordsbeta.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400 hover:bg-white/5 transition-all">
+                <i class="fa-solid fa-folder-open"></i> Master Record
             </a>
-            <a href="admin_recordsbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
-                <i class="fa-solid fa-folder-open text-base"></i> Master Record
-            </a>
-            <a href="admin_accountsbeta.html" class="nav-link active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold">
-                <i class="fa-solid fa-users-gear text-base"></i> Accounts
+            <a href="admin_accountsbeta.html" class="active flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold bg-white text-black shadow-lg">
+                <i class="fa-solid fa-users-gear"></i> Accounts
             </a>
         </nav>
-
         <div class="p-6 border-t border-white/5">
-            <a href="admin_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
+            <div class="glass-card p-4 flex items-center gap-3 mb-4">
                 <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase">AD</div>
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Administrator</p>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System Admin</p>
                 </div>
-            </a>
-            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
-                Sign Out
-            </button>
+            </div>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Sign Out</button>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col overflow-hidden relative">
         <header class="h-20 flex items-center justify-between px-10 border-b border-white/5">
-            <h1 class="text-sm font-bold uppercase tracking-[0.2em] text-gray-400">User Account <span class="text-white">Management</span></h1>
-            <div class="text-right">
-                <p id="clock" class="text-sm font-black tracking-widest text-white">--:--</p>
+            <h1 class="text-sm font-black uppercase tracking-[0.2em] text-gray-400">Security <span class="text-white">& Accounts</span></h1>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <span class="text-[9px] font-black uppercase tracking-widest">System Live</span>
+                </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-6 items-end">
-                <div class="w-48">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">View Role</label>
-                    <select id="roleFilter" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-bold text-gray-700 outline-none">
-                        <option value="ALL">ALL USERS</option>
-                        <option value="student">STUDENTS</option>
-                        <option value="teacher">TEACHERS</option>
-                    </select>
-                </div>
-                <div class="flex-1">
-                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">Search Directory</label>
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-gray-400 text-xs"></i>
-                        <input type="text" id="userSearch" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium outline-none" placeholder="SEARCH BY NAME OR ID NUMBER...">
+        <div class="flex-1 overflow-y-auto p-10 space-y-8">
+            <div class="glass-card p-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-64">
+                        <label class="block text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Filter by Access</label>
+                        <select id="roleFilter" class="w-full rounded-xl px-4 py-3 text-xs font-black uppercase">
+                            <option value="ALL">ALL ACCESS LEVELS</option>
+                            <option value="student">STUDENTS</option>
+                            <option value="teacher">FACULTY / STAFF</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[9px] font-black text-gray-500 uppercase mb-3 tracking-widest">Directory Search</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                            <input type="text" id="userSearch" class="w-full pl-12 pr-4 py-3 rounded-xl text-xs font-black uppercase" placeholder="SEARCH BY NAME, EMAIL, OR ID...">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="glass-card overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse modern-table">
-                        <thead>
+                    <table class="w-full text-left">
+                        <thead class="bg-white/[0.02] border-b border-white/5 text-[9px] font-black text-gray-500 uppercase tracking-widest">
                             <tr>
-                                <th>User ID / Role</th>
-                                <th>Full Name</th>
-                                <th>Email Address</th>
-                                <th>Dept / Course</th>
-                                <th>Status</th>
-                                <th class="text-right">Actions</th>
+                                <th class="px-8 py-5">Identity / Role</th>
+                                <th class="px-8 py-5">Legal Name</th>
+                                <th class="px-8 py-5">Communication</th>
+                                <th class="px-8 py-5">Department</th>
+                                <th class="px-8 py-5">Status</th>
+                                <th class="px-8 py-5 text-right">Management</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="text-sm text-gray-700 divide-y divide-gray-100"></tbody>
+                        <tbody id="userTableBody" class="divide-y divide-white/5 text-xs"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="notifModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-80 transform transition-all p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-blue-100 text-primary flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-bell text-xl"></i>
+    <div id="notifModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden items-center justify-center z-[100] p-4">
+        <div class="glass-card w-full max-w-sm p-8 text-center border-white/20">
+            <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
             </div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">System Message</h3>
-            <p id="notifMessage" class="text-sm text-gray-600 mb-6"></p>
-            <div id="confirmActions" class="hidden flex justify-center gap-3">
-                <button id="btnYes" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">Proceed</button>
-                <button onclick="closeModal('notifModal')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
+            <h3 class="text-lg font-black uppercase tracking-tighter mb-2">Security Action</h3>
+            <p id="notifMessage" class="text-xs text-gray-400 leading-relaxed mb-8"></p>
+            
+            <div id="confirmActions" class="hidden grid grid-cols-2 gap-3">
+                <button id="btnYes" class="py-3 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all">Confirm</button>
+                <button onclick="closeModal('notifModal')" class="py-3 rounded-xl bg-white/5 text-white text-[10px] font-black uppercase tracking-widest">Cancel</button>
             </div>
-            <div id="alertActions" class="flex justify-center">
-                <button onclick="closeModal('notifModal')" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition">Okay</button>
+            
+            <div id="alertActions" class="flex">
+                <button onclick="closeModal('notifModal')" class="w-full py-3 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest">Acknowledge</button>
             </div>
         </div>
     </div>
@@ -183,60 +178,41 @@
 
     let allUsers = [];
 
-    // --- NOTIFICATION SYSTEM ---
     window.showNotif = (msg, isConfirm = false, onYes = null) => {
         document.getElementById('notifMessage').innerText = msg;
         const confirmDiv = document.getElementById('confirmActions');
         const alertDiv = document.getElementById('alertActions');
+        
         if (isConfirm) {
-            confirmDiv.classList.remove('hidden'); confirmDiv.classList.add('flex');
+            confirmDiv.classList.remove('hidden');
             alertDiv.classList.add('hidden');
             document.getElementById('btnYes').onclick = () => { onYes(); closeModal('notifModal'); };
         } else {
-            confirmDiv.classList.add('hidden'); confirmDiv.classList.remove('flex');
+            confirmDiv.classList.add('hidden');
             alertDiv.classList.remove('hidden');
         }
-        document.getElementById('notifModal').classList.remove('hidden');
-        document.getElementById('notifModal').classList.add('flex');
+        document.getElementById('notifModal').classList.replace('hidden', 'flex');
     };
 
     window.closeModal = (id) => {
-        document.getElementById(id).classList.add('hidden');
-        document.getElementById(id).classList.remove('flex');
+        document.getElementById(id).classList.replace('flex', 'hidden');
     };
 
-    // --- AUTHENTICATION & ADMIN ROLE CHECK ---
     onAuthStateChanged(auth, async user => {
         if (user) {
-            try {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const userData = snap.data();
-                    if (userData.role === 'admin') {
-                        document.getElementById('adminName').innerText = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
-                        document.getElementById('adminInitial').innerText = userData.firstname.charAt(0).toUpperCase();
-                        syncUsers();
-                    } else {
-                        alert("ACCESS DENIED: Administrative privileges required.");
-                        window.location.href = "login.html";
-                    }
-                } else {
-                    window.location.href = "login.html";
-                }
-            } catch (err) {
-                console.error("Auth Error:", err);
-                window.location.href = "login.html";
-            }
-        } else { 
-            window.location.href = "login.html"; 
-        }
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists() && snap.data().role === 'admin') {
+                const ud = snap.data();
+                document.getElementById('adminName').innerText = `${ud.lastname}, ${ud.firstname}`.toUpperCase();
+                document.getElementById('adminInitial').innerText = ud.firstname.charAt(0).toUpperCase();
+                syncUsers();
+            } else { window.location.href = "login.html"; }
+        } else { window.location.href = "login.html"; }
     });
 
-    // --- DATA MANAGEMENT ---
     function syncUsers() {
         onSnapshot(collection(db, "users"), (snap) => {
-            allUsers = [];
-            snap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
+            allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
             renderTable();
         });
     }
@@ -245,55 +221,50 @@
         const role = document.getElementById('roleFilter').value;
         const search = document.getElementById('userSearch').value.toUpperCase();
         const tbody = document.getElementById('userTableBody');
-        tbody.innerHTML = '';
-
+        
         const filtered = allUsers.filter(u => {
             const matchRole = role === 'ALL' || u.role === role;
             const fullName = `${u.lastname} ${u.firstname}`.toUpperCase();
-            const matchSearch = fullName.includes(search) || (u.studentId && u.studentId.includes(search));
+            const matchSearch = fullName.includes(search) || u.studentId?.includes(search) || u.email?.toUpperCase().includes(search);
             return matchRole && matchSearch && u.role !== 'admin';
         });
 
         tbody.innerHTML = filtered.map(u => {
-            const dept = u.role === 'student' ? u.course : 'FACULTY';
-            
-            // Logic for Status Badges
-            let statusLabel = 'ACTIVE';
-            let statusClass = 'bg-success/10 text-success';
+            let statusClass = 'badge-active';
+            let statusText = 'VERIFIED';
             
             if (u.status === 'disabled') {
-                statusLabel = 'BLOCKED';
-                statusClass = 'bg-danger/10 text-danger';
+                statusClass = 'badge-blocked';
+                statusText = 'RESTRICTED';
             } else if (u.status === 'pending') {
-                statusLabel = 'PENDING';
-                statusClass = 'bg-red-600 text-white shadow-sm'; // Highly visible Red for pending
+                statusClass = 'badge-pending';
+                statusText = 'ENROLLMENT PENDING';
             }
 
             return `
-                <tr class="hover:bg-blue-50/30 transition-all border-b border-gray-100">
-                    <td class="px-6 py-4">
-                        <div class="font-bold text-gray-800">${u.studentId || 'N/A'}</div>
-                        <div class="text-[10px] text-primary font-bold uppercase">${u.role}</div>
+                <tr class="hover:bg-white/[0.02] transition-all border-b border-white/5">
+                    <td class="px-8 py-5">
+                        <div class="font-black text-white text-[11px] mb-1">${u.studentId || 'NO ID'}</div>
+                        <div class="text-[9px] text-blue-400 font-black uppercase tracking-widest">${u.role}</div>
                     </td>
-                    <td class="px-6 py-4 font-bold uppercase text-gray-800">${u.lastname}, ${u.firstname}</td>
-                    <td class="px-6 py-4 text-xs lowercase text-gray-500">${u.email}</td>
-                    <td class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">${dept || '---'}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusClass}">
-                            ${statusLabel}
+                    <td class="px-8 py-5 font-black uppercase text-white">${u.lastname}, ${u.firstname}</td>
+                    <td class="px-8 py-5 text-[10px] text-gray-500 font-medium">${u.email}</td>
+                    <td class="px-8 py-5 text-[9px] font-black text-gray-500 uppercase tracking-widest">${u.role === 'student' ? (u.course || '---') : 'FACULTY'}</td>
+                    <td class="px-8 py-5">
+                        <span class="px-3 py-1.5 rounded-full text-[8px] font-black tracking-[0.1em] ${statusClass}">
+                            ${statusText}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-8 py-5 text-right">
                         <div class="flex justify-end gap-2">
-                            <button onclick="handleEdit('${u.uid}', '${u.role}')" class="px-3 py-2 rounded-lg bg-blue-50 text-primary text-[10px] font-bold hover:bg-primary hover:text-white transition-all">
-                                <i class="fa-solid fa-pen-to-square"></i> EDIT
+                            <button onclick="handleEdit('${u.uid}', '${u.role}')" class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white hover:text-black transition-all" title="Edit Profile">
+                                <i class="fa-solid fa-pen-nib text-[10px]"></i>
                             </button>
-                            <button onclick="handleBlock('${u.uid}', '${u.status}')" class="px-3 py-2 rounded-lg border border-gray-200 text-[10px] font-bold hover:bg-slate-800 hover:text-white transition-all">
-                                <i class="fa-solid ${u.status === 'approved' ? 'fa-ban' : 'fa-circle-check'}"></i> 
-                                ${u.status === 'approved' ? 'BLOCK' : 'APPROVE/UNBLOCK'}
+                            <button onclick="handleBlock('${u.uid}', '${u.status}')" class="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-orange-500 hover:border-orange-500 transition-all" title="Toggle Access">
+                                <i class="fa-solid ${u.status === 'approved' ? 'fa-user-slash' : 'fa-user-check'} text-[10px]"></i>
                             </button>
-                            <button onclick="handleDelete('${u.uid}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">
-                                <i class="fa-solid fa-trash-can"></i> DELETE
+                            <button onclick="handleDelete('${u.uid}')" class="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all" title="Delete Account">
+                                <i class="fa-solid fa-trash-can text-[10px]"></i>
                             </button>
                         </div>
                     </td>
@@ -301,21 +272,16 @@
         }).join('');
     }
 
-    // --- ACTIONS ---
-    window.handleBlock = (uid, currentStatus) => {
-        // If they are approved, we block them. If they are pending or disabled, we approve them.
-        const willBlock = currentStatus === 'approved';
-        const msg = willBlock ? "Are you sure you want to BLOCK this user?" : "Approve and grant access for this user?";
-        
+    window.handleBlock = (uid, status) => {
+        const willBlock = status === 'approved';
+        const msg = willBlock ? "Restrict user access? This will prevent them from logging into the portal." : "Grant system access to this user?";
         showNotif(msg, true, async () => {
-            await updateDoc(doc(db, "users", uid), { 
-                status: willBlock ? 'disabled' : 'approved' 
-            });
+            await updateDoc(doc(db, "users", uid), { status: willBlock ? 'disabled' : 'approved' });
         });
     };
 
     window.handleDelete = (uid) => {
-        showNotif("PERMANENTLY DELETE THIS ACCOUNT? This action cannot be reversed.", true, async () => {
+        showNotif("Destroy this account permanently? This record will be purged from the database.", true, async () => {
             await deleteDoc(doc(db, "users", uid));
         });
     };
@@ -325,7 +291,6 @@
         window.open(`${page}?edit=${uid}`, '_blank');
     };
 
-    // --- EVENT LISTENERS ---
     document.getElementById('roleFilter').onchange = renderTable;
     document.getElementById('userSearch').oninput = renderTable;
     window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
