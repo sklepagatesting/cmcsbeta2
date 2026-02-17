@@ -201,13 +201,9 @@
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const userData = snap.data();
-                    
-                    // Strictly allow only 'admin' role
                     if (userData.role === 'admin') {
                         document.getElementById('adminName').innerText = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
                         document.getElementById('adminInitial').innerText = userData.firstname.charAt(0).toUpperCase();
-                        
-                        // Initialize real-time sync
                         syncUsers();
                     } else {
                         alert("ACCESS DENIED: Administrative privileges required.");
@@ -244,13 +240,24 @@
             const matchRole = role === 'ALL' || u.role === role;
             const fullName = `${u.lastname} ${u.firstname}`.toUpperCase();
             const matchSearch = fullName.includes(search) || (u.studentId && u.studentId.includes(search));
-            // Prevent Admin from seeing/editing other Admins in this list for safety
             return matchRole && matchSearch && u.role !== 'admin';
         });
 
         tbody.innerHTML = filtered.map(u => {
-            const isBlocked = u.status === 'disabled';
             const dept = u.role === 'student' ? u.course : 'FACULTY';
+            
+            // Logic for Status Badges
+            let statusLabel = 'ACTIVE';
+            let statusClass = 'bg-success/10 text-success';
+            
+            if (u.status === 'disabled') {
+                statusLabel = 'BLOCKED';
+                statusClass = 'bg-danger/10 text-danger';
+            } else if (u.status === 'pending') {
+                statusLabel = 'PENDING';
+                statusClass = 'bg-red-600 text-white shadow-sm'; // Highly visible Red for pending
+            }
+
             return `
                 <tr class="hover:bg-blue-50/30 transition-all border-b border-gray-100">
                     <td class="px-6 py-4">
@@ -261,8 +268,8 @@
                     <td class="px-6 py-4 text-xs lowercase text-gray-500">${u.email}</td>
                     <td class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase">${dept || '---'}</td>
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold ${!isBlocked ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}">
-                            ${!isBlocked ? 'ACTIVE' : 'BLOCKED'}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusClass}">
+                            ${statusLabel}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
@@ -271,7 +278,8 @@
                                 <i class="fa-solid fa-pen-to-square"></i> EDIT
                             </button>
                             <button onclick="handleBlock('${u.uid}', '${u.status}')" class="px-3 py-2 rounded-lg border border-gray-200 text-[10px] font-bold hover:bg-slate-800 hover:text-white transition-all">
-                                <i class="fa-solid ${!isBlocked ? 'fa-ban' : 'fa-circle-check'}"></i> ${!isBlocked ? 'BLOCK' : 'UNBLOCK'}
+                                <i class="fa-solid ${u.status === 'approved' ? 'fa-ban' : 'fa-circle-check'}"></i> 
+                                ${u.status === 'approved' ? 'BLOCK' : 'APPROVE/UNBLOCK'}
                             </button>
                             <button onclick="handleDelete('${u.uid}')" class="px-3 py-2 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold hover:bg-red-600 hover:text-white transition-all">
                                 <i class="fa-solid fa-trash-can"></i> DELETE
@@ -284,10 +292,14 @@
 
     // --- ACTIONS ---
     window.handleBlock = (uid, currentStatus) => {
-        const isApproved = currentStatus === 'approved';
-        const msg = isApproved ? "Are you sure you want to BLOCK this user?" : "Restore access for this user?";
+        // If they are approved, we block them. If they are pending or disabled, we approve them.
+        const willBlock = currentStatus === 'approved';
+        const msg = willBlock ? "Are you sure you want to BLOCK this user?" : "Approve and grant access for this user?";
+        
         showNotif(msg, true, async () => {
-            await updateDoc(doc(db, "users", uid), { status: isApproved ? 'disabled' : 'approved' });
+            await updateDoc(doc(db, "users", uid), { 
+                status: willBlock ? 'disabled' : 'approved' 
+            });
         });
     };
 
