@@ -10,38 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #050505;
-            color: white;
-            overflow: hidden;
-        }
-        .logo-watermark {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0.06;
-            pointer-events: none;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.06; pointer-events: none; }
         .logo-watermark img { height: 80%; filter: grayscale(1) brightness(0.5); }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 1.5rem;
-        }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
         .nav-link { transition: all 0.3s ease; border: 1px solid transparent; }
         .nav-link:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
         .nav-link.active { background: white; color: black !important; }
-        .sidebar {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
@@ -71,8 +47,14 @@
             <a href="admin_setupbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
                 <i class="fa-solid fa-school text-base"></i> Academic Setup
             </a>
+            <a href="admin_classbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
+                <i class="fa-solid fa-chalkboard-user text-base"></i> Class Assignment
+            </a>
             <a href="admin_recordsbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
                 <i class="fa-solid fa-folder-open text-base"></i> Master Record
+            </a>
+            <a href="admin_accountsbeta.html" class="nav-link flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold text-gray-400">
+                <i class="fa-solid fa-users-gear text-base"></i> Accounts
             </a>
         </nav>
 
@@ -101,7 +83,7 @@
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-10 space-y-8" id="dashboardContent">
+        <div class="flex-1 overflow-y-auto p-10 space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="glass-card p-6 flex flex-col justify-between min-h-[130px]">
                     <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Students</p>
@@ -112,7 +94,7 @@
                     <h3 class="text-3xl font-black" id="statFaculty">0</h3>
                 </div>
                 <div class="glass-card p-6 flex flex-col justify-between min-h-[130px]">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Programs</p>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Subjects</p>
                     <h3 class="text-3xl font-black" id="statSubjects">0</h3>
                 </div>
                 <div class="glass-card p-6 flex flex-col justify-between min-h-[130px] border-red-500/20">
@@ -123,190 +105,199 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="glass-card p-8">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Student Distribution</h3>
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Student Population per Course</h3>
                     <div class="h-[250px]"><canvas id="courseChart"></canvas></div>
                 </div>
                 <div class="glass-card p-8 text-center">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Year Level Breakdown</h3>
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Enrollment by Year Level</h3>
                     <div class="h-[250px] flex justify-center"><canvas id="yearLevelChart"></canvas></div>
                 </div>
             </div>
 
             <div class="glass-card overflow-hidden">
                 <div class="px-8 py-5 border-b border-white/5">
-                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Faculty Workload Report</h3>
+                    <h3 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Faculty Workload Overview</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-white/5">
-                                <th class="px-8 py-4">Instructor</th>
-                                <th class="px-8 py-4">Workload</th>
-                                <th class="px-8 py-4 text-right">Student Reach</th>
+                                <th class="px-8 py-4">Instructor Name</th>
+                                <th class="px-8 py-4">Handled Subjects</th>
+                                <th class="px-8 py-4 text-right">Total Students</th>
                             </tr>
                         </thead>
-                        <tbody id="workloadTable" class="divide-y divide-white/5">
-                            </tbody>
+                        <tbody id="workloadTable" class="divide-y divide-white/5"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-            authDomain: "svls-289ee.firebaseapp.com",
-            projectId: "svls-289ee",
-            storageBucket: "svls-289ee.firebasestorage.app",
-            messagingSenderId: "500705386198",
-            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-        };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+        authDomain: "svls-289ee.firebaseapp.com",
+        projectId: "svls-289ee",
+        storageBucket: "svls-289ee.firebasestorage.app",
+        messagingSenderId: "500705386198",
+        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let courseChart, yearChart;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let courseChart, yearChart;
 
-        // Chart.js Global Styles
-        Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
-        Chart.defaults.font.family = "'Inter', sans-serif";
+    // Chart.js Global Styles for Dark Mode
+    Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
 
-        onAuthStateChanged(auth, async user => {
-            if (user) {
-                try {
-                    const snap = await getDoc(doc(db, "users", user.uid));
-                    if (snap.exists() && snap.data().role === 'admin') {
-                        const userData = snap.data();
+    // --- 1. AUTHENTICATION & ROLE CHECK (ORIGINAL LOGIC) ---
+    onAuthStateChanged(auth, async user => {
+        if (user) {
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists()) {
+                    const userData = snap.data();
+                    // SECURITY: Strict Admin Role Check
+                    if (userData.role === 'admin') {
                         document.getElementById('adminName').innerText = `${userData.lastname}, ${userData.firstname}`.toUpperCase();
                         document.getElementById('adminInitial').innerText = userData.firstname[0].toUpperCase();
                         initDashboard();
                     } else {
+                        alert("Access Denied: Admin privileges required.");
                         window.location.href = "login.html";
                     }
-                } catch (e) { window.location.href = "login.html"; }
-            } else { window.location.href = "login.html"; }
+                } else {
+                    window.location.href = "login.html";
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                window.location.href = "login.html";
+            }
+        } else {
+            window.location.href = "login.html";
+        }
+    });
+
+    // --- 2. CORE DASHBOARD LOGIC (ORIGINAL LOGIC) ---
+    async function initDashboard() {
+        const dateEl = document.getElementById('currentDate');
+        if (dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+        try {
+            const [userSnap, progSnap] = await Promise.all([
+                getDocs(collection(db, "users")),
+                getDocs(collection(db, "programs"))
+            ]);
+
+            const users = userSnap.docs.map(d => d.data());
+            const programs = progSnap.docs.map(d => d.data());
+
+            const students = users.filter(u => u.role === 'student' && u.status === 'approved');
+            const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
+            const pending = users.filter(u => u.status === 'pending');
+
+            document.getElementById('statStudents').innerText = students.length;
+            document.getElementById('statFaculty').innerText = faculty.length;
+            document.getElementById('statSubjects').innerText = programs.length;
+            document.getElementById('statPending').innerText = pending.length;
+
+            updateCourseChart(students);
+            updateYearChart(students);
+            updateWorkloadTable(faculty, programs, students);
+
+            gsap.from(".glass-card", { opacity: 0, y: 20, duration: 0.6, stagger: 0.1, ease: "power2.out" });
+        } catch (error) {
+            console.error("Data fetch error:", error);
+        }
+    }
+
+    // --- 3. UI RENDERING HELPERS (ORIGINAL LOGIC + DESIGN WRAPPER) ---
+    function updateWorkloadTable(faculty, programs, students) {
+        const workloadTable = document.getElementById('workloadTable');
+        workloadTable.innerHTML = faculty.map(f => {
+            const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
+            const handled = programs.filter(p => p.teacher === fullName);
+            const studentCount = students.filter(s => 
+                s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
+            ).length;
+
+            return `
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-8 py-4 text-sm font-semibold text-white">${fullName}</td>
+                    <td class="px-8 py-4"><span class="bg-white/10 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">${handled.length} SUBJECTS</span></td>
+                    <td class="px-8 py-4 text-right font-mono text-sm text-gray-400">${studentCount} Students</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateCourseChart(students) {
+        const counts = {};
+        students.forEach(s => {
+            const c = s.course || "Unassigned";
+            counts[c] = (counts[c] || 0) + 1;
         });
 
-        async function initDashboard() {
-            const dateEl = document.getElementById('currentDate');
-            if (dateEl) dateEl.innerText = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
-
-            try {
-                const [userSnap, progSnap] = await Promise.all([
-                    getDocs(collection(db, "users")),
-                    getDocs(collection(db, "programs"))
-                ]);
-
-                const users = userSnap.docs.map(d => d.data());
-                const programs = progSnap.docs.map(d => d.data());
-
-                const students = users.filter(u => u.role === 'student' && u.status === 'approved');
-                const faculty = users.filter(u => u.role === 'teacher' && u.status === 'approved');
-                const pending = users.filter(u => u.status === 'pending');
-
-                document.getElementById('statStudents').innerText = students.length;
-                document.getElementById('statFaculty').innerText = faculty.length;
-                document.getElementById('statSubjects').innerText = programs.length;
-                document.getElementById('statPending').innerText = pending.length;
-
-                updateCourseChart(students);
-                updateYearChart(students);
-                updateWorkloadTable(faculty, programs, students);
-
-                gsap.from(".glass-card", { opacity: 0, y: 20, duration: 0.6, stagger: 0.1, ease: "power2.out" });
-            } catch (error) { console.error(error); }
-        }
-
-        function updateWorkloadTable(faculty, programs, students) {
-            const workloadTable = document.getElementById('workloadTable');
-            workloadTable.innerHTML = faculty.map(f => {
-                const fullName = `${f.lastname}, ${f.firstname}`.toUpperCase();
-                const handled = programs.filter(p => p.teacher === fullName);
-                const studentCount = students.filter(s => 
-                    s.assignedPrograms && s.assignedPrograms.some(ap => handled.some(hp => hp.code === ap))
-                ).length;
-
-                return `
-                    <tr class="hover:bg-white/[0.02] transition-colors">
-                        <td class="px-8 py-4 text-sm font-semibold text-white">${fullName}</td>
-                        <td class="px-8 py-4"><span class="bg-white/10 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">${handled.length} Subjects</span></td>
-                        <td class="px-8 py-4 text-right font-mono text-sm text-gray-400">${studentCount} Students</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateCourseChart(students) {
-            const counts = {};
-            students.forEach(s => { counts[s.course || "N/A"] = (counts[s.course || "N/A"] || 0) + 1; });
-            const ctx = document.getElementById('courseChart');
-            if (courseChart) courseChart.destroy();
-            courseChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{ 
-                        data: Object.values(counts), 
-                        backgroundColor: 'white', 
-                        borderRadius: 12, 
-                        barThickness: 25 
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
-                        x: { grid: { display: false }, border: { display: false } }
-                    }
+        const ctx = document.getElementById('courseChart');
+        if (courseChart) courseChart.destroy();
+        courseChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{ label: 'Students', data: Object.values(counts), backgroundColor: 'white', borderRadius: 8 }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
                 }
-            });
-        }
+            }
+        });
+    }
 
-        function updateYearChart(students) {
-            const yearCounts = { "1st": 0, "2nd": 0, "3rd": 0, "4th": 0 };
-            students.forEach(s => { if(yearCounts[s.year + 'st']) yearCounts[s.year + 'st']++; }); 
-            // Simplified matching for the logic:
-            students.forEach(s => {
-                if(s.year == '1') yearCounts["1st"]++;
-                else if(s.year == '2') yearCounts["2nd"]++;
-                else if(s.year == '3') yearCounts["3rd"]++;
-                else if(s.year == '4') yearCounts["4th"]++;
-            });
+    function updateYearChart(students) {
+        const yearCounts = { "1st Year": 0, "2nd Year": 0, "3rd Year": 0, "4th Year": 0 };
+        students.forEach(s => {
+            if(s.year == '1') yearCounts["1st Year"]++;
+            else if(s.year == '2') yearCounts["2nd Year"]++;
+            else if(s.year == '3') yearCounts["3rd Year"]++;
+            else if(s.year == '4') yearCounts["4th Year"]++;
+        });
 
-            const ctx = document.getElementById('yearLevelChart');
-            if (yearChart) yearChart.destroy();
-            yearChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(yearCounts),
-                    datasets: [{ 
-                        data: Object.values(yearCounts), 
-                        backgroundColor: ['#ffffff', '#666666', '#333333', '#111111'], 
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    cutout: '80%', 
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 20 } } } 
-                }
-            });
-        }
+        const ctx = document.getElementById('yearLevelChart');
+        if (yearChart) yearChart.destroy();
+        yearChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(yearCounts),
+                datasets: [{ data: Object.values(yearCounts), backgroundColor: ['#ffffff', '#888888', '#444444', '#222222'], borderWidth: 0 }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                cutout: '80%', 
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 20 } } } 
+            }
+        });
+    }
 
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-        setInterval(() => {
-            const clock = document.getElementById('clock');
-            if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        }, 1000);
-    </script>
+    // --- 4. UTILITIES & CLOCK ---
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+
+    setInterval(() => {
+        const clock = document.getElementById('clock');
+        if (clock) clock.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }, 1000);
+</script>
 </body>
 </html>
