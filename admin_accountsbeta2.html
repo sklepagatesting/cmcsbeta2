@@ -24,6 +24,18 @@
         }
     </script>
     <style>
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.06; pointer-events: none; }
+        .logo-watermark img { height: 80%; filter: grayscale(1) brightness(0.5); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+        .nav-link { transition: all 0.3s ease; border: 1px solid transparent; }
+        .nav-link:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
+        .nav-link.active { background: white; color: black !important; }
+        .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        .action-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .action-btn:hover { transform: translateY(-2px); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         
