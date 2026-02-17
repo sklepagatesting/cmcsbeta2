@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        /* Force text to remain white even during browser autofill events */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus {
@@ -17,125 +16,41 @@
             -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset !important;
             transition: background-color 5000s ease-in-out 0s;
         }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #050505;
-            color: white;
-            margin: 0;
-            overflow-x: hidden;
-        }
-
-        .logo-container {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0.12;
-            pointer-events: none;
-        }
-
-        .logo-container img {
-            height: 90%;
-            width: auto;
-            max-width: none;
-            object-fit: contain;
-            filter: grayscale(1) brightness(0.4);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2.2rem;
-        }
-
-        .input-field {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.75rem 1.1rem !important;
-            transition: border 0.4s ease;
-        }
-
-        .btn-anchor {
-            width: 100%;
-            height: 52px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 1.5rem;
-            position: relative;
-        }
-
-        #submitBtn {
-            width: 100%;
-            height: 52px;
-            background: white;
-            color: black;
-            border-radius: 9999px;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        footer {
-            padding: 40px 0 24px 0; /* Padding instead of absolute positioning */
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            letter-spacing: 0.1em;
-            color: rgba(255, 255, 255, 0.3);
-            z-index: 5;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; margin: 0; }
+        .logo-container { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.12; pointer-events: none; }
+        .logo-container img { height: 90%; width: auto; max-width: none; object-fit: contain; filter: grayscale(1) brightness(0.4); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 2.2rem; }
+        .input-field { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.75rem 1.1rem !important; transition: border 0.4s ease; }
+        .btn-anchor { width: 100%; height: 52px; display: flex; justify-content: center; align-items: center; margin-top: 1.5rem; position: relative; }
+        #submitBtn { width: 100%; height: 52px; background: white; color: black; border-radius: 9999px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.2); white-space: nowrap; display: flex; align-items: center; justify-content: center; }
+        footer { position: absolute; bottom: 24px; width: 100%; text-align: center; font-size: 10px; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.3); z-index: 5; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between p-4">
-    <div class="hidden md:block"></div>
-
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
     <div class="logo-container">
         <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
     </div>
 
-    <div class="max-w-[400px] w-full relative z-10 my-8">
+    <div class="max-w-[400px] w-full relative z-10">
         <div class="text-center mb-10">
-            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" 
-                 alt="CMCS Logo" class="w-16 mx-auto mb-6 brightness-125">
-            
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 leading-tight">
-                Login
-            </h1>
-
-            <p id="para-text" class="text-gray-400 text-sm md:text-base max-w-xs mx-auto">
-                Only verified accounts can access the system.
-            </p>
+            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo" class="w-16 mx-auto mb-6 brightness-125">
+            <h1 class="text-4xl md:text-5xl font-bold py-1 bg-clip-text tracking-tight mb-4 text-transparent bg-gradient-to-b from-white to-gray-400 leading-normal">Login</h1>
+            <p id="para-text" class="text-gray-400 text-sm md:text-base max-w-xs mx-auto">Only verified accounts can access the system.</p>
         </div>
 
         <div class="glass-card p-8">
             <form id="loginForm" class="space-y-5">
                 <div class="space-y-2">
                     <label class="field-label text-gray-400 text-sm md:text-base ml-1">Email</label>
-                    <input type="email" id="email" name="email" autocomplete="username" 
-                           class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white" required>
+                    <input type="email" id="email" name="email" autocomplete="username" class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white" required>
                 </div>
-
                 <div class="space-y-2">
                     <label class="field-label text-gray-400 text-sm md:text-base ml-1">Password</label>
                     <div class="relative">
-                        <input type="password" id="pw" name="password" autocomplete="current-password" 
-                                class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white pr-12" required>
+                        <input type="password" id="pw" name="password" autocomplete="current-password" class="w-full input-field rounded-2xl outline-none font-medium text-sm text-white pr-12" required>
                         <i id="togglePw" class="fa-solid fa-eye absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-30 cursor-pointer"></i>
                     </div>
                 </div>
-
                 <div class="btn-anchor">
                     <button type="submit" id="submitBtn">Authenticate</button>
                 </div>
@@ -159,23 +74,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, deleteUser, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const inputs = document.querySelectorAll('.input-field');
-        inputs.forEach(input => {
-            input.setAttribute('readonly', 'readonly');
-            input.style.cursor = 'text';
-            
-            const stopReadOnly = () => {
-                input.removeAttribute('readonly');
-                input.removeEventListener('focus', stopReadOnly);
-                input.removeEventListener('mousedown', stopReadOnly);
-            };
-
-            input.addEventListener('focus', stopReadOnly);
-            input.addEventListener('mousedown', stopReadOnly);
-        });
-
+        // Setup Year
         document.getElementById('year').textContent = new Date().getFullYear();
 
         const firebaseConfig = {
@@ -195,57 +96,82 @@
         const pwInput = document.getElementById('pw');
         let activeTl;
 
+        // Toggle Password visibility
         document.getElementById('togglePw').addEventListener('click', () => {
             pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
         });
 
+        // Login Handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if(activeTl) activeTl.kill();
 
             activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-            
             activeTl.to(btn, {
-                width: "140px",
-                height: "38px",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                color: "#ffffff",
-                fontSize: "12px",
-                duration: 1.2,
-                innerText: "Checking",
-                opacity: 0.6
+                width: "140px", height: "38px", backgroundColor: "rgba(255, 255, 255, 0.1)",
+                color: "#ffffff", fontSize: "12px", duration: 1.2, innerText: "Checking", opacity: 0.6
             });
 
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, document.getElementById('email').value.trim(), pwInput.value);
-                const docSnap = await getDoc(doc(db, "users", userCredential.user.uid));
+            const email = document.getElementById('email').value.trim();
+            const password = pwInput.value;
 
-                if (docSnap.exists() && docSnap.data().status === "approved") {
-                    activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
-                    activeTl.to(btn, {
-                        width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
-                        fontSize: "14px", innerText: "Verified", opacity: 1,
-                        duration: 1.0
-                    });
-                    setTimeout(() => window.location.href = `${docSnap.data().role}_dashboard.html`, 1400);
-                } else { throw new Error("pending"); }
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+
+                // --- GHOST ACCOUNT CHECK (SELF-DESTRUCT LOGIC) ---
+                if (!docSnap.exists()) {
+                    // This triggers if Admin deleted the record from Firestore
+                    await deleteUser(user);
+                    throw new Error("purged");
+                }
+
+                const userData = docSnap.data();
+
+                // Check if account is restricted/disabled
+                if (userData.status === "disabled") {
+                    throw new Error("blocked");
+                }
+
+                // Check if account is still pending
+                if (userData.status !== "approved") {
+                    throw new Error("pending");
+                }
+
+                // SUCCESS: Proceed to Dashboard
+                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
+                activeTl.to(btn, {
+                    width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
+                    fontSize: "14px", innerText: "Verified", opacity: 1, duration: 1.0
+                });
+                
+                setTimeout(() => window.location.href = `${userData.role}_dashboard.html`, 1400);
 
             } catch (err) {
                 if(activeTl) activeTl.kill();
-                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
                 
+                let errorMsg = "Denied";
+                if (err.message === "pending") errorMsg = "Approval Pending";
+                if (err.message === "blocked") errorMsg = "Access Restricted";
+                if (err.message === "purged") errorMsg = "Account Deactivated";
+
+                activeTl = gsap.timeline({ defaults: { ease: "power4.inOut" } });
                 activeTl.to(btn, { 
-                     backgroundColor: "rgba(255, 59, 48, 0.2)", 
-                     innerText: err.message === "pending" ? "Pending for approval" : "Denied",
+                    backgroundColor: "rgba(255, 59, 48, 0.2)", 
+                    innerText: errorMsg,
                     color: "#ff3b30",
                     duration: 0.4 
-                 })
+                })
                 .to(btn, { x: -4, duration: 0.1, repeat: 3, yoyo: true, ease: "linear" }, 0)
                 .to(btn, {
                     width: "100%", height: "52px", backgroundColor: "#ffffff", color: "#000000",
                     fontSize: "14px", innerText: "Authenticate", x: 0, opacity: 1,
                     duration: 1.2, delay: 1.2
                 });
+
+                // Sign out in case of pending/blocked so auth state doesn't persist
+                await signOut(auth);
             }
         });
     </script>
