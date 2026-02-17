@@ -5,133 +5,160 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard | CMCS VLS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#2563eb', secondary: '#1e293b', success: '#10b981', danger: '#ef4444' }
-                }
-            }
-        }
-    </script>
     <style>
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #2563eb; border-radius: 50%; width: 14px; height: 14px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .active-nav { background: #2563eb !important; color: white !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; overflow: hidden; }
+        .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.04; pointer-events: none; }
+        .logo-watermark img { height: 75%; filter: grayscale(1) brightness(0.5); }
         
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+        .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Nav Styling */
+        .sidebar-btn, .subj-btn { transition: all 0.3s ease; color: #94a3b8; border: 1px solid transparent; }
+        .sidebar-btn:hover, .subj-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+        .active-nav { background: white !important; color: black !important; font-weight: 800; border-radius: 12px; }
+
+        /* Form & Scroll */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        input { 
+            background: rgba(255, 255, 255, 0.05) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            outline: none !important;
+        }
+        input:focus { border-color: rgba(255, 255, 255, 0.3) !important; }
+
+        /* TRADITIONAL PRINT PRESERVATION - SHARP CORNERS & BLACK TEXT */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; color: black !important; }
             .no-print { display: none !important; }
+            
+            /* Sharp edges for print tables */
+            .rounded-xl { border-radius: 0 !important; }
+            .bg-white { background: white !important; }
             table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
-            th, td { border: 1pt solid black !important; padding: 6px 10px !important; color: black !important; font-size: 9pt !important; }
-            thead { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
-            .print-header-info { display: grid !important; grid-template-cols: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; border-bottom: 1px solid black; padding-bottom: 10px; }
+            th, td { border: 1pt solid black !important; padding: 8px 12px !important; color: black !important; font-size: 9pt !important; }
+            
+            .print-header-info { display: grid !important; grid-template-cols: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; border-bottom: 1px solid black; padding-bottom: 10px; text-align: left; }
+            #printHeader { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <aside class="w-64 bg-secondary text-white flex flex-col shadow-2xl z-20 no-print">
-        <div class="h-16 flex items-center px-6 border-b border-gray-700 bg-slate-900">
-            <div class="font-bold text-lg tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-graduation-cap text-primary"></i> CMCS <span class="text-primary">VLS</span>
+    <div class="logo-watermark">
+        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
+    </div>
+
+    <div class="md:hidden sidebar p-4 flex justify-between items-center z-30 shadow-md no-print">
+        <div class="font-black text-sm tracking-tighter flex items-center gap-2 uppercase">
+            CMCS <span class="text-gray-500">VLS</span>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white p-2"><i class="fa-solid fa-bars-staggered"></i></button>
+    </div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 sidebar transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col no-print md:relative">
+        <div class="h-20 hidden md:flex items-center px-8 border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="h-8 brightness-125">
+                <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
             </div>
         </div>
-        <nav class="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
-            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Academic Overview</p>
-            <a onclick="switchGlobalView('schedules')" id="navSched" class="sidebar-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1">
-                <i class="fa-solid fa-calendar-alt text-sm"></i> <span class="font-bold text-xs uppercase">Class Schedules</span>
-            </a>
-            <a onclick="switchGlobalView('grades')" id="navGrades" class="sidebar-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1">
-                <i class="fa-solid fa-star text-sm"></i> <span class="font-bold text-xs uppercase">Scholastic Records</span>
-            </a>
 
-            <div class="mt-6">
-                <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Subject Selection</p>
-                <div id="subjectNavItems"></div>
+        <nav class="flex-1 py-8 px-4 space-y-6 overflow-y-auto scrollbar-hide">
+            <div>
+                <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Core Portal</p>
+                <a onclick="switchGlobalView('schedules'); closeMobileMenu()" id="navSched" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
+                    <i class="fa-solid fa-calendar-day text-xs"></i> <span class="uppercase tracking-tighter">Schedules</span>
+                </a>
+                <a onclick="switchGlobalView('grades'); closeMobileMenu()" id="navGrades" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
+                    <i class="fa-solid fa-file-invoice text-xs"></i> <span class="uppercase tracking-tighter">Scholastic Records</span>
+                </a>
+            </div>
+
+            <div>
+                <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Enrolled Subjects</p>
+                <div id="subjectNavItems" class="space-y-2"></div>
             </div>
         </nav>
-        <div class="p-4 border-t border-gray-700 bg-slate-900">
-            <div class="flex items-center gap-3 mb-3 p-2 rounded-lg bg-white/5">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-sm font-bold text-white uppercase" id="adminInitial">..</div>
+
+        <div class="p-6 border-t border-white/5">
+            <a href="student_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
+                <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase"></div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-white truncate uppercase" id="adminName">Loading...</p>
-                    <p class="text-[9px] text-gray-400 font-bold uppercase" id="studentIdDisplay">ID: ---</p>
+                    <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest" id="studentIdDisplay">ID: ---</p>
                 </div>
-            </div>
-            <button onclick="logout()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-md text-[10px] font-bold transition-all uppercase tracking-widest">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
+                Logout
             </button>
         </div>
     </aside>
 
+    <div id="sidebarOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
+
     <main class="flex-1 flex flex-col h-full overflow-hidden">
-        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10 no-print">
+        <header class="h-auto min-h-[5rem] py-4 flex flex-col md:flex-row items-start md:items-center justify-between px-10 border-b border-white/5 no-print gap-6">
             <div class="flex flex-col">
-                <h1 id="headerTitle" class="text-lg font-black text-gray-800 leading-none">STUDENT PORTAL</h1>
-                <div id="headerContext" class="flex items-center gap-2 mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                    </div>
+                <h1 id="headerTitle" class="text-sm font-black uppercase tracking-widest text-white leading-none">STUDENT PORTAL</h1>
+                <div id="headerContext" class="flex flex-wrap items-center gap-3 mt-3"></div>
             </div>
-            <div class="flex items-center gap-4">
-                <div id="subjectToggles" class="hidden bg-gray-100 p-1 rounded-lg flex gap-1">
-                    <button id="btnAtt" onclick="switchSubTab('attendance')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all active-nav">Attendance</button>
-                    <button id="btnMat" onclick="switchSubTab('materials')" class="px-4 py-1.5 text-xs font-bold rounded-md transition-all text-gray-500">Materials</button>
+            
+            <div class="flex items-center gap-6 w-full md:w-auto">
+                <div id="subjectToggles" class="hidden glass-card !rounded-xl p-1 flex flex-1 md:flex-none">
+                    <button id="btnAtt" onclick="switchSubTab('attendance')" class="flex-1 md:flex-none px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all active-nav">Attendance</button>
+                    <button id="btnMat" onclick="switchSubTab('materials')" class="flex-1 md:flex-none px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all text-gray-500">Materials</button>
                 </div>
-                <div id="exportGroup" class="flex gap-2">
-                    <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-[10px] font-bold uppercase">CSV</button>
-                    <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase">PDF</button>
+                <div id="exportGroup" class="flex gap-3">
+                    <button onclick="exportCSV()" class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-black transition-all">CSV</button>
+                    <button onclick="exportPDF()" class="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all">PDF</button>
                 </div>
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 scrollbar-hide">
-            <div id="workspace" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 no-print" id="infoSummary">
-                    </div>
+        <div class="flex-1 overflow-y-auto p-10 scrollbar-hide">
+            <div id="workspace" class="space-y-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print" id="infoSummary"></div>
 
-                <div id="searchBar" class="no-print">
-                    <div class="relative w-full max-w-md">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                        <input type="text" id="masterSearch" placeholder="Search entries..." 
-                               class="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:border-primary transition-all shadow-sm">
-                    </div>
+                <div id="searchBar" class="no-print relative w-full max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                    <input type="text" id="masterSearch" placeholder="SEARCH ENTRIES..." 
+                            class="w-full pl-12 pr-4 py-3 rounded-xl text-xs font-black uppercase shadow-lg">
                 </div>
 
                 <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-6">
-                        <div class="flex items-center gap-4 mb-4">
-                            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.jpg" class="w-16 h-16">
-                            <div class="text-center">
-                                <h2 class="text-xl font-black uppercase text-black">Central Mindanao Computer School</h2>
-                                <p class="text-[10px] font-bold">Poblacion, Tulunan, Cotabato</p>
-                                <p class="text-[12px] font-black mt-1 uppercase tracking-widest border-t border-black pt-1" id="lblReportType"></p>
+                    <div id="printHeader" class="hidden flex-col items-center mb-10 text-center">
+                        <div class="flex flex-col items-center gap-2 mb-6">
+                            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-20 h-20">
+                            <div>
+                                <h2 class="text-2xl font-black uppercase text-black">Central Mindanao Computer School</h2>
+                                <p class="text-[10px] font-bold text-black">Poblacion, Tulunan, Cotabato</p>
+                                <p class="text-[13px] font-black mt-2 uppercase tracking-[0.2em] border-t border-black pt-2 text-black" id="lblReportType"></p>
                             </div>
-                        </div>
-                        
-                        <div class="print-header-info w-full text-[10px] font-bold uppercase">
+                        </div>                                                
+                        <div class="print-header-info w-full text-[10px] font-bold uppercase text-black">
                             <div class="space-y-1">
-                                <p>Student: <span id="pName" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Student ID: <span id="pID" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Gender: <span id="pGender" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
+                                <p>Student: <span id="pName" class="font-normal border-b border-black"></span></p>
+                                <p>Student ID: <span id="pID" class="font-normal border-b border-black"></span></p>
+                                <p>Gender: <span id="pGender" class="font-normal border-b border-black"></span></p>
                             </div>
                             <div class="space-y-1">
-                                <p>Course: <span id="pCourse" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>Year & Sem: <span id="pYearSem" class="font-normal border-b border-gray-300 inline-block w-40"></span></p>
-                                <p>School Year: <span id="pSY" class="font-normal border-b border-gray-300 inline-block w-40">2025-2026</span></p>
+                                <p>Course: <span id="pCourse" class="font-normal border-b border-black"></span></p>
+                                <p>Year & Sem: <span id="pYearSem" class="font-normal border-b border-black"></span></p>
+                                <p>School Year: <span id="pSY" class="font-normal border-b border-black">2025-2026</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead id="tableHead" class="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold tracking-widest border-b"></thead>
-                            <tbody id="tableBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                    <div class="glass-card overflow-hidden !border-white/5">
+                        <table class="w-full text-left">
+                            <thead id="tableHead" class="bg-white/[0.02] text-gray-500 text-[9px] uppercase font-black tracking-widest border-b border-white/5"></thead>
+                            <tbody id="tableBody" class="divide-y divide-white/5 text-xs"></tbody>
                         </table>
                     </div>
                 </div>
@@ -139,225 +166,223 @@
         </div>
     </main>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
-        authDomain: "svls-289ee.firebaseapp.com",
-        projectId: "svls-289ee",
-        storageBucket: "svls-289ee.firebasestorage.app",
-        messagingSenderId: "500705386198",
-        appId: "1:500705386198:web:96f189662bc2aa99cf7377"
-    };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDaeNQF4qmW0vvwxUPp_NztnT0hoLzm1BQ",
+            authDomain: "svls-289ee.firebaseapp.com",
+            projectId: "svls-289ee",
+            storageBucket: "svls-289ee.firebasestorage.app",
+            messagingSenderId: "500705386198",
+            appId: "1:500705386198:web:96f189662bc2aa99cf7377"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-    let currentStudent = null, programs = [], activeSubj = null, currentMode = 'schedules', searchTerm = "";
+        let currentStudent = null, programs = [], activeSubj = null, currentMode = 'schedules', searchTerm = "";
 
-    onAuthStateChanged(auth, async user => {
-        if (user) {
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists() && snap.data().role === 'student') {
-                currentStudent = { uid: user.uid, ...snap.data() };
-                updateDashboardInfo();
-                await fetchSubjects();
-                switchGlobalView('schedules');
+        window.toggleMobileMenu = () => {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        };
+
+        window.closeMobileMenu = () => {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+        };
+
+        onAuthStateChanged(auth, async user => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                if (snap.exists() && snap.data().role === 'student') {
+                    currentStudent = { uid: user.uid, ...snap.data() };
+                    updateDashboardInfo();
+                    await fetchSubjects();
+                    switchGlobalView('schedules');
+                } else { window.location.href = "login.html"; }
             } else { window.location.href = "login.html"; }
-        } else { window.location.href = "login.html"; }
-    });
-
-    function updateDashboardInfo() {
-        // Sidebar
-        document.getElementById('adminName').innerText = `${currentStudent.lastname}, ${currentStudent.firstname}`;
-        document.getElementById('adminInitial').innerText = currentStudent.firstname[0] + currentStudent.lastname[0];
-        document.getElementById('studentIdDisplay').innerText = `ID: ${currentStudent.studentId}`;
-
-        // Header Metadata
-        document.getElementById('headerContext').innerHTML = `
-            <span class="bg-blue-50 text-primary px-2 py-0.5 rounded border border-blue-100">${currentStudent.course}</span>
-            <span class="bg-gray-100 px-2 py-0.5 rounded">Year ${currentStudent.year}</span>
-            <span class="bg-gray-100 px-2 py-0.5 rounded">${currentStudent.semester}</span>
-            <span class="bg-gray-800 text-white px-2 py-0.5 rounded">S.Y. 2025-2026</span>
-        `;
-
-        // Info Summary Cards
-        document.getElementById('infoSummary').innerHTML = `
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-[9px] font-bold text-gray-400 uppercase">Current Program</p>
-                <p class="text-xs font-black text-gray-800 uppercase">${currentStudent.course}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-[9px] font-bold text-gray-400 uppercase">Year / Semester</p>
-                <p class="text-xs font-black text-gray-800 uppercase">Y${currentStudent.year} - ${currentStudent.semester.split(' ')[0]}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-[9px] font-bold text-gray-400 uppercase">Enrollment Status</p>
-                <p class="text-xs font-black text-emerald-600 uppercase">${currentStudent.status}</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-[9px] font-bold text-gray-400 uppercase">Account Type</p>
-            </div>
-        `;
-    }
-
-    async function fetchSubjects() {
-        const codes = currentStudent.assignedPrograms || [];
-        if(!codes.length) return;
-        const q = query(collection(db, "programs"), where("code", "in", codes));
-        const snap = await getDocs(q);
-        programs = snap.docs.map(d => d.data());
-        
-        const nav = document.getElementById('subjectNavItems');
-        nav.innerHTML = '';
-        programs.forEach(p => {
-            const a = document.createElement('a');
-            a.className = "subj-btn flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors cursor-pointer mb-1";
-            a.onclick = () => switchSubjectView(p);
-            a.innerHTML = `<i class="fa-solid fa-book-open text-sm"></i> <span class="font-bold text-xs uppercase">${p.code}</span>`;
-            nav.appendChild(a);
         });
-    }
 
-    window.switchGlobalView = (mode) => {
-        currentMode = mode;
-        activeSubj = null;
-        document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
-        document.getElementById(mode === 'schedules' ? 'navSched' : 'navGrades').classList.add('active-nav');
-        
-        document.getElementById('headerTitle').innerText = mode === 'schedules' ? "OFFICIAL CLASS SCHEDULES" : "SCHOLASTIC PERFORMANCE RECORD";
-        document.getElementById('subjectToggles').classList.add('hidden');
-        document.getElementById('exportGroup').classList.remove('hidden');
-        document.getElementById('searchBar').classList.remove('hidden');
-        renderTable();
-    };
+        function updateDashboardInfo() {
+            document.getElementById('adminName').innerText = `${currentStudent.lastname}, ${currentStudent.firstname}`;
+            document.getElementById('adminInitial').innerText = currentStudent.firstname[0] + currentStudent.lastname[0];
+            document.getElementById('studentIdDisplay').innerText = `ID: ${currentStudent.studentId}`;
 
-    window.switchSubjectView = (p) => {
-        activeSubj = p;
-        currentMode = 'attendance';
-        document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
-        event.currentTarget.classList.add('active-nav');
-        
-        document.getElementById('headerTitle').innerText = p.name;
-        document.getElementById('subjectToggles').classList.remove('hidden');
-        switchSubTab('attendance');
-    };
+            document.getElementById('headerContext').innerHTML = `
+                <span class="bg-white/10 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-white/5">${currentStudent.course}</span>
+                <span class="bg-white/5 text-gray-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">Year ${currentStudent.year}</span>
+                <span class="bg-white text-black px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">S.Y. 2025-2026</span>
+            `;
 
-    window.switchSubTab = (tab) => {
-        currentMode = tab;
-        document.getElementById('btnAtt').classList.toggle('active-nav', tab === 'attendance');
-        document.getElementById('btnMat').classList.toggle('active-nav', tab === 'materials');
-        document.getElementById('exportGroup').classList.toggle('hidden', tab === 'materials');
-        document.getElementById('searchBar').classList.toggle('hidden', tab === 'materials');
-        renderTable();
-    };
-
-    async function renderTable() {
-        const head = document.getElementById('tableHead');
-        const body = document.getElementById('tableBody');
-        const term = searchTerm.toLowerCase();
-        body.innerHTML = '';
-
-        if (currentMode === 'schedules') {
-            head.innerHTML = `<tr><th class="px-6 py-4">Code</th><th class="px-6 py-4">Subject Title</th><th class="px-6 py-4">Schedule & Time</th><th class="px-6 py-4">Instructor</th></tr>`;
-            programs.filter(p => p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term)).forEach(p => {
-                body.innerHTML += `<tr>
-                    <td class="px-6 py-4 font-black text-primary">${p.code}</td>
-                    <td class="px-6 py-4 font-bold uppercase">${p.name}<div class="text-[9px] text-gray-400 font-normal">S.Y. 2025-2026</div></td>
-                    <td class="px-6 py-4">
-                        <span class="text-[10px] font-black block">${p.schedule}</span>
-                        <span class="text-[10px] text-gray-500">${p.startTime} - ${p.endTime}</span>
-                    </td>
-                    <td class="px-6 py-4 text-xs font-bold uppercase">${p.teacher}</td>
-                </tr>`;
-            });
-        } 
-        else if (currentMode === 'grades') {
-            head.innerHTML = `<tr><th class="px-6 py-4">Enrolled Subjects</th><th class="px-6 py-4 text-center">PRE</th><th class="px-6 py-4 text-center">MID</th><th class="px-6 py-4 text-center">FIN</th><th class="px-6 py-4 text-right">POINT</th></tr>`;
-            programs.filter(p => p.name.toLowerCase().includes(term)).forEach(p => {
-                const g = currentStudent.grades?.[p.code] || { prelim:'-', midterm:'-', final:'-', point:'5.0' };
-                body.innerHTML += `<tr>
-                    <td class="px-6 py-4 font-bold uppercase">${p.name}<div class="text-[9px] text-gray-400 font-normal">${p.teacher} | ${currentStudent.semester}</div></td>
-                    <td class="px-6 py-4 text-center font-bold">${g.prelim}</td>
-                    <td class="px-6 py-4 text-center font-bold">${g.midterm}</td>
-                    <td class="px-6 py-4 text-center font-bold">${g.final}</td>
-                    <td class="px-6 py-4 text-right font-black text-primary">${g.point}</td>
-                </tr>`;
-            });
+            document.getElementById('infoSummary').innerHTML = `
+                <div class="glass-card p-6 border-white/5">
+                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">PROGRAM</p>
+                    <p class="text-xs font-black text-white uppercase truncate">${currentStudent.course}</p>
+                </div>
+                <div class="glass-card p-6 border-white/5">
+                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">YEAR/SEM</p>
+                    <p class="text-xs font-black text-white uppercase truncate">Y${currentStudent.year} - ${currentStudent.semester.split(' ')[0]}</p>
+                </div>
+                <div class="glass-card p-6 border-white/5">
+                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ENROLLMENT STATUS</p>
+                    <p class="text-xs font-black text-emerald-400 uppercase truncate">${currentStudent.status}</p>
+                </div>
+                <div class="glass-card p-6 border-white/5">
+                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ACADEMIC PERIOD</p>
+                    <p class="text-xs font-black text-blue-400 uppercase truncate">2025 - 2026</p>
+                </div>
+            `;
         }
-        else if (currentMode === 'attendance') {
-            head.innerHTML = `<tr><th class="px-6 py-4">Class Date Record</th><th class="px-6 py-4">Term/SY</th><th class="px-6 py-4 text-center">Status</th></tr>`;
-            const attMap = currentStudent.attendance?.[activeSubj.code] || {};
-            Object.keys(attMap).sort().reverse().forEach(date => {
-                if(date.includes(term)) {
-                    const status = attMap[date];
-                    const color = status === 'P' ? 'text-success' : status === 'L' ? 'text-yellow-500' : 'text-danger';
-                    body.innerHTML += `<tr>
-                        <td class="px-6 py-4 font-bold">${date}</td>
-                        <td class="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase">${currentStudent.semester} | 2025-2026</td>
-                        <td class="px-6 py-4 text-center font-black ${color}">${status === 'P' ? 'PRESENT' : status === 'L' ? 'LATE' : 'ABSENT'}</td>
-                    </tr>`;
-                }
-            });
-        }
-        else if (currentMode === 'materials') {
-            head.innerHTML = `<tr><th class="px-6 py-4">Resource Title</th><th class="px-6 py-4">Academic Instruction</th><th class="px-6 py-4 text-right">Action</th></tr>`;
-            const q = query(collection(db, "materials"), where("subjectCode", "==", activeSubj.code));
+
+        async function fetchSubjects() {
+            const codes = currentStudent.assignedPrograms || [];
+            if(!codes.length) return;
+            const q = query(collection(db, "programs"), where("code", "in", codes));
             const snap = await getDocs(q);
-            snap.forEach(d => {
-                const m = d.data();
-                body.innerHTML += `<tr>
-                    <td class="px-6 py-4 font-bold uppercase text-xs">${m.name}<div class="text-[9px] text-gray-400 uppercase">${activeSubj.code} | S.Y. 2025-2026</div></td>
-                    <td class="px-6 py-4 text-xs italic text-gray-500">${m.desc || 'No instruction provided.'}</td>
-                    <td class="px-6 py-4 text-right"><a href="${m.link}" target="_blank" class="bg-primary text-white px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase shadow-sm">View Resource</a></td>
-                </tr>`;
+            programs = snap.docs.map(d => d.data());
+            
+            const nav = document.getElementById('subjectNavItems');
+            nav.innerHTML = '';
+            programs.forEach(p => {
+                const a = document.createElement('a');
+                a.className = "subj-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold cursor-pointer";
+                a.onclick = (e) => { switchSubjectView(p, e); closeMobileMenu(); };
+                a.innerHTML = `<i class="fa-solid fa-book-open text-xs"></i> <span class="uppercase tracking-tighter font-black text-xs">${p.code}</span>`;
+                nav.appendChild(a);
             });
         }
-    }
 
-    window.exportCSV = () => {
-        let csv = "STUDENT NAME," + currentStudent.lastname + " " + currentStudent.firstname + "\n";
-        csv += "STUDENT ID," + currentStudent.studentId + "\n";
-        csv += "COURSE," + currentStudent.course + "\n";
-        csv += "YEAR/SEM," + currentStudent.year + " / " + currentStudent.semester + "\n\n";
-        
-        if(currentMode === 'schedules') {
-            csv += "CODE,SUBJECT,SCHEDULE,TIME,TEACHER\n";
-            programs.forEach(p => csv += `${p.code},${p.name},${p.schedule},${p.startTime}-${p.endTime},${p.teacher}\n`);
-        } else {
-            csv += "SUBJECT,PRELIM,MIDTERM,FINAL,GPA\n";
-            programs.forEach(p => { 
-                const g = currentStudent.grades?.[p.code] || {}; 
-                csv += `"${p.name}",${g.prelim || '-'},${g.midterm || '-'},${g.final || '-'},${g.point || '-'}\n`; 
-            });
+        window.switchGlobalView = (mode) => {
+            currentMode = mode; activeSubj = null;
+            document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
+            const activeNav = document.getElementById(mode === 'schedules' ? 'navSched' : 'navGrades');
+            if(activeNav) activeNav.classList.add('active-nav');
+            
+            document.getElementById('headerTitle').innerText = mode === 'schedules' ? "CLASS SCHEDULES" : "SCHOLASTIC PERFORMANCE";
+            document.getElementById('subjectToggles').classList.add('hidden');
+            document.getElementById('exportGroup').classList.remove('hidden');
+            document.getElementById('searchBar').classList.remove('hidden');
+            renderTable();
+        };
+
+        window.switchSubjectView = (p, event) => {
+            activeSubj = p; currentMode = 'attendance';
+            document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
+            if(event && event.currentTarget) event.currentTarget.classList.add('active-nav');
+            
+            document.getElementById('headerTitle').innerText = p.name;
+            document.getElementById('headerContext').innerHTML = `
+                <span class="bg-blue-500 text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase"><i class="fa-solid fa-calendar mr-1"></i> ${p.schedule}</span>
+                <span class="bg-white/10 text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase"><i class="fa-solid fa-clock mr-1"></i> ${p.startTime} - ${p.endTime}</span>
+            `;
+            document.getElementById('subjectToggles').classList.remove('hidden');
+            switchSubTab('attendance');
+        };
+
+        window.switchSubTab = (tab) => {
+            currentMode = tab;
+            document.getElementById('btnAtt').classList.toggle('active-nav', tab === 'attendance');
+            document.getElementById('btnMat').classList.toggle('active-nav', tab === 'materials');
+            document.getElementById('exportGroup').classList.toggle('hidden', tab === 'materials');
+            document.getElementById('searchBar').classList.toggle('hidden', tab === 'materials');
+            renderTable();
+        };
+
+        async function renderTable() {
+            const head = document.getElementById('tableHead');
+            const body = document.getElementById('tableBody');
+            const term = searchTerm.toLowerCase();
+            body.innerHTML = '';
+
+            if (currentMode === 'schedules') {
+                head.innerHTML = `<tr><th class="px-8 py-5">Code</th><th class="px-8 py-5">Subject Details</th><th class="px-8 py-5">Schedule</th><th class="px-8 py-5">Instructor</th></tr>`;
+                programs.filter(p => p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term)).forEach(p => {
+                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                        <td class="px-8 py-5 font-black text-white">${p.code}</td>
+                        <td class="px-8 py-5 font-bold uppercase text-white">${p.name}<div class="text-[9px] text-gray-500 font-medium">S.Y. 2025-2026</div></td>
+                        <td class="px-8 py-5">
+                            <span class="text-[10px] font-black block text-white">${p.schedule}</span>
+                            <span class="text-[9px] text-gray-500">${p.startTime} - ${p.endTime}</span>
+                        </td>
+                        <td class="px-8 py-5 text-[10px] font-black uppercase text-gray-400">${p.teacher}</td>
+                    </tr>`;
+                });
+            } else if (currentMode === 'grades') {
+                head.innerHTML = `<tr><th class="px-8 py-5">Subject Title</th><th class="px-8 py-5 text-center">PRE</th><th class="px-8 py-5 text-center">MID</th><th class="px-8 py-5 text-center">FIN</th><th class="px-8 py-5 text-right">POINT</th></tr>`;
+                programs.filter(p => p.name.toLowerCase().includes(term)).forEach(p => {
+                    const g = currentStudent.grades?.[p.code] || { prelim:'-', midterm:'-', final:'-', point:'5.0' };
+                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                        <td class="px-8 py-5 font-bold uppercase text-white">${p.name}<div class="text-[9px] text-gray-500 font-medium">${p.teacher}</div></td>
+                        <td class="px-8 py-5 text-center font-black">${g.prelim}</td>
+                        <td class="px-8 py-5 text-center font-black">${g.midterm}</td>
+                        <td class="px-8 py-5 text-center font-black">${g.final}</td>
+                        <td class="px-8 py-5 text-right font-black text-blue-400">${g.point}</td>
+                    </tr>`;
+                });
+            } else if (currentMode === 'attendance') {
+                head.innerHTML = `<tr><th class="px-8 py-5">Date</th><th class="px-8 py-5">Academic Period</th><th class="px-8 py-5 text-center">Status</th></tr>`;
+                const attMap = currentStudent.attendance?.[activeSubj.code] || {};
+                Object.keys(attMap).sort().reverse().forEach(date => {
+                    if(date.includes(term)) {
+                        const status = attMap[date];
+                        const color = status === 'P' ? 'text-emerald-400' : status === 'L' ? 'text-yellow-500' : 'text-red-500';
+                        body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                            <td class="px-8 py-5 font-black text-white">${date}</td>
+                            <td class="px-8 py-5 text-[10px] font-black text-gray-500 uppercase">${currentStudent.semester} | 2025-2026</td>
+                            <td class="px-8 py-5 text-center font-black ${color}">${status === 'P' ? 'PRESENT' : status === 'L' ? 'LATE' : 'ABSENT'}</td>
+                        </tr>`;
+                    }
+                });
+            } else if (currentMode === 'materials') {
+                head.innerHTML = `<tr><th class="px-8 py-5">Resource Title</th><th class="px-8 py-5">Instructions</th><th class="px-8 py-5 text-right">Action</th></tr>`;
+                const q = query(collection(db, "materials"), where("subjectCode", "==", activeSubj.code));
+                const snap = await getDocs(q);
+                snap.forEach(d => {
+                    const m = d.data();
+                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
+                        <td class="px-8 py-5 font-black uppercase text-[10px] text-white">${m.name}<div class="text-[9px] text-gray-500 uppercase">${activeSubj.code}</div></td>
+                        <td class="px-8 py-5 text-[10px] italic text-gray-400 font-medium">${m.desc || 'Refer to link for details.'}</td>
+                        <td class="px-8 py-5 text-right"><a href="${m.link}" target="_blank" class="bg-white text-black px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-lg">Access</a></td>
+                    </tr>`;
+                });
+            }
         }
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `${currentStudent.lastname}_Record.csv`;
-        a.click();
-    };
 
-    window.exportPDF = () => {
-        document.getElementById('lblReportType').innerText = currentMode === 'schedules' ? "CERTIFICATE OF MATRICULATION / SCHEDULE" : "OFFICIAL STUDENT SCHOLASTIC RECORD";
-        document.getElementById('pName').innerText = `${currentStudent.lastname}, ${currentStudent.firstname}`;
-        document.getElementById('pID').innerText = currentStudent.studentId;
-        document.getElementById('pGender').innerText = currentStudent.gender || '-';
-        document.getElementById('pCourse').innerText = currentStudent.course;
-        document.getElementById('pYearSem').innerText = `YEAR ${currentStudent.year} - ${currentStudent.semester}`;
-        document.getElementById('pSY').innerText = "2025-2026";
-        
-        document.getElementById('printHeader').classList.replace('hidden', 'flex');
-        window.print();
-        document.getElementById('printHeader').classList.replace('flex', 'hidden');
-    };
+        window.exportCSV = () => {
+            let csv = "STUDENT NAME," + currentStudent.lastname + " " + currentStudent.firstname + "\nSTUDENT ID," + currentStudent.studentId + "\n\n";
+            if(currentMode === 'schedules') {
+                csv += "CODE,SUBJECT,SCHEDULE,TIME,TEACHER\n";
+                programs.forEach(p => csv += `${p.code},${p.name},${p.schedule},${p.startTime}-${p.endTime},${p.teacher}\n`);
+            } else {
+                csv += "SUBJECT,PRELIM,MIDTERM,FINAL,GPA\n";
+                programs.forEach(p => { const g = currentStudent.grades?.[p.code] || {}; csv += `"${p.name}",${g.prelim || '-'},${g.midterm || '-'},${g.final || '-'},${g.point || '-'}\n`; });
+            }
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${currentStudent.lastname}_Record.csv`;
+            a.click();
+        };
 
-    document.getElementById('masterSearch').oninput = (e) => { searchTerm = e.target.value; renderTable(); };
-    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-</script>
+        window.exportPDF = () => {
+            document.getElementById('lblReportType').innerText = currentMode === 'schedules' ? "CERTIFICATE OF MATRICULATION / SCHEDULE" : "OFFICIAL STUDENT SCHOLASTIC RECORD";
+            document.getElementById('pName').innerText = `${currentStudent.lastname}, ${currentStudent.firstname}`;
+            document.getElementById('pID').innerText = currentStudent.studentId;
+            document.getElementById('pGender').innerText = currentStudent.gender || '-';
+            document.getElementById('pCourse').innerText = currentStudent.course;
+            document.getElementById('pYearSem').innerText = `YEAR ${currentStudent.year} - ${currentStudent.semester}`;
+            document.getElementById('printHeader').classList.replace('hidden', 'flex');
+            window.print();
+            document.getElementById('printHeader').classList.replace('flex', 'hidden');
+        };
+
+        document.getElementById('masterSearch').oninput = (e) => { searchTerm = e.target.value; renderTable(); };
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+    </script>
 </body>
 </html>
