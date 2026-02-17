@@ -12,54 +12,39 @@
         .logo-watermark { position: fixed; inset: 0; z-index: -1; display: flex; justify-content: center; align-items: center; opacity: 0.04; pointer-events: none; }
         .logo-watermark img { height: 75%; filter: grayscale(1) brightness(0.5); }
         
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1.5rem; }
         .sidebar { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
         
-        /* Nav Styling */
         .sidebar-btn, .subj-btn { transition: all 0.3s ease; color: #94a3b8; border: 1px solid transparent; }
-        .sidebar-btn:hover, .subj-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
         .active-nav { background: white !important; color: black !important; font-weight: 800; border-radius: 12px; }
 
-        /* Form & Scroll */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        input { 
-            background: rgba(255, 255, 255, 0.05) !important; 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-            outline: none !important;
-        }
-        input:focus { border-color: rgba(255, 255, 255, 0.3) !important; }
+        input { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; outline: none !important; }
 
-        /* TRADITIONAL PRINT PRESERVATION - SHARP CORNERS & BLACK TEXT */
+        /* TRADITIONAL PRINT PRESERVATION - SHARP CORNERS & CENTERED HEADER */
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; color: black !important; }
             .no-print { display: none !important; }
             
-            /* Sharp edges for print tables */
-            .rounded-xl { border-radius: 0 !important; }
-            .bg-white { background: white !important; }
-            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; }
-            th, td { border: 1pt solid black !important; padding: 8px 12px !important; color: black !important; font-size: 9pt !important; }
+            /* Remove all rounding and cutoffs for professional print */
+            .rounded-xl, .glass-card { border-radius: 0 !important; border: none !important; background: transparent !important; backdrop-filter: none !important; }
+            .overflow-hidden { overflow: visible !important; }
             
-            .print-header-info { display: grid !important; grid-template-cols: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; border-bottom: 1px solid black; padding-bottom: 10px; text-align: left; }
-            #printHeader { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; }
+            table { border-collapse: collapse !important; width: 100% !important; border: 1.5pt solid black !important; margin-top: 10px; }
+            th, td { border: 1pt solid black !important; padding: 8px 12px !important; color: black !important; font-size: 9pt !important; background: transparent !important; }
+            thead { display: table-header-group !important; }
+            
+            #printHeader { display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; width: 100%; }
+            .print-header-info { display: grid !important; grid-template-cols: repeat(2, 1fr); gap: 40px; margin-top: 20px; padding-bottom: 10px; text-align: left; width: 100%; }
+            .border-b-print { border-bottom: 1px solid black !important; min-width: 150px; display: inline-block; }
         }
     </style>
 </head>
 <body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <div class="logo-watermark">
-        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" alt="CMCS Logo">
-    </div>
-
-    <div class="md:hidden sidebar p-4 flex justify-between items-center z-30 shadow-md no-print">
-        <div class="font-black text-sm tracking-tighter flex items-center gap-2 uppercase">
-            CMCS <span class="text-gray-500">VLS</span>
-        </div>
-        <button onclick="toggleMobileMenu()" class="text-white p-2"><i class="fa-solid fa-bars-staggered"></i></button>
-    </div>
+    <div class="logo-watermark"><img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png"></div>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 sidebar transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col no-print md:relative">
         <div class="h-20 hidden md:flex items-center px-8 border-b border-white/5">
@@ -68,55 +53,44 @@
                 <span class="font-black text-lg tracking-tighter uppercase">CMCS <span class="text-gray-500">VLS</span></span>
             </div>
         </div>
-
         <nav class="flex-1 py-8 px-4 space-y-6 overflow-y-auto scrollbar-hide">
             <div>
                 <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Core Portal</p>
-                <a onclick="switchGlobalView('schedules'); closeMobileMenu()" id="navSched" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
-                    <i class="fa-solid fa-calendar-day text-xs"></i> <span class="uppercase tracking-tighter">Schedules</span>
+                <a onclick="switchGlobalView('schedules')" id="navSched" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
+                    <i class="fa-solid fa-calendar-day text-xs"></i> <span class="uppercase">Schedules</span>
                 </a>
-                <a onclick="switchGlobalView('grades'); closeMobileMenu()" id="navGrades" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
-                    <i class="fa-solid fa-file-invoice text-xs"></i> <span class="uppercase tracking-tighter">Scholastic Records</span>
+                <a onclick="switchGlobalView('grades')" id="navGrades" class="sidebar-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold mb-2 cursor-pointer">
+                    <i class="fa-solid fa-file-invoice text-xs"></i> <span class="uppercase">Records</span>
                 </a>
             </div>
-
             <div>
-                <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Enrolled Subjects</p>
+                <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-4">Subjects</p>
                 <div id="subjectNavItems" class="space-y-2"></div>
             </div>
         </nav>
-
         <div class="p-6 border-t border-white/5">
-            <a href="student_edit.html" class="glass-card p-4 flex items-center gap-3 mb-4 block hover:border-white/20 transition-all">
+            <div class="glass-card p-4 flex items-center gap-3 mb-4">
                 <div id="adminInitial" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-xs font-bold text-black uppercase"></div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p>
-                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest" id="studentIdDisplay">ID: ---</p>
-                </div>
-            </a>
-            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">
-                Logout
-            </button>
+                <div class="flex-1 min-w-0"><p class="text-xs font-bold truncate uppercase text-white" id="adminName">Loading...</p><p class="text-[9px] text-gray-500 font-bold uppercase" id="studentIdDisplay">ID: ---</p></div>
+            </div>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-red-500 hover:text-white transition-all">Logout</button>
         </div>
     </aside>
-
-    <div id="sidebarOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden">
         <header class="h-auto min-h-[5rem] py-4 flex flex-col md:flex-row items-start md:items-center justify-between px-10 border-b border-white/5 no-print gap-6">
             <div class="flex flex-col">
                 <h1 id="headerTitle" class="text-sm font-black uppercase tracking-widest text-white leading-none">STUDENT PORTAL</h1>
-                <div id="headerContext" class="flex flex-wrap items-center gap-3 mt-3"></div>
+                <div id="headerContext" class="flex flex-wrap items-center gap-3 mt-3 text-[10px] font-bold text-gray-400"></div>
             </div>
-            
             <div class="flex items-center gap-6 w-full md:w-auto">
-                <div id="subjectToggles" class="hidden glass-card !rounded-xl p-1 flex flex-1 md:flex-none">
-                    <button id="btnAtt" onclick="switchSubTab('attendance')" class="flex-1 md:flex-none px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all active-nav">Attendance</button>
-                    <button id="btnMat" onclick="switchSubTab('materials')" class="flex-1 md:flex-none px-5 py-2 text-[10px] font-black uppercase rounded-lg transition-all text-gray-500">Materials</button>
+                <div id="subjectToggles" class="hidden glass-card !rounded-xl p-1 flex">
+                    <button id="btnAtt" onclick="switchSubTab('attendance')" class="px-5 py-2 text-[10px] font-black uppercase rounded-lg active-nav">Attendance</button>
+                    <button id="btnMat" onclick="switchSubTab('materials')" class="px-5 py-2 text-[10px] font-black uppercase rounded-lg text-gray-500">Materials</button>
                 </div>
                 <div id="exportGroup" class="flex gap-3">
-                    <button onclick="exportCSV()" class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase hover:bg-white hover:text-black transition-all">CSV</button>
-                    <button onclick="exportPDF()" class="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all">PDF</button>
+                    <button onclick="exportCSV()" class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase">CSV</button>
+                    <button onclick="exportPDF()" class="px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase">PDF</button>
                 </div>
             </div>
         </header>
@@ -124,38 +98,33 @@
         <div class="flex-1 overflow-y-auto p-10 scrollbar-hide">
             <div id="workspace" class="space-y-8">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print" id="infoSummary"></div>
-
                 <div id="searchBar" class="no-print relative w-full max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                    <input type="text" id="masterSearch" placeholder="SEARCH ENTRIES..." 
-                            class="w-full pl-12 pr-4 py-3 rounded-xl text-xs font-black uppercase shadow-lg">
+                    <input type="text" id="masterSearch" placeholder="SEARCH..." class="w-full pl-12 pr-4 py-3 rounded-xl text-xs font-black uppercase">
                 </div>
 
-                <div id="printArea">
-                    <div id="printHeader" class="hidden flex-col items-center mb-10 text-center">
-                        <div class="flex flex-col items-center gap-2 mb-6">
-                            <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-20 h-20">
-                            <div>
-                                <h2 class="text-2xl font-black uppercase text-black">Central Mindanao Computer School</h2>
-                                <p class="text-[10px] font-bold text-black">Poblacion, Tulunan, Cotabato</p>
-                                <p class="text-[13px] font-black mt-2 uppercase tracking-[0.2em] border-t border-black pt-2 text-black" id="lblReportType"></p>
+                <div id="printArea" class="overflow-visible">
+                    <div id="printHeader" class="hidden">
+                        <img src="https://sklepagatesting.github.io/resources/Images/CMCSlogo.png" class="w-20 h-20 mb-2">
+                        <h2 class="text-2xl font-black uppercase text-black">Central Mindanao Computer School</h2>
+                        <p class="text-[10px] font-bold text-black">Poblacion, Tulunan, Cotabato</p>
+                        <p class="text-[13px] font-black mt-2 uppercase tracking-[0.2em] border-t border-black pt-2 text-black" id="lblReportType"></p>
+                        
+                        <div class="print-header-info text-black">
+                            <div class="space-y-2">
+                                <p>Student: <span id="pName" class="border-b-print"></span></p>
+                                <p>Student ID: <span id="pID" class="border-b-print"></span></p>
+                                <p>Gender: <span id="pGender" class="border-b-print"></span></p>
                             </div>
-                        </div>                                                
-                        <div class="print-header-info w-full text-[10px] font-bold uppercase text-black">
-                            <div class="space-y-1">
-                                <p>Student: <span id="pName" class="font-normal border-b border-black"></span></p>
-                                <p>Student ID: <span id="pID" class="font-normal border-b border-black"></span></p>
-                                <p>Gender: <span id="pGender" class="font-normal border-b border-black"></span></p>
-                            </div>
-                            <div class="space-y-1">
-                                <p>Course: <span id="pCourse" class="font-normal border-b border-black"></span></p>
-                                <p>Year & Sem: <span id="pYearSem" class="font-normal border-b border-black"></span></p>
-                                <p>School Year: <span id="pSY" class="font-normal border-b border-black">2025-2026</span></p>
+                            <div class="space-y-2">
+                                <p>Course: <span id="pCourse" class="border-b-print"></span></p>
+                                <p>Year & Sem: <span id="pYearSem" class="border-b-print"></span></p>
+                                <p>School Year: <span class="border-b-print">2025-2026</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="glass-card overflow-hidden !border-white/5">
+                    <div class="glass-card overflow-hidden">
                         <table class="w-full text-left">
                             <thead id="tableHead" class="bg-white/[0.02] text-gray-500 text-[9px] uppercase font-black tracking-widest border-b border-white/5"></thead>
                             <tbody id="tableBody" class="divide-y divide-white/5 text-xs"></tbody>
@@ -186,14 +155,14 @@
 
         let currentStudent = null, programs = [], activeSubj = null, currentMode = 'schedules', searchTerm = "";
 
-        window.toggleMobileMenu = () => {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('sidebarOverlay').classList.toggle('hidden');
-        };
-
-        window.closeMobileMenu = () => {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebarOverlay').classList.add('hidden');
+        // Helper for AM/PM format
+        const formatTime = (timeStr) => {
+            if (!timeStr) return "--:--";
+            const [hours, minutes] = timeStr.split(':');
+            let h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${h}:${minutes} ${ampm}`;
         };
 
         onAuthStateChanged(auth, async user => {
@@ -212,30 +181,13 @@
             document.getElementById('adminName').innerText = `${currentStudent.lastname}, ${currentStudent.firstname}`;
             document.getElementById('adminInitial').innerText = currentStudent.firstname[0] + currentStudent.lastname[0];
             document.getElementById('studentIdDisplay').innerText = `ID: ${currentStudent.studentId}`;
-
-            document.getElementById('headerContext').innerHTML = `
-                <span class="bg-white/10 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter border border-white/5">${currentStudent.course}</span>
-                <span class="bg-white/5 text-gray-400 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">Year ${currentStudent.year}</span>
-                <span class="bg-white text-black px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter">S.Y. 2025-2026</span>
-            `;
-
+            document.getElementById('headerContext').innerHTML = `<span>${currentStudent.course}</span> • <span>Year ${currentStudent.year}</span> • <span>${currentStudent.semester}</span>`;
+            
             document.getElementById('infoSummary').innerHTML = `
-                <div class="glass-card p-6 border-white/5">
-                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">PROGRAM</p>
-                    <p class="text-xs font-black text-white uppercase truncate">${currentStudent.course}</p>
-                </div>
-                <div class="glass-card p-6 border-white/5">
-                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">YEAR/SEM</p>
-                    <p class="text-xs font-black text-white uppercase truncate">Y${currentStudent.year} - ${currentStudent.semester.split(' ')[0]}</p>
-                </div>
-                <div class="glass-card p-6 border-white/5">
-                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ENROLLMENT STATUS</p>
-                    <p class="text-xs font-black text-emerald-400 uppercase truncate">${currentStudent.status}</p>
-                </div>
-                <div class="glass-card p-6 border-white/5">
-                    <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ACADEMIC PERIOD</p>
-                    <p class="text-xs font-black text-blue-400 uppercase truncate">2025 - 2026</p>
-                </div>
+                <div class="glass-card p-6"><p class="text-[9px] font-black text-gray-500 uppercase mb-1">PROGRAM</p><p class="text-xs font-black">${currentStudent.course}</p></div>
+                <div class="glass-card p-6"><p class="text-[9px] font-black text-gray-500 uppercase mb-1">YEAR/SEM</p><p class="text-xs font-black">Y${currentStudent.year} - ${currentStudent.semester}</p></div>
+                <div class="glass-card p-6"><p class="text-[9px] font-black text-gray-500 uppercase mb-1">STATUS</p><p class="text-xs font-black text-emerald-400">${currentStudent.status}</p></div>
+                <div class="glass-card p-6"><p class="text-[9px] font-black text-gray-500 uppercase mb-1">S.Y.</p><p class="text-xs font-black text-blue-400">2025-2026</p></div>
             `;
         }
 
@@ -245,14 +197,13 @@
             const q = query(collection(db, "programs"), where("code", "in", codes));
             const snap = await getDocs(q);
             programs = snap.docs.map(d => d.data());
-            
             const nav = document.getElementById('subjectNavItems');
             nav.innerHTML = '';
             programs.forEach(p => {
                 const a = document.createElement('a');
-                a.className = "subj-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold cursor-pointer";
-                a.onclick = (e) => { switchSubjectView(p, e); closeMobileMenu(); };
-                a.innerHTML = `<i class="fa-solid fa-book-open text-xs"></i> <span class="uppercase tracking-tighter font-black text-xs">${p.code}</span>`;
+                a.className = "subj-btn flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-semibold cursor-pointer mb-2";
+                a.onclick = () => switchSubjectView(p);
+                a.innerHTML = `<i class="fa-solid fa-book-open text-xs"></i> <span class="uppercase font-black text-xs">${p.code}</span>`;
                 nav.appendChild(a);
             });
         }
@@ -260,26 +211,17 @@
         window.switchGlobalView = (mode) => {
             currentMode = mode; activeSubj = null;
             document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
-            const activeNav = document.getElementById(mode === 'schedules' ? 'navSched' : 'navGrades');
-            if(activeNav) activeNav.classList.add('active-nav');
-            
-            document.getElementById('headerTitle').innerText = mode === 'schedules' ? "CLASS SCHEDULES" : "SCHOLASTIC PERFORMANCE";
+            document.getElementById(mode === 'schedules' ? 'navSched' : 'navGrades')?.classList.add('active-nav');
+            document.getElementById('headerTitle').innerText = mode === 'schedules' ? "CLASS SCHEDULES" : "SCHOLASTIC RECORDS";
             document.getElementById('subjectToggles').classList.add('hidden');
-            document.getElementById('exportGroup').classList.remove('hidden');
-            document.getElementById('searchBar').classList.remove('hidden');
             renderTable();
         };
 
-        window.switchSubjectView = (p, event) => {
+        window.switchSubjectView = (p) => {
             activeSubj = p; currentMode = 'attendance';
             document.querySelectorAll('.sidebar-btn, .subj-btn').forEach(b => b.classList.remove('active-nav'));
-            if(event && event.currentTarget) event.currentTarget.classList.add('active-nav');
-            
             document.getElementById('headerTitle').innerText = p.name;
-            document.getElementById('headerContext').innerHTML = `
-                <span class="bg-blue-500 text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase"><i class="fa-solid fa-calendar mr-1"></i> ${p.schedule}</span>
-                <span class="bg-white/10 text-white px-3 py-1 rounded-lg text-[9px] font-black uppercase"><i class="fa-solid fa-clock mr-1"></i> ${p.startTime} - ${p.endTime}</span>
-            `;
+            document.getElementById('headerContext').innerHTML = `<span class="bg-blue-500 text-white px-2 py-1 rounded">${p.schedule}</span> <span>${formatTime(p.startTime)} - ${formatTime(p.endTime)}</span>`;
             document.getElementById('subjectToggles').classList.remove('hidden');
             switchSubTab('attendance');
         };
@@ -288,8 +230,6 @@
             currentMode = tab;
             document.getElementById('btnAtt').classList.toggle('active-nav', tab === 'attendance');
             document.getElementById('btnMat').classList.toggle('active-nav', tab === 'materials');
-            document.getElementById('exportGroup').classList.toggle('hidden', tab === 'materials');
-            document.getElementById('searchBar').classList.toggle('hidden', tab === 'materials');
             renderTable();
         };
 
@@ -300,74 +240,33 @@
             body.innerHTML = '';
 
             if (currentMode === 'schedules') {
-                head.innerHTML = `<tr><th class="px-8 py-5">Code</th><th class="px-8 py-5">Subject Details</th><th class="px-8 py-5">Schedule</th><th class="px-8 py-5">Instructor</th></tr>`;
-                programs.filter(p => p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term)).forEach(p => {
-                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                        <td class="px-8 py-5 font-black text-white">${p.code}</td>
-                        <td class="px-8 py-5 font-bold uppercase text-white">${p.name}<div class="text-[9px] text-gray-500 font-medium">S.Y. 2025-2026</div></td>
-                        <td class="px-8 py-5">
-                            <span class="text-[10px] font-black block text-white">${p.schedule}</span>
-                            <span class="text-[9px] text-gray-500">${p.startTime} - ${p.endTime}</span>
-                        </td>
-                        <td class="px-8 py-5 text-[10px] font-black uppercase text-gray-400">${p.teacher}</td>
-                    </tr>`;
+                head.innerHTML = `<tr><th class="px-8 py-5">Code</th><th class="px-8 py-5">Subject</th><th class="px-8 py-5">Schedule</th><th class="px-8 py-5">Teacher</th></tr>`;
+                programs.filter(p => p.name.toLowerCase().includes(term)).forEach(p => {
+                    body.innerHTML += `<tr><td class="px-8 py-5 font-black">${p.code}</td><td class="px-8 py-5 uppercase">${p.name}</td><td class="px-8 py-5">${p.schedule}<br>${formatTime(p.startTime)} - ${formatTime(p.endTime)}</td><td class="px-8 py-5 uppercase">${p.teacher}</td></tr>`;
                 });
             } else if (currentMode === 'grades') {
-                head.innerHTML = `<tr><th class="px-8 py-5">Subject Title</th><th class="px-8 py-5 text-center">PRE</th><th class="px-8 py-5 text-center">MID</th><th class="px-8 py-5 text-center">FIN</th><th class="px-8 py-5 text-right">POINT</th></tr>`;
+                head.innerHTML = `<tr><th class="px-8 py-5">Subject</th><th class="px-8 py-5 text-center">PRE</th><th class="px-8 py-5 text-center">MID</th><th class="px-8 py-5 text-center">FIN</th><th class="px-8 py-5 text-right">POINT</th></tr>`;
                 programs.filter(p => p.name.toLowerCase().includes(term)).forEach(p => {
                     const g = currentStudent.grades?.[p.code] || { prelim:'-', midterm:'-', final:'-', point:'5.0' };
-                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                        <td class="px-8 py-5 font-bold uppercase text-white">${p.name}<div class="text-[9px] text-gray-500 font-medium">${p.teacher}</div></td>
-                        <td class="px-8 py-5 text-center font-black">${g.prelim}</td>
-                        <td class="px-8 py-5 text-center font-black">${g.midterm}</td>
-                        <td class="px-8 py-5 text-center font-black">${g.final}</td>
-                        <td class="px-8 py-5 text-right font-black text-blue-400">${g.point}</td>
-                    </tr>`;
+                    body.innerHTML += `<tr><td class="px-8 py-5 uppercase">${p.name}</td><td class="px-8 py-5 text-center font-black">${g.prelim}</td><td class="px-8 py-5 text-center font-black">${g.midterm}</td><td class="px-8 py-5 text-center font-black">${g.final}</td><td class="px-8 py-5 text-right font-black text-blue-400">${g.point}</td></tr>`;
                 });
             } else if (currentMode === 'attendance') {
-                head.innerHTML = `<tr><th class="px-8 py-5">Date</th><th class="px-8 py-5">Academic Period</th><th class="px-8 py-5 text-center">Status</th></tr>`;
+                head.innerHTML = `<tr><th class="px-8 py-5">Date</th><th class="px-8 py-5 text-center">Status</th></tr>`;
                 const attMap = currentStudent.attendance?.[activeSubj.code] || {};
                 Object.keys(attMap).sort().reverse().forEach(date => {
-                    if(date.includes(term)) {
-                        const status = attMap[date];
-                        const color = status === 'P' ? 'text-emerald-400' : status === 'L' ? 'text-yellow-500' : 'text-red-500';
-                        body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                            <td class="px-8 py-5 font-black text-white">${date}</td>
-                            <td class="px-8 py-5 text-[10px] font-black text-gray-500 uppercase">${currentStudent.semester} | 2025-2026</td>
-                            <td class="px-8 py-5 text-center font-black ${color}">${status === 'P' ? 'PRESENT' : status === 'L' ? 'LATE' : 'ABSENT'}</td>
-                        </tr>`;
-                    }
+                    const status = attMap[date];
+                    body.innerHTML += `<tr><td class="px-8 py-5 font-black">${date}</td><td class="px-8 py-5 text-center font-black">${status === 'P' ? 'PRESENT' : 'ABSENT'}</td></tr>`;
                 });
             } else if (currentMode === 'materials') {
-                head.innerHTML = `<tr><th class="px-8 py-5">Resource Title</th><th class="px-8 py-5">Instructions</th><th class="px-8 py-5 text-right">Action</th></tr>`;
+                head.innerHTML = `<tr><th class="px-8 py-5">Material</th><th class="px-8 py-5 text-right">Link</th></tr>`;
                 const q = query(collection(db, "materials"), where("subjectCode", "==", activeSubj.code));
                 const snap = await getDocs(q);
                 snap.forEach(d => {
                     const m = d.data();
-                    body.innerHTML += `<tr class="hover:bg-white/[0.02]">
-                        <td class="px-8 py-5 font-black uppercase text-[10px] text-white">${m.name}<div class="text-[9px] text-gray-500 uppercase">${activeSubj.code}</div></td>
-                        <td class="px-8 py-5 text-[10px] italic text-gray-400 font-medium">${m.desc || 'Refer to link for details.'}</td>
-                        <td class="px-8 py-5 text-right"><a href="${m.link}" target="_blank" class="bg-white text-black px-4 py-2 rounded-lg text-[9px] font-black uppercase shadow-lg">Access</a></td>
-                    </tr>`;
+                    body.innerHTML += `<tr><td class="px-8 py-5 uppercase font-black">${m.name}</td><td class="px-8 py-5 text-right"><a href="${m.link}" target="_blank" class="bg-white text-black px-4 py-2 rounded-lg text-[9px] font-black uppercase">View</a></td></tr>`;
                 });
             }
         }
-
-        window.exportCSV = () => {
-            let csv = "STUDENT NAME," + currentStudent.lastname + " " + currentStudent.firstname + "\nSTUDENT ID," + currentStudent.studentId + "\n\n";
-            if(currentMode === 'schedules') {
-                csv += "CODE,SUBJECT,SCHEDULE,TIME,TEACHER\n";
-                programs.forEach(p => csv += `${p.code},${p.name},${p.schedule},${p.startTime}-${p.endTime},${p.teacher}\n`);
-            } else {
-                csv += "SUBJECT,PRELIM,MIDTERM,FINAL,GPA\n";
-                programs.forEach(p => { const g = currentStudent.grades?.[p.code] || {}; csv += `"${p.name}",${g.prelim || '-'},${g.midterm || '-'},${g.final || '-'},${g.point || '-'}\n`; });
-            }
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${currentStudent.lastname}_Record.csv`;
-            a.click();
-        };
 
         window.exportPDF = () => {
             document.getElementById('lblReportType').innerText = currentMode === 'schedules' ? "CERTIFICATE OF MATRICULATION / SCHEDULE" : "OFFICIAL STUDENT SCHOLASTIC RECORD";
