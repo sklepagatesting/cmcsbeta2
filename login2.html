@@ -96,6 +96,22 @@
         const pwInput = document.getElementById('pw');
         let activeTl;
 
+         // --- NEW: Disable Autofill on Load logic ---
+        const inputs = document.querySelectorAll('.input-field');
+        inputs.forEach(input => {
+            input.setAttribute('readonly', 'readonly');
+            input.style.cursor = 'text';
+            
+            const stopReadOnly = () => {
+                input.removeAttribute('readonly');
+                input.removeEventListener('focus', stopReadOnly);
+                input.removeEventListener('mousedown', stopReadOnly);
+            };
+    
+            input.addEventListener('focus', stopReadOnly);
+            input.addEventListener('mousedown', stopReadOnly);
+        });
+
         // Toggle Password visibility
         document.getElementById('togglePw').addEventListener('click', () => {
             pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
